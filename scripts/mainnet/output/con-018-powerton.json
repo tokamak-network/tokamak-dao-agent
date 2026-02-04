@@ -1,0 +1,16 @@
+{
+  "name": "PowerTON",
+  "address": "0x970298189050aBd4dc4F119ccae14284f971E9c8",
+  "type": "rewards",
+  "docId": "con-018",
+  "description": "PowerTON reward distribution system",
+  "abi": [],
+  "sourceCode": "",
+  "contractName": "",
+  "compilerVersion": "",
+  "isProxy": false,
+  "functions": [],
+  "events": [],
+  "stateVariables": [],
+  "onChainState": {}
+}

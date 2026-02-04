@@ -1,0 +1,316 @@
+{
+  "coreTokens": [
+    {
+      "name": "TON",
+      "address": "0x2be5e8c109e2197D077D13A82dAead6a9b3433C5",
+      "type": "token",
+      "docId": "con-001",
+      "description": "Native utility token of Tokamak Network"
+    },
+    {
+      "name": "WTON",
+      "address": "0xc4A11aaf6ea915Ed7Ac194161d2fC9384F15bff2",
+      "type": "token",
+      "docId": "con-002",
+      "description": "Wrapped TON for staking with RAY precision (27 decimals)"
+    }
+  ],
+  "simpleStakingV2": [
+    {
+      "name": "SeigManager",
+      "address": "0x3b1e59c2ff4b850d78ab50cb13a4a482101681b6",
+      "type": "implementation",
+      "docId": "con-011",
+      "description": "Seigniorage calculation and distribution logic"
+    },
+    {
+      "name": "SeigManagerProxy",
+      "address": "0x0b55a0f463b6defb81c6063973763951712d0e5f",
+      "type": "proxy",
+      "implementation": "0x3b1e59c2ff4b850d78ab50cb13a4a482101681b6",
+      "docId": "con-012",
+      "description": "Upgradeable proxy for SeigManager"
+    },
+    {
+      "name": "DepositManager",
+      "address": "0x76c01207959df1242c2824b4445cde48eb55d2f1",
+      "type": "implementation",
+      "docId": "con-013",
+      "description": "WTON deposit and withdrawal logic"
+    },
+    {
+      "name": "DepositManagerProxy",
+      "address": "0x0b58ca72b12f01fc05f8f252e226f3e2089bd00e",
+      "type": "proxy",
+      "implementation": "0x76c01207959df1242c2824b4445cde48eb55d2f1",
+      "docId": "con-014",
+      "description": "Upgradeable proxy for DepositManager"
+    },
+    {
+      "name": "Layer2Registry",
+      "address": "0x296ef64487ecfddcdd03eab35c81c9262dab88ba",
+      "type": "implementation",
+      "docId": "con-015",
+      "description": "Layer 2 registration logic"
+    },
+    {
+      "name": "Layer2RegistryProxy",
+      "address": "0x7846c2248a7b4de77e9c2bae7fbb93bfc286837b",
+      "type": "proxy",
+      "implementation": "0x296ef64487ecfddcdd03eab35c81c9262dab88ba",
+      "docId": "con-016",
+      "description": "Upgradeable proxy for Layer2Registry"
+    },
+    {
+      "name": "Candidate",
+      "address": "0x1a8f59017e0434efc27e89640ac4b7d7d194c0a3",
+      "type": "implementation",
+      "docId": "con-017",
+      "description": "Candidate contract implementation"
+    },
+    {
+      "name": "CandidateFactory",
+      "address": "0xc5eb1c5ce7196bdb49ea7500ca18a1b9f1fa3ffb",
+      "type": "factory",
+      "docId": "con-018",
+      "description": "Factory for creating Candidate contracts"
+    },
+    {
+      "name": "CandidateFactoryProxy",
+      "address": "0x9fc7100a16407ee24a79c834a56e6eca555a5d7c",
+      "type": "proxy",
+      "docId": "con-019",
+      "description": "Upgradeable proxy for CandidateFactory"
+    },
+    {
+      "name": "RefactorCoinageSnapshot",
+      "address": "0xef12310ff8a6e96357b7d2c4a759b19ce94f7dfb",
+      "type": "implementation",
+      "docId": "con-020",
+      "description": "Refactored coinage snapshot contract"
+    },
+    {
+      "name": "CoinageFactory",
+      "address": "0xe8fae91b80dd515c3d8b9fc02cb5b2ecfddabf43",
+      "type": "factory",
+      "docId": "con-021",
+      "description": "Factory for AutoRefactorCoinage tokens"
+    },
+    {
+      "name": "SwapProxy",
+      "address": "0x30e65B3A6e6868F044944Aa0e9C5d52F8dcb138d",
+      "type": "proxy",
+      "docId": "con-022",
+      "description": "TON/WTON swap proxy contract"
+    },
+    {
+      "name": "L1BridgeRegistryV1_1",
+      "address": "0x259Ac335EB42d345A61bE48104eC0Ec20b283F14",
+      "type": "implementation",
+      "docId": "con-023",
+      "description": "L1 Bridge Registry V1.1 implementation"
+    },
+    {
+      "name": "L1BridgeRegistryProxy",
+      "address": "0x39d43281A4A5e922AB0DCf89825D73273D8C5BA4",
+      "type": "proxy",
+      "docId": "con-024",
+      "description": "Upgradeable proxy for L1BridgeRegistry"
+    },
+    {
+      "name": "OperatorManagerV1_1",
+      "address": "0xB5F3b31dFB4DCe9a2FA12dE50A97250d60823750",
+      "type": "implementation",
+      "docId": "con-025",
+      "description": "Operator Manager V1.1 implementation"
+    },
+    {
+      "name": "OperatorManagerFactory",
+      "address": "0xAf86b21edDdC78ea27E23A7F2151d60d4e069450",
+      "type": "factory",
+      "docId": "con-026",
+      "description": "Factory for OperatorManager contracts"
+    },
+    {
+      "name": "CandidateAddOnV1_1",
+      "address": "0x73Bfd5cAEC63307784C7B6d2555F18ec24D96E2e",
+      "type": "implementation",
+      "docId": "con-027",
+      "description": "Candidate AddOn V1.1 implementation"
+    },
+    {
+      "name": "CandidateAddOnFactory",
+      "address": "0x557E24b5CbFbDA3e5aC1bD01F38EcDe865791Bc5",
+      "type": "factory",
+      "docId": "con-028",
+      "description": "Factory for CandidateAddOn contracts"
+    },
+    {
+      "name": "CandidateAddOnFactoryProxy",
+      "address": "0xFA8ce5caF456115E72B96E5074769b8f66AA5861",
+      "type": "proxy",
+      "docId": "con-029",
+      "description": "Upgradeable proxy for CandidateAddOnFactory"
+    },
+    {
+      "name": "Layer2ManagerV1_1",
+      "address": "0x2EB7f500125f11544392B83B87cDEb9456f3509f",
+      "type": "implementation",
+      "docId": "con-030",
+      "description": "Layer2 Manager V1.1 implementation"
+    },
+    {
+      "name": "Layer2ManagerProxy",
+      "address": "0xD6Bf6B2b7553c8064Ba763AD6989829060FdFC1D",
+      "type": "proxy",
+      "docId": "con-031",
+      "description": "Upgradeable proxy for Layer2Manager"
+    },
+    {
+      "name": "SeigManagerV1_2",
+      "address": "0xb1958719b3Af9B4d85D93EFC5e317C97cCe9aBc4",
+      "type": "implementation",
+      "docId": "con-032",
+      "description": "SeigManager V1.2 implementation"
+    },
+    {
+      "name": "SeigManagerV1_3",
+      "address": "0xce18C6F84F10881eA47A43AF7311A29bb116F628",
+      "type": "implementation",
+      "docId": "con-033",
+      "description": "SeigManager V1.3 implementation"
+    },
+    {
+      "name": "DepositManagerV1_1",
+      "address": "0x74bC3031b9369e6b898e82784106257D4D37Eac5",
+      "type": "implementation",
+      "docId": "con-034",
+      "description": "DepositManager V1.1 implementation"
+    }
+  ],
+  "layerOperators": [
+    {
+      "name": "tokamak1",
+      "address": "0xf3B17FDB808c7d0Df9ACd24dA34700ce069007DF",
+      "type": "layer2",
+      "docId": "con-051",
+      "description": "tokamak1 Layer2 operator contract"
+    },
+    {
+      "name": "DXM Corp",
+      "address": "0x44e3605d0ed58FD125E9C47D1bf25a4406c13b57",
+      "type": "layer2",
+      "docId": "con-052",
+      "description": "DXM Corp Layer2 operator contract"
+    },
+    {
+      "name": "DSRV",
+      "address": "0x2B67D8D4E61b68744885E243EfAF988f1Fc66E2D",
+      "type": "layer2",
+      "docId": "con-053",
+      "description": "DSRV Layer2 operator contract"
+    },
+    {
+      "name": "Talken",
+      "address": "0x36101b31e74c5E8f9a9cec378407Bbb776287761",
+      "type": "layer2",
+      "docId": "con-054",
+      "description": "Talken Layer2 operator contract"
+    },
+    {
+      "name": "staked",
+      "address": "0x2c25A6be0e6f9017b5bf77879c487eed466F2194",
+      "type": "layer2",
+      "docId": "con-055",
+      "description": "staked Layer2 operator contract"
+    },
+    {
+      "name": "level",
+      "address": "0x0F42D1C40b95DF7A1478639918fc358B4aF5298D",
+      "type": "layer2",
+      "docId": "con-056",
+      "description": "level Layer2 operator contract"
+    },
+    {
+      "name": "decipher",
+      "address": "0xbc602C1D9f3aE99dB4e9fD3662CE3D02e593ec5d",
+      "type": "layer2",
+      "docId": "con-057",
+      "description": "decipher Layer2 operator contract"
+    },
+    {
+      "name": "DeSpread",
+      "address": "0xC42cCb12515b52B59c02eEc303c887C8658f5854",
+      "type": "layer2",
+      "docId": "con-058",
+      "description": "DeSpread Layer2 operator contract"
+    },
+    {
+      "name": "Danal Fintech",
+      "address": "0xf3CF23D896Ba09d8EcdcD4655d918f71925E3FE5",
+      "type": "layer2",
+      "docId": "con-059",
+      "description": "Danal Fintech Layer2 operator contract"
+    },
+    {
+      "name": "Hammer DAO",
+      "address": "0x06D34f65869Ec94B3BA8c0E08BCEb532f65005E2",
+      "type": "layer2",
+      "docId": "con-060",
+      "description": "Hammer DAO Layer2 operator contract"
+    }
+  ],
+  "daoContracts": [
+    {
+      "name": "DAOVault",
+      "address": "0x2520CD65BAa2cEEe9E6Ad6EBD3F45490C42dd303",
+      "type": "vault",
+      "docId": "con-071",
+      "description": "DAO treasury for TON/WTON and ERC-20 tokens"
+    },
+    {
+      "name": "DAOAgendaManager",
+      "address": "0xcD4421d082752f363E1687544a09d5112cD4f484",
+      "type": "manager",
+      "docId": "con-072",
+      "description": "Manages DAO agenda proposals and voting"
+    },
+    {
+      "name": "DAOCommitteeProxy",
+      "address": "0xDD9f0cCc044B0781289Ee318e5971b0139602C26",
+      "type": "proxy",
+      "docId": "con-073",
+      "description": "Upgradeable proxy for DAOCommittee"
+    },
+    {
+      "name": "DAOCommitteeProxy2",
+      "address": "0xD6175F575F4d32392508Ee2FBbDec9a2E8B3c01a",
+      "type": "proxy",
+      "docId": "con-074",
+      "description": "Second DAOCommittee proxy contract"
+    },
+    {
+      "name": "DAOCommittee_V1",
+      "address": "0xcC88dFa531512f24A8a5CbCB88F7B6731807EEFe",
+      "type": "implementation",
+      "docId": "con-075",
+      "description": "DAOCommittee V1 implementation"
+    },
+    {
+      "name": "DAOCommitteeOwner",
+      "address": "0x5991Aebb5271522d33C457bf6DF26d83c0dAa221",
+      "type": "owner",
+      "docId": "con-076",
+      "description": "DAOCommittee owner contract"
+    }
+  ],
+  "multiSig": [
+    {
+      "name": "MultiSigWallet",
+      "address": "0xE3F72E959834d0A72aFb2ea79F5ec2b4243d2d95",
+      "type": "multisig",
+      "docId": "con-081",
+      "description": "Tokamak Network MultiSig wallet"
+    }
+  ]
+}

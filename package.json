@@ -6,7 +6,11 @@
     "dev": "bun run --hot src/server/index.ts",
     "dev:client": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "analyze-contracts": "bun run scripts/analyze-contracts.ts mainnet",
+    "analyze-contracts:sepolia": "bun run scripts/analyze-contracts.ts sepolia",
+    "generate-docs": "bun run scripts/generate-docs.ts mainnet",
+    "generate-docs:sepolia": "bun run scripts/generate-docs.ts sepolia"
   },
   "devDependencies": {
     "@types/bun": "latest",

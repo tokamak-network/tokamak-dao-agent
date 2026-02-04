@@ -1,0 +1,16 @@
+{
+  "name": "TONSwapper",
+  "address": "0x70e7Fd47CbCC1694c917Cf2b9E59cBd07b8e1b19",
+  "type": "swap",
+  "docId": "con-041",
+  "description": "TON <-> WTON swap contract",
+  "abi": [],
+  "sourceCode": "",
+  "contractName": "",
+  "compilerVersion": "",
+  "isProxy": false,
+  "functions": [],
+  "events": [],
+  "stateVariables": [],
+  "onChainState": {}
+}

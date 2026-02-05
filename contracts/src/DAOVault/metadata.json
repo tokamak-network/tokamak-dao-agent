@@ -1,0 +1,11 @@
+{
+  "name": "DAOVault",
+  "address": "0x2520CD65BAa2cEEe9E6Ad6EBD3F45490C42dd303",
+  "compilerVersion": "v0.7.6+commit.7338295f",
+  "optimizationUsed": true,
+  "runs": 200,
+  "evmVersion": "Default",
+  "proxy": false,
+  "implementation": null,
+  "settings": null
+}

@@ -1,0 +1,36 @@
+{
+  "name": "OperatorManagerFactory",
+  "address": "0xAf86b21edDdC78ea27E23A7F2151d60d4e069450",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "optimizationUsed": true,
+  "runs": 200,
+  "evmVersion": "paris",
+  "proxy": false,
+  "implementation": null,
+  "settings": {
+    "evmVersion": "paris",
+    "libraries": {},
+    "metadata": {
+      "bytecodeHash": "none",
+      "useLiteralContent": true
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "remappings": [],
+    "viaIR": true,
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "devdoc",
+          "userdoc",
+          "metadata",
+          "abi"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "SeigManagerProxy",
+  "address": "0x0b55a0f463b6defb81c6063973763951712d0e5f",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "optimizationUsed": true,
+  "runs": 625,
+  "evmVersion": "paris",
+  "proxy": true,
+  "implementation": "0xb1958719b3af9b4d85d93efc5e317c97cce9abc4",
+  "settings": {
+    "evmVersion": "paris",
+    "libraries": {},
+    "metadata": {
+      "bytecodeHash": "none",
+      "useLiteralContent": true
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 625
+    },
+    "remappings": [],
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "devdoc",
+          "userdoc",
+          "metadata",
+          "abi"
+        ]
+      }
+    }
+  }
+}

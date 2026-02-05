@@ -1,0 +1,36 @@
+{
+  "name": "Layer2ManagerProxy",
+  "address": "0xD6Bf6B2b7553c8064Ba763AD6989829060FdFC1D",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "optimizationUsed": true,
+  "runs": 200,
+  "evmVersion": "paris",
+  "proxy": true,
+  "implementation": "0x2eb7f500125f11544392b83b87cdeb9456f3509f",
+  "settings": {
+    "evmVersion": "paris",
+    "libraries": {},
+    "metadata": {
+      "bytecodeHash": "none",
+      "useLiteralContent": true
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "remappings": [],
+    "viaIR": true,
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "devdoc",
+          "userdoc",
+          "metadata",
+          "abi"
+        ]
+      }
+    }
+  }
+}

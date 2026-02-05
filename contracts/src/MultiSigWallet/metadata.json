@@ -1,0 +1,30 @@
+{
+  "name": "MultiSigWallet",
+  "address": "0xE3F72E959834d0A72aFb2ea79F5ec2b4243d2d95",
+  "compilerVersion": "v0.8.27+commit.40a35a09",
+  "optimizationUsed": false,
+  "runs": 200,
+  "evmVersion": "paris",
+  "proxy": false,
+  "implementation": null,
+  "settings": {
+    "evmVersion": "paris",
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "devdoc",
+          "userdoc",
+          "metadata",
+          "abi"
+        ]
+      }
+    },
+    "libraries": {}
+  }
+}

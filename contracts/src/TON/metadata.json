@@ -1,0 +1,11 @@
+{
+  "name": "TON",
+  "address": "0x2be5e8c109e2197D077D13A82dAead6a9b3433C5",
+  "compilerVersion": "v0.5.12+commit.7709ece9",
+  "optimizationUsed": true,
+  "runs": 200,
+  "evmVersion": "Default",
+  "proxy": false,
+  "implementation": null,
+  "settings": null
+}

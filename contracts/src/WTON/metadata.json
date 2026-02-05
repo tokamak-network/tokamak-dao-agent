@@ -1,0 +1,11 @@
+{
+  "name": "WTON",
+  "address": "0xc4A11aaf6ea915Ed7Ac194161d2fC9384F15bff2",
+  "compilerVersion": "v0.5.12+commit.7709ece9",
+  "optimizationUsed": true,
+  "runs": 200,
+  "evmVersion": "Default",
+  "proxy": false,
+  "implementation": null,
+  "settings": null
+}

@@ -1,0 +1,32 @@
+{
+  "name": "DAOCommitteeProxy",
+  "address": "0xDD9f0cCc044B0781289Ee318e5971b0139602C26",
+  "compilerVersion": "v0.7.6+commit.7338295f",
+  "optimizationUsed": true,
+  "runs": 200,
+  "evmVersion": "istanbul",
+  "proxy": true,
+  "implementation": "0x9e7f54eff4a4d35097e0acb6994a723f1a28368c",
+  "settings": {
+    "remappings": [
+      ":g=/dir"
+    ],
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "evmVersion": "istanbul",
+    "metadata": {
+      "useLiteralContent": true
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "abi"
+        ]
+      }
+    }
+  }
+}

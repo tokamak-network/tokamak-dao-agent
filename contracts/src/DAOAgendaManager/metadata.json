@@ -1,0 +1,32 @@
+{
+  "name": "DAOAgendaManager",
+  "address": "0xcD4421d082752f363E1687544a09d5112cD4f484",
+  "compilerVersion": "v0.7.6+commit.7338295f",
+  "optimizationUsed": true,
+  "runs": 200,
+  "evmVersion": "istanbul",
+  "proxy": false,
+  "implementation": null,
+  "settings": {
+    "remappings": [
+      ":g=/dir"
+    ],
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "evmVersion": "istanbul",
+    "metadata": {
+      "useLiteralContent": true
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "abi"
+        ]
+      }
+    }
+  }
+}

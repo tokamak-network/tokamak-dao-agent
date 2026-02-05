@@ -1,0 +1,36 @@
+{
+  "name": "L1BridgeRegistryProxy",
+  "address": "0x39d43281A4A5e922AB0DCf89825D73273D8C5BA4",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "optimizationUsed": true,
+  "runs": 200,
+  "evmVersion": "paris",
+  "proxy": true,
+  "implementation": "0x259ac335eb42d345a61be48104ec0ec20b283f14",
+  "settings": {
+    "evmVersion": "paris",
+    "libraries": {},
+    "metadata": {
+      "bytecodeHash": "none",
+      "useLiteralContent": true
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "remappings": [],
+    "viaIR": true,
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "devdoc",
+          "userdoc",
+          "metadata",
+          "abi"
+        ]
+      }
+    }
+  }
+}

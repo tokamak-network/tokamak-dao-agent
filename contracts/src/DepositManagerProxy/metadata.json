@@ -1,0 +1,35 @@
+{
+  "name": "DepositManagerProxy",
+  "address": "0x0b58ca72b12f01fc05f8f252e226f3e2089bd00e",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "optimizationUsed": true,
+  "runs": 625,
+  "evmVersion": "paris",
+  "proxy": true,
+  "implementation": "0x76c01207959df1242c2824b4445cde48eb55d2f1",
+  "settings": {
+    "evmVersion": "paris",
+    "libraries": {},
+    "metadata": {
+      "bytecodeHash": "none",
+      "useLiteralContent": true
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 625
+    },
+    "remappings": [],
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "devdoc",
+          "userdoc",
+          "metadata",
+          "abi"
+        ]
+      }
+    }
+  }
+}

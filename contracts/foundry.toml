@@ -1,0 +1,33 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+optimizer = true
+optimizer_runs = 200
+
+# Solidity versions used by Tokamak contracts
+auto_detect_solc = true
+solc_version = "0.8.24"
+
+# Remappings for dependencies
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "forge-std/=lib/forge-std/src/"
+]
+
+# EVM version
+evm_version = "london"
+
+# Allow multiple Solidity versions
+[profile.default.model_checker]
+
+# Profiles for specific contracts with different versions
+[profile.legacy]
+solc_version = "0.5.12"
+
+[profile.v6]
+solc_version = "0.6.12"
+
+[profile.v7]
+solc_version = "0.7.6"

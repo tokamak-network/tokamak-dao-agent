@@ -1,0 +1,33 @@
+{
+  "name": "CandidateProxy",
+  "address": "0xbc602C1D9f3aE99dB4e9fD3662CE3D02e593ec5d",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "optimizationUsed": true,
+  "runs": 625,
+  "evmVersion": "Default",
+  "proxy": true,
+  "implementation": "0x1a8f59017e0434efc27e89640ac4b7d7d194c0a3",
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 625
+    },
+    "metadata": {
+      "bytecodeHash": "none",
+      "useLiteralContent": true
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "devdoc",
+          "userdoc",
+          "metadata",
+          "abi"
+        ]
+      }
+    },
+    "libraries": {}
+  }
+}

@@ -1,0 +1,541 @@
+{
+  "contractAddress": "0xb1958719b3Af9B4d85D93EFC5e317C97cCe9aBc4",
+  "contractName": "SeigManagerV1_2",
+  "implementationName": "SeigManagerV1_2",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "isProxy": false,
+  "implementationAddress": null,
+  "layout": {
+    "storage": [
+      {
+        "astId": 2751,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "pauseProxy",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 2755,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "proxyImplementation",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_uint256,t_address)"
+      },
+      {
+        "astId": 2759,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "aliveImplementation",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 2763,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "selectorImplementation",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_mapping(t_bytes4,t_address)"
+      },
+      {
+        "astId": 674,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_supportedInterfaces",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_mapping(t_bytes4,t_bool)"
+      },
+      {
+        "astId": 24,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_roles",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_mapping(t_bytes32,t_struct(RoleData)19_storage)"
+      },
+      {
+        "astId": 3201,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_registry",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_address"
+      },
+      {
+        "astId": 3203,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_depositManager",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_address"
+      },
+      {
+        "astId": 3205,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_powerton",
+        "offset": 0,
+        "slot": "8",
+        "type": "t_address"
+      },
+      {
+        "astId": 3207,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "dao",
+        "offset": 0,
+        "slot": "9",
+        "type": "t_address"
+      },
+      {
+        "astId": 3209,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_ton",
+        "offset": 0,
+        "slot": "10",
+        "type": "t_address"
+      },
+      {
+        "astId": 3211,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_wton",
+        "offset": 0,
+        "slot": "11",
+        "type": "t_address"
+      },
+      {
+        "astId": 3213,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "factory",
+        "offset": 0,
+        "slot": "12",
+        "type": "t_address"
+      },
+      {
+        "astId": 3216,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_tot",
+        "offset": 0,
+        "slot": "13",
+        "type": "t_contract(RefactorCoinageSnapshotI)2977"
+      },
+      {
+        "astId": 3221,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_coinages",
+        "offset": 0,
+        "slot": "14",
+        "type": "t_mapping(t_address,t_contract(RefactorCoinageSnapshotI)2977)"
+      },
+      {
+        "astId": 3225,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_lastCommitBlock",
+        "offset": 0,
+        "slot": "15",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 3227,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_seigPerBlock",
+        "offset": 0,
+        "slot": "16",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3229,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_lastSeigBlock",
+        "offset": 0,
+        "slot": "17",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3231,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_pausedBlock",
+        "offset": 0,
+        "slot": "18",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3233,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_unpausedBlock",
+        "offset": 0,
+        "slot": "19",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3237,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_commissionRates",
+        "offset": 0,
+        "slot": "20",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 3241,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_isCommissionRateNegative",
+        "offset": 0,
+        "slot": "21",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 3243,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "adjustCommissionDelay",
+        "offset": 0,
+        "slot": "22",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3247,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "delayedCommissionBlock",
+        "offset": 0,
+        "slot": "23",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 3251,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "delayedCommissionRate",
+        "offset": 0,
+        "slot": "24",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 3255,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "delayedCommissionRateNegative",
+        "offset": 0,
+        "slot": "25",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 3257,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "minimumAmount",
+        "offset": 0,
+        "slot": "26",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3259,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "powerTONSeigRate",
+        "offset": 0,
+        "slot": "27",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3261,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "daoSeigRate",
+        "offset": 0,
+        "slot": "28",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3263,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "relativeSeigRate",
+        "offset": 0,
+        "slot": "29",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3265,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "accRelativeSeig",
+        "offset": 0,
+        "slot": "30",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3267,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "paused",
+        "offset": 0,
+        "slot": "31",
+        "type": "t_bool"
+      },
+      {
+        "astId": 3269,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "lastSnapshotId",
+        "offset": 0,
+        "slot": "32",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3285,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "seigStartBlock",
+        "offset": 0,
+        "slot": "33",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3288,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "initialTotalSupply",
+        "offset": 0,
+        "slot": "34",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 3291,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "burntAmountAtDAO",
+        "offset": 0,
+        "slot": "35",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 6195,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "l1BridgeRegistry",
+        "offset": 0,
+        "slot": "36",
+        "type": "t_address"
+      },
+      {
+        "astId": 6198,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "layer2Manager",
+        "offset": 0,
+        "slot": "37",
+        "type": "t_address"
+      },
+      {
+        "astId": 6201,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "layer2StartBlock",
+        "offset": 0,
+        "slot": "38",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 6203,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "l2RewardPerUint",
+        "offset": 0,
+        "slot": "39",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 6206,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "totalLayer2TVL",
+        "offset": 0,
+        "slot": "40",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 6212,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "layer2RewardInfo",
+        "offset": 0,
+        "slot": "41",
+        "type": "t_mapping(t_address,t_struct(Layer2Reward)6192_storage)"
+      },
+      {
+        "astId": 6217,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "layer2PauseBlocks",
+        "offset": 0,
+        "slot": "42",
+        "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)"
+      },
+      {
+        "astId": 6223,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "layer2UnpauseBlocks",
+        "offset": 0,
+        "slot": "43",
+        "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))"
+      },
+      {
+        "astId": 6225,
+        "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+        "label": "_lock",
+        "offset": 0,
+        "slot": "44",
+        "type": "t_bool"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_uint256)dyn_storage": {
+        "encoding": "dynamic_array",
+        "label": "uint256[]",
+        "numberOfBytes": "32",
+        "base": "t_uint256"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_bytes4": {
+        "encoding": "inplace",
+        "label": "bytes4",
+        "numberOfBytes": "4"
+      },
+      "t_contract(RefactorCoinageSnapshotI)2977": {
+        "encoding": "inplace",
+        "label": "contract RefactorCoinageSnapshotI",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => uint256[])",
+        "numberOfBytes": "32",
+        "value": "t_array(t_uint256)dyn_storage"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_address,t_contract(RefactorCoinageSnapshotI)2977)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => contract RefactorCoinageSnapshotI)",
+        "numberOfBytes": "32",
+        "value": "t_contract(RefactorCoinageSnapshotI)2977"
+      },
+      "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(uint256 => uint256))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_uint256,t_uint256)"
+      },
+      "t_mapping(t_address,t_struct(Layer2Reward)6192_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct SeigManagerV1_3Storage.Layer2Reward)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Layer2Reward)6192_storage"
+      },
+      "t_mapping(t_address,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_bytes32,t_struct(RoleData)19_storage)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => struct AccessControl.RoleData)",
+        "numberOfBytes": "32",
+        "value": "t_struct(RoleData)19_storage"
+      },
+      "t_mapping(t_bytes4,t_address)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_bytes4,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_address)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_uint256,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_struct(Layer2Reward)6192_storage": {
+        "encoding": "inplace",
+        "label": "struct SeigManagerV1_3Storage.Layer2Reward",
+        "numberOfBytes": "96",
+        "members": [
+          {
+            "astId": 6187,
+            "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+            "label": "layer2Tvl",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 6189,
+            "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+            "label": "initialDebt",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 6191,
+            "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+            "label": "startBlock",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          }
+        ]
+      },
+      "t_struct(RoleData)19_storage": {
+        "encoding": "inplace",
+        "label": "struct AccessControl.RoleData",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 16,
+            "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+            "label": "members",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)"
+          },
+          {
+            "astId": 18,
+            "contract": "src/SeigManagerV1_2/stake/managers/SeigManagerV1_2.sol:SeigManagerV1_2",
+            "label": "adminRole",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bytes32"
+          }
+        ]
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

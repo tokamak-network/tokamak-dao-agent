@@ -1,0 +1,67 @@
+{
+  "contractAddress": "0xAf86b21edDdC78ea27E23A7F2151d60d4e069450",
+  "contractName": "OperatorManagerFactory",
+  "implementationName": "OperatorManagerFactory",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "isProxy": false,
+  "implementationAddress": null,
+  "layout": {
+    "storage": [
+      {
+        "astId": 7,
+        "contract": "src/OperatorManagerFactory/layer2/factory/OperatorManagerFactory.sol:OperatorManagerFactory",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 1160,
+        "contract": "src/OperatorManagerFactory/layer2/factory/OperatorManagerFactory.sol:OperatorManagerFactory",
+        "label": "operatorManagerImp",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_address"
+      },
+      {
+        "astId": 1162,
+        "contract": "src/OperatorManagerFactory/layer2/factory/OperatorManagerFactory.sol:OperatorManagerFactory",
+        "label": "depositManager",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_address"
+      },
+      {
+        "astId": 1164,
+        "contract": "src/OperatorManagerFactory/layer2/factory/OperatorManagerFactory.sol:OperatorManagerFactory",
+        "label": "ton",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_address"
+      },
+      {
+        "astId": 1166,
+        "contract": "src/OperatorManagerFactory/layer2/factory/OperatorManagerFactory.sol:OperatorManagerFactory",
+        "label": "wton",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_address"
+      },
+      {
+        "astId": 1168,
+        "contract": "src/OperatorManagerFactory/layer2/factory/OperatorManagerFactory.sol:OperatorManagerFactory",
+        "label": "layer2Manager",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}

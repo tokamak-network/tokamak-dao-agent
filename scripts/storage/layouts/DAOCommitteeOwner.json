@@ -1,0 +1,484 @@
+{
+  "contractAddress": "0x5991Aebb5271522d33C457bf6DF26d83c0dAa221",
+  "contractName": "DAOCommitteeOwner",
+  "implementationName": "DAOCommitteeOwner",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "isProxy": false,
+  "implementationAddress": null,
+  "layout": {
+    "storage": [
+      {
+        "astId": 2127,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "ton",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 2130,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "daoVault",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_contract(IDAOVault)3050"
+      },
+      {
+        "astId": 2133,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "agendaManager",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_contract(IDAOAgendaManager)2728"
+      },
+      {
+        "astId": 2136,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "candidateFactory",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_contract(ICandidateFactory)2439"
+      },
+      {
+        "astId": 2139,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "layer2Registry",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_contract(ILayer2Registry)3104"
+      },
+      {
+        "astId": 2142,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "seigManager",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_contract(ISeigManager)3268"
+      },
+      {
+        "astId": 2145,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "candidates",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_array(t_address)dyn_storage"
+      },
+      {
+        "astId": 2148,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "members",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_array(t_address)dyn_storage"
+      },
+      {
+        "astId": 2150,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "maxMember",
+        "offset": 0,
+        "slot": "8",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 2155,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "_candidateInfos",
+        "offset": 0,
+        "slot": "9",
+        "type": "t_mapping(t_address,t_struct(CandidateInfo)2125_storage)"
+      },
+      {
+        "astId": 2157,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "quorum",
+        "offset": 0,
+        "slot": "10",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 2159,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "activityRewardPerSecond",
+        "offset": 0,
+        "slot": "11",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 25,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "_roles",
+        "offset": 0,
+        "slot": "12",
+        "type": "t_mapping(t_bytes32,t_struct(RoleData)20_storage)"
+      },
+      {
+        "astId": 563,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "_supportedInterfaces",
+        "offset": 0,
+        "slot": "13",
+        "type": "t_mapping(t_bytes4,t_bool)"
+      },
+      {
+        "astId": 3449,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "proxyImplementation",
+        "offset": 0,
+        "slot": "14",
+        "type": "t_mapping(t_uint256,t_address)"
+      },
+      {
+        "astId": 3453,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "aliveImplementation",
+        "offset": 0,
+        "slot": "15",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 3457,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "selectorImplementation",
+        "offset": 0,
+        "slot": "16",
+        "type": "t_mapping(t_bytes4,t_address)"
+      },
+      {
+        "astId": 2305,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "_implementation",
+        "offset": 0,
+        "slot": "17",
+        "type": "t_address"
+      },
+      {
+        "astId": 2307,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "pauseProxy",
+        "offset": 20,
+        "slot": "17",
+        "type": "t_bool"
+      },
+      {
+        "astId": 2312,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "_oldCandidateInfos",
+        "offset": 0,
+        "slot": "18",
+        "type": "t_mapping(t_address,t_struct(CandidateInfo2)2325_storage)"
+      },
+      {
+        "astId": 2327,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "wton",
+        "offset": 0,
+        "slot": "19",
+        "type": "t_address"
+      },
+      {
+        "astId": 2329,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "layer2Manager",
+        "offset": 0,
+        "slot": "20",
+        "type": "t_address"
+      },
+      {
+        "astId": 2331,
+        "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+        "label": "candidateAddOnFactory",
+        "offset": 0,
+        "slot": "21",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_address)dyn_storage": {
+        "encoding": "dynamic_array",
+        "label": "address[]",
+        "numberOfBytes": "32",
+        "base": "t_address"
+      },
+      "t_array(t_bytes32)dyn_storage": {
+        "encoding": "dynamic_array",
+        "label": "bytes32[]",
+        "numberOfBytes": "32",
+        "base": "t_bytes32"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_bytes4": {
+        "encoding": "inplace",
+        "label": "bytes4",
+        "numberOfBytes": "4"
+      },
+      "t_contract(ICandidateFactory)2439": {
+        "encoding": "inplace",
+        "label": "contract ICandidateFactory",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IDAOAgendaManager)2728": {
+        "encoding": "inplace",
+        "label": "contract IDAOAgendaManager",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IDAOVault)3050": {
+        "encoding": "inplace",
+        "label": "contract IDAOVault",
+        "numberOfBytes": "20"
+      },
+      "t_contract(ILayer2Registry)3104": {
+        "encoding": "inplace",
+        "label": "contract ILayer2Registry",
+        "numberOfBytes": "20"
+      },
+      "t_contract(ISeigManager)3268": {
+        "encoding": "inplace",
+        "label": "contract ISeigManager",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_address,t_struct(CandidateInfo)2125_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct StorageStateCommittee.CandidateInfo)",
+        "numberOfBytes": "32",
+        "value": "t_struct(CandidateInfo)2125_storage"
+      },
+      "t_mapping(t_address,t_struct(CandidateInfo2)2325_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct StorageStateCommitteeV2.CandidateInfo2)",
+        "numberOfBytes": "32",
+        "value": "t_struct(CandidateInfo2)2325_storage"
+      },
+      "t_mapping(t_bytes32,t_struct(RoleData)20_storage)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => struct AccessControl.RoleData)",
+        "numberOfBytes": "32",
+        "value": "t_struct(RoleData)20_storage"
+      },
+      "t_mapping(t_bytes32,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_bytes4,t_address)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_bytes4,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_address)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_struct(AddressSet)893_storage": {
+        "encoding": "inplace",
+        "label": "struct EnumerableSet.AddressSet",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 892,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "_inner",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_struct(Set)616_storage"
+          }
+        ]
+      },
+      "t_struct(CandidateInfo)2125_storage": {
+        "encoding": "inplace",
+        "label": "struct StorageStateCommittee.CandidateInfo",
+        "numberOfBytes": "128",
+        "members": [
+          {
+            "astId": 2116,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "candidateContract",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 2118,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "indexMembers",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 2120,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "memberJoinedTime",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 2122,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "rewardPeriod",
+            "offset": 16,
+            "slot": "2",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 2124,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "claimedTimestamp",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint128"
+          }
+        ]
+      },
+      "t_struct(CandidateInfo2)2325_storage": {
+        "encoding": "inplace",
+        "label": "struct StorageStateCommitteeV2.CandidateInfo2",
+        "numberOfBytes": "160",
+        "members": [
+          {
+            "astId": 2314,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "candidateContract",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 2316,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "newCandidate",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address"
+          },
+          {
+            "astId": 2318,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "indexMembers",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 2320,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "memberJoinedTime",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 2322,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "rewardPeriod",
+            "offset": 16,
+            "slot": "3",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 2324,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "claimedTimestamp",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint128"
+          }
+        ]
+      },
+      "t_struct(RoleData)20_storage": {
+        "encoding": "inplace",
+        "label": "struct AccessControl.RoleData",
+        "numberOfBytes": "96",
+        "members": [
+          {
+            "astId": 17,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "members",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_struct(AddressSet)893_storage"
+          },
+          {
+            "astId": 19,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "adminRole",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bytes32"
+          }
+        ]
+      },
+      "t_struct(Set)616_storage": {
+        "encoding": "inplace",
+        "label": "struct EnumerableSet.Set",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 611,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "_values",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_array(t_bytes32)dyn_storage"
+          },
+          {
+            "astId": 615,
+            "contract": "src/DAOCommitteeOwner/dao/DAOCommitteeOwner.sol:DAOCommitteeOwner",
+            "label": "_indexes",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_bytes32,t_uint256)"
+          }
+        ]
+      },
+      "t_uint128": {
+        "encoding": "inplace",
+        "label": "uint128",
+        "numberOfBytes": "16"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

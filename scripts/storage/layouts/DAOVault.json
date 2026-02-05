@@ -1,0 +1,38 @@
+{
+  "contractAddress": "0x2520CD65BAa2cEEe9E6Ad6EBD3F45490C42dd303",
+  "contractName": "DAOVault",
+  "implementationName": "DAOVault",
+  "compilerVersion": "v0.7.6",
+  "isProxy": false,
+  "implementationAddress": null,
+  "note": "Manual layout for DAOVault",
+  "layout": {
+    "storage": [
+      {
+        "label": "_owner",
+        "slot": "0",
+        "type": "t_address",
+        "offset": 0
+      },
+      {
+        "label": "ton",
+        "slot": "1",
+        "type": "t_address",
+        "offset": 0
+      },
+      {
+        "label": "wton",
+        "slot": "2",
+        "type": "t_address",
+        "offset": 0
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}

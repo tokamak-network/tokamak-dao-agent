@@ -1,0 +1,85 @@
+{
+  "contractAddress": "0xcD4421d082752f363E1687544a09d5112cD4f484",
+  "contractName": "DAOAgendaManager",
+  "implementationName": "DAOAgendaManager",
+  "compilerVersion": "v0.7.6",
+  "isProxy": false,
+  "implementationAddress": null,
+  "note": "Manual layout for DAOAgendaManager",
+  "layout": {
+    "storage": [
+      {
+        "label": "_owner",
+        "slot": "0",
+        "type": "t_address",
+        "offset": 0
+      },
+      {
+        "label": "committee",
+        "slot": "1",
+        "type": "t_address",
+        "offset": 0
+      },
+      {
+        "label": "agendas",
+        "slot": "2",
+        "type": "t_array(t_struct)dyn",
+        "offset": 0
+      },
+      {
+        "label": "agendaFees",
+        "slot": "3",
+        "type": "t_mapping(t_uint256,t_uint256)",
+        "offset": 0
+      },
+      {
+        "label": "minimumNoticePeriodSeconds",
+        "slot": "4",
+        "type": "t_uint256",
+        "offset": 0
+      },
+      {
+        "label": "minimumVotingPeriodSeconds",
+        "slot": "5",
+        "type": "t_uint256",
+        "offset": 0
+      },
+      {
+        "label": "executingPeriodSeconds",
+        "slot": "6",
+        "type": "t_uint256",
+        "offset": 0
+      },
+      {
+        "label": "createAgendaFees",
+        "slot": "7",
+        "type": "t_uint256",
+        "offset": 0
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_array(t_struct)dyn": {
+        "encoding": "dynamic_array",
+        "label": "Agenda[]",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_uint256,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "value": "t_uint256",
+        "label": "mapping(uint256 => uint256)",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

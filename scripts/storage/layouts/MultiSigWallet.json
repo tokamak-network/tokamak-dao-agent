@@ -1,0 +1,139 @@
+{
+  "contractAddress": "0xE3F72E959834d0A72aFb2ea79F5ec2b4243d2d95",
+  "contractName": "MultiSigWallet",
+  "implementationName": "MultiSigWallet",
+  "compilerVersion": "v0.8.27+commit.40a35a09",
+  "isProxy": false,
+  "implementationAddress": null,
+  "layout": {
+    "storage": [
+      {
+        "astId": 128,
+        "contract": "src/MultiSigWallet/MultiSigWallet.sol:MultiSigWallet",
+        "label": "owners",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_array(t_address)dyn_storage"
+      },
+      {
+        "astId": 132,
+        "contract": "src/MultiSigWallet/MultiSigWallet.sol:MultiSigWallet",
+        "label": "isOwner",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 152,
+        "contract": "src/MultiSigWallet/MultiSigWallet.sol:MultiSigWallet",
+        "label": "isConfirmed",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))"
+      },
+      {
+        "astId": 156,
+        "contract": "src/MultiSigWallet/MultiSigWallet.sol:MultiSigWallet",
+        "label": "transactions",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_array(t_struct(Transaction)146_storage)dyn_storage"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_address)dyn_storage": {
+        "encoding": "dynamic_array",
+        "label": "address[]",
+        "numberOfBytes": "32",
+        "base": "t_address"
+      },
+      "t_array(t_struct(Transaction)146_storage)dyn_storage": {
+        "encoding": "dynamic_array",
+        "label": "struct MultiSigWallet.Transaction[]",
+        "numberOfBytes": "32",
+        "base": "t_struct(Transaction)146_storage"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes_storage": {
+        "encoding": "bytes",
+        "label": "bytes",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => mapping(address => bool))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_address,t_bool)"
+      },
+      "t_struct(Transaction)146_storage": {
+        "encoding": "inplace",
+        "label": "struct MultiSigWallet.Transaction",
+        "numberOfBytes": "160",
+        "members": [
+          {
+            "astId": 137,
+            "contract": "src/MultiSigWallet/MultiSigWallet.sol:MultiSigWallet",
+            "label": "to",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 139,
+            "contract": "src/MultiSigWallet/MultiSigWallet.sol:MultiSigWallet",
+            "label": "value",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 141,
+            "contract": "src/MultiSigWallet/MultiSigWallet.sol:MultiSigWallet",
+            "label": "data",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bytes_storage"
+          },
+          {
+            "astId": 143,
+            "contract": "src/MultiSigWallet/MultiSigWallet.sol:MultiSigWallet",
+            "label": "executed",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_bool"
+          },
+          {
+            "astId": 145,
+            "contract": "src/MultiSigWallet/MultiSigWallet.sol:MultiSigWallet",
+            "label": "numConfirmations",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256"
+          }
+        ]
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

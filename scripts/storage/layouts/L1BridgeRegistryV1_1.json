@@ -1,0 +1,280 @@
+{
+  "contractAddress": "0x259Ac335EB42d345A61bE48104eC0Ec20b283F14",
+  "contractName": "L1BridgeRegistryV1_1",
+  "implementationName": "L1BridgeRegistryV1_1",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "isProxy": false,
+  "implementationAddress": null,
+  "layout": {
+    "storage": [
+      {
+        "astId": 3293,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "pauseProxy",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 3297,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "proxyImplementation",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_uint256,t_address)"
+      },
+      {
+        "astId": 3301,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "aliveImplementation",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 3305,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "selectorImplementation",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_mapping(t_bytes4,t_address)"
+      },
+      {
+        "astId": 674,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "_supportedInterfaces",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_mapping(t_bytes4,t_bool)"
+      },
+      {
+        "astId": 24,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "_roles",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_mapping(t_bytes32,t_struct(RoleData)19_storage)"
+      },
+      {
+        "astId": 2136,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "layer2Manager",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_address"
+      },
+      {
+        "astId": 2138,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "seigManager",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_address"
+      },
+      {
+        "astId": 2140,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "ton",
+        "offset": 0,
+        "slot": "8",
+        "type": "t_address"
+      },
+      {
+        "astId": 2142,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "seigniorageCommittee",
+        "offset": 0,
+        "slot": "9",
+        "type": "t_address"
+      },
+      {
+        "astId": 2147,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "rollupInfo",
+        "offset": 0,
+        "slot": "10",
+        "type": "t_mapping(t_address,t_struct(ROLLUP_INFO)2134_storage)"
+      },
+      {
+        "astId": 2152,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "l1Bridge",
+        "offset": 0,
+        "slot": "11",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 2157,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "portal",
+        "offset": 0,
+        "slot": "12",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 2161,
+        "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+        "label": "registeredNames",
+        "offset": 0,
+        "slot": "13",
+        "type": "t_mapping(t_bytes32,t_bool)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_bytes4": {
+        "encoding": "inplace",
+        "label": "bytes4",
+        "numberOfBytes": "4"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_address,t_struct(ROLLUP_INFO)2134_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct L1BridgeRegistryStorage.ROLLUP_INFO)",
+        "numberOfBytes": "32",
+        "value": "t_struct(ROLLUP_INFO)2134_storage"
+      },
+      "t_mapping(t_bytes32,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_bytes32,t_struct(RoleData)19_storage)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => struct AccessControl.RoleData)",
+        "numberOfBytes": "32",
+        "value": "t_struct(RoleData)19_storage"
+      },
+      "t_mapping(t_bytes4,t_address)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_bytes4,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_address)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_struct(ROLLUP_INFO)2134_storage": {
+        "encoding": "inplace",
+        "label": "struct L1BridgeRegistryStorage.ROLLUP_INFO",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 2124,
+            "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+            "label": "rollupType",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8"
+          },
+          {
+            "astId": 2127,
+            "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+            "label": "l2TON",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 2129,
+            "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+            "label": "rejectedSeigs",
+            "offset": 21,
+            "slot": "0",
+            "type": "t_bool"
+          },
+          {
+            "astId": 2131,
+            "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+            "label": "rejectedL2Deposit",
+            "offset": 22,
+            "slot": "0",
+            "type": "t_bool"
+          },
+          {
+            "astId": 2133,
+            "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+            "label": "name",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage"
+          }
+        ]
+      },
+      "t_struct(RoleData)19_storage": {
+        "encoding": "inplace",
+        "label": "struct AccessControl.RoleData",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 16,
+            "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+            "label": "members",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)"
+          },
+          {
+            "astId": 18,
+            "contract": "src/L1BridgeRegistryV1_1/layer2/L1BridgeRegistryV1_1.sol:L1BridgeRegistryV1_1",
+            "label": "adminRole",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bytes32"
+          }
+        ]
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint8": {
+        "encoding": "inplace",
+        "label": "uint8",
+        "numberOfBytes": "1"
+      }
+    }
+  }
+}

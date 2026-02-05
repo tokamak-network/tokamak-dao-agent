@@ -1,0 +1,321 @@
+{
+  "contractAddress": "0xD6Bf6B2b7553c8064Ba763AD6989829060FdFC1D",
+  "contractName": "Layer2ManagerProxy",
+  "implementationName": "Layer2ManagerV1_1",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "isProxy": true,
+  "layout": {
+    "storage": [
+      {
+        "astId": 3665,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "pauseProxy",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 3669,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "proxyImplementation",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_uint256,t_address)"
+      },
+      {
+        "astId": 3673,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "aliveImplementation",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 3677,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "selectorImplementation",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_mapping(t_bytes4,t_address)"
+      },
+      {
+        "astId": 752,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "_supportedInterfaces",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_mapping(t_bytes4,t_bool)"
+      },
+      {
+        "astId": 24,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "_roles",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_mapping(t_bytes32,t_struct(RoleData)19_storage)"
+      },
+      {
+        "astId": 1980,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "l1BridgeRegistry",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_address"
+      },
+      {
+        "astId": 1982,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "operatorManagerFactory",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_address"
+      },
+      {
+        "astId": 1984,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "ton",
+        "offset": 0,
+        "slot": "8",
+        "type": "t_address"
+      },
+      {
+        "astId": 1986,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "wton",
+        "offset": 0,
+        "slot": "9",
+        "type": "t_address"
+      },
+      {
+        "astId": 1988,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "dao",
+        "offset": 0,
+        "slot": "10",
+        "type": "t_address"
+      },
+      {
+        "astId": 1990,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "depositManager",
+        "offset": 0,
+        "slot": "11",
+        "type": "t_address"
+      },
+      {
+        "astId": 1992,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "seigManager",
+        "offset": 0,
+        "slot": "12",
+        "type": "t_address"
+      },
+      {
+        "astId": 1994,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "swapProxy",
+        "offset": 0,
+        "slot": "13",
+        "type": "t_address"
+      },
+      {
+        "astId": 1996,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "minimumInitialDepositAmount",
+        "offset": 0,
+        "slot": "14",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 2002,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "rollupConfigInfo",
+        "offset": 0,
+        "slot": "15",
+        "type": "t_mapping(t_address,t_struct(SeqSeigStatus)1978_storage)"
+      },
+      {
+        "astId": 2008,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "operatorInfo",
+        "offset": 0,
+        "slot": "16",
+        "type": "t_mapping(t_address,t_struct(CandidateAddOnInfo)1973_storage)"
+      },
+      {
+        "astId": 2013,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "operatorOfLayer",
+        "offset": 0,
+        "slot": "17",
+        "type": "t_mapping(t_address,t_address)"
+      },
+      {
+        "astId": 2015,
+        "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+        "label": "_lock",
+        "offset": 0,
+        "slot": "18",
+        "type": "t_bool"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_bytes4": {
+        "encoding": "inplace",
+        "label": "bytes4",
+        "numberOfBytes": "4"
+      },
+      "t_mapping(t_address,t_address)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_address,t_struct(CandidateAddOnInfo)1973_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct Layer2ManagerStorage.CandidateAddOnInfo)",
+        "numberOfBytes": "32",
+        "value": "t_struct(CandidateAddOnInfo)1973_storage"
+      },
+      "t_mapping(t_address,t_struct(SeqSeigStatus)1978_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct Layer2ManagerStorage.SeqSeigStatus)",
+        "numberOfBytes": "32",
+        "value": "t_struct(SeqSeigStatus)1978_storage"
+      },
+      "t_mapping(t_bytes32,t_struct(RoleData)19_storage)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => struct AccessControl.RoleData)",
+        "numberOfBytes": "32",
+        "value": "t_struct(RoleData)19_storage"
+      },
+      "t_mapping(t_bytes4,t_address)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_bytes4,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_address)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_struct(CandidateAddOnInfo)1973_storage": {
+        "encoding": "inplace",
+        "label": "struct Layer2ManagerStorage.CandidateAddOnInfo",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 1970,
+            "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+            "label": "rollupConfig",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 1972,
+            "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+            "label": "candidateAddOn",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address"
+          }
+        ]
+      },
+      "t_struct(RoleData)19_storage": {
+        "encoding": "inplace",
+        "label": "struct AccessControl.RoleData",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 16,
+            "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+            "label": "members",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)"
+          },
+          {
+            "astId": 18,
+            "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+            "label": "adminRole",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bytes32"
+          }
+        ]
+      },
+      "t_struct(SeqSeigStatus)1978_storage": {
+        "encoding": "inplace",
+        "label": "struct Layer2ManagerStorage.SeqSeigStatus",
+        "numberOfBytes": "32",
+        "members": [
+          {
+            "astId": 1975,
+            "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+            "label": "status",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8"
+          },
+          {
+            "astId": 1977,
+            "contract": "src/Layer2ManagerV1_1/layer2/Layer2ManagerV1_1.sol:Layer2ManagerV1_1",
+            "label": "operatorManager",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_address"
+          }
+        ]
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint8": {
+        "encoding": "inplace",
+        "label": "uint8",
+        "numberOfBytes": "1"
+      }
+    }
+  },
+  "linkedFrom": "Layer2ManagerV1_1"
+}

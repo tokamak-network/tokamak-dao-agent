@@ -1,0 +1,351 @@
+{
+  "contractAddress": "0x76c01207959df1242c2824b4445cde48eb55d2f1",
+  "contractName": "DepositManager",
+  "implementationName": "DepositManager",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "isProxy": false,
+  "implementationAddress": null,
+  "layout": {
+    "storage": [
+      {
+        "astId": 2762,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "pauseProxy",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 2766,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "proxyImplementation",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_uint256,t_address)"
+      },
+      {
+        "astId": 2770,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "aliveImplementation",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 2774,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "selectorImplementation",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_mapping(t_bytes4,t_address)"
+      },
+      {
+        "astId": 1494,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_supportedInterfaces",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_mapping(t_bytes4,t_bool)"
+      },
+      {
+        "astId": 24,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_roles",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_mapping(t_bytes32,t_struct(RoleData)19_storage)"
+      },
+      {
+        "astId": 4232,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_wton",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_address"
+      },
+      {
+        "astId": 4234,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_registry",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_address"
+      },
+      {
+        "astId": 4236,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_seigManager",
+        "offset": 0,
+        "slot": "8",
+        "type": "t_address"
+      },
+      {
+        "astId": 4238,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "oldDepositManager",
+        "offset": 0,
+        "slot": "9",
+        "type": "t_address"
+      },
+      {
+        "astId": 4244,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_accStaked",
+        "offset": 0,
+        "slot": "10",
+        "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))"
+      },
+      {
+        "astId": 4248,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_accStakedLayer2",
+        "offset": 0,
+        "slot": "11",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 4252,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_accStakedAccount",
+        "offset": 0,
+        "slot": "12",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 4258,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_pendingUnstaked",
+        "offset": 0,
+        "slot": "13",
+        "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))"
+      },
+      {
+        "astId": 4262,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_pendingUnstakedLayer2",
+        "offset": 0,
+        "slot": "14",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 4266,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_pendingUnstakedAccount",
+        "offset": 0,
+        "slot": "15",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 4272,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_accUnstaked",
+        "offset": 0,
+        "slot": "16",
+        "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))"
+      },
+      {
+        "astId": 4276,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_accUnstakedLayer2",
+        "offset": 0,
+        "slot": "17",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 4280,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_accUnstakedAccount",
+        "offset": 0,
+        "slot": "18",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 4288,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_withdrawalRequests",
+        "offset": 0,
+        "slot": "19",
+        "type": "t_mapping(t_address,t_mapping(t_address,t_array(t_struct(WithdrawalReqeust)4307_storage)dyn_storage))"
+      },
+      {
+        "astId": 4294,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "_withdrawalRequestIndex",
+        "offset": 0,
+        "slot": "20",
+        "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))"
+      },
+      {
+        "astId": 4296,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "globalWithdrawalDelay",
+        "offset": 0,
+        "slot": "21",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 4300,
+        "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+        "label": "withdrawalDelay",
+        "offset": 0,
+        "slot": "22",
+        "type": "t_mapping(t_address,t_uint256)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_struct(WithdrawalReqeust)4307_storage)dyn_storage": {
+        "encoding": "dynamic_array",
+        "label": "struct DepositManagerStorage.WithdrawalReqeust[]",
+        "numberOfBytes": "32",
+        "base": "t_struct(WithdrawalReqeust)4307_storage"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_bytes4": {
+        "encoding": "inplace",
+        "label": "bytes4",
+        "numberOfBytes": "4"
+      },
+      "t_mapping(t_address,t_array(t_struct(WithdrawalReqeust)4307_storage)dyn_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct DepositManagerStorage.WithdrawalReqeust[])",
+        "numberOfBytes": "32",
+        "value": "t_array(t_struct(WithdrawalReqeust)4307_storage)dyn_storage"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_address,t_mapping(t_address,t_array(t_struct(WithdrawalReqeust)4307_storage)dyn_storage))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(address => struct DepositManagerStorage.WithdrawalReqeust[]))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_address,t_array(t_struct(WithdrawalReqeust)4307_storage)dyn_storage)"
+      },
+      "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(address => uint256))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_address,t_uint256)"
+      },
+      "t_mapping(t_address,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_bytes32,t_struct(RoleData)19_storage)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => struct AccessControl.RoleData)",
+        "numberOfBytes": "32",
+        "value": "t_struct(RoleData)19_storage"
+      },
+      "t_mapping(t_bytes4,t_address)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_bytes4,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_address)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_struct(RoleData)19_storage": {
+        "encoding": "inplace",
+        "label": "struct AccessControl.RoleData",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 16,
+            "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+            "label": "members",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)"
+          },
+          {
+            "astId": 18,
+            "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+            "label": "adminRole",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bytes32"
+          }
+        ]
+      },
+      "t_struct(WithdrawalReqeust)4307_storage": {
+        "encoding": "inplace",
+        "label": "struct DepositManagerStorage.WithdrawalReqeust",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 4302,
+            "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+            "label": "withdrawableBlockNumber",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 4304,
+            "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+            "label": "amount",
+            "offset": 16,
+            "slot": "0",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 4306,
+            "contract": "src/DepositManager/stake/managers/DepositManager.sol:DepositManager",
+            "label": "processed",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bool"
+          }
+        ]
+      },
+      "t_uint128": {
+        "encoding": "inplace",
+        "label": "uint128",
+        "numberOfBytes": "16"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

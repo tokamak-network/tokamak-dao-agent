@@ -1,0 +1,27 @@
+{
+  "contractAddress": "0xB5F3b31dFB4DCe9a2FA12dE50A97250d60823750",
+  "contractName": "OperatorManagerV1_1",
+  "implementationName": "OperatorManagerV1_1",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "isProxy": false,
+  "implementationAddress": null,
+  "layout": {
+    "storage": [
+      {
+        "astId": 7,
+        "contract": "src/OperatorManagerV1_1/layer2/OperatorManagerV1_1.sol:OperatorManagerV1_1",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}

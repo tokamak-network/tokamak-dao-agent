@@ -1,0 +1,198 @@
+{
+  "contractAddress": "0x44e3605d0ed58FD125E9C47D1bf25a4406c13b57",
+  "contractName": "DXM Corp",
+  "implementationName": "CandidateProxy",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "isProxy": false,
+  "implementationAddress": null,
+  "layout": {
+    "storage": [
+      {
+        "astId": 2652,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "pauseProxy",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 2656,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "proxyImplementation",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_uint256,t_address)"
+      },
+      {
+        "astId": 2660,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "aliveImplementation",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 2664,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "selectorImplementation",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_mapping(t_bytes4,t_address)"
+      },
+      {
+        "astId": 1004,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "_supportedInterfaces",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_mapping(t_bytes4,t_bool)"
+      },
+      {
+        "astId": 24,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "_roles",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_mapping(t_bytes32,t_struct(RoleData)19_storage)"
+      },
+      {
+        "astId": 2209,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "_supportedInterfaces",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_mapping(t_bytes4,t_bool)"
+      },
+      {
+        "astId": 2211,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "isLayer2Candidate",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_bool"
+      },
+      {
+        "astId": 2213,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "candidate",
+        "offset": 1,
+        "slot": "7",
+        "type": "t_address"
+      },
+      {
+        "astId": 2215,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "memo",
+        "offset": 0,
+        "slot": "8",
+        "type": "t_string_storage"
+      },
+      {
+        "astId": 2217,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "committee",
+        "offset": 0,
+        "slot": "9",
+        "type": "t_address"
+      },
+      {
+        "astId": 2219,
+        "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+        "label": "seigManager",
+        "offset": 0,
+        "slot": "10",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_bytes4": {
+        "encoding": "inplace",
+        "label": "bytes4",
+        "numberOfBytes": "4"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_bytes32,t_struct(RoleData)19_storage)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => struct AccessControl.RoleData)",
+        "numberOfBytes": "32",
+        "value": "t_struct(RoleData)19_storage"
+      },
+      "t_mapping(t_bytes4,t_address)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_bytes4,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_address)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_struct(RoleData)19_storage": {
+        "encoding": "inplace",
+        "label": "struct AccessControl.RoleData",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 16,
+            "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+            "label": "members",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)"
+          },
+          {
+            "astId": 18,
+            "contract": "src/DXM Corp/dao/CandidateProxy.sol:CandidateProxy",
+            "label": "adminRole",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bytes32"
+          }
+        ]
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

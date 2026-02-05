@@ -1,0 +1,390 @@
+{
+  "contractAddress": "0xD6175F575F4d32392508Ee2FBbDec9a2E8B3c01a",
+  "contractName": "DAOCommitteeProxy2",
+  "implementationName": "DAOCommitteeProxy2",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "isProxy": true,
+  "layout": {
+    "storage": [
+      {
+        "astId": 1490,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "ton",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 1493,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "daoVault",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_contract(IDAOVault)2382"
+      },
+      {
+        "astId": 1496,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "agendaManager",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_contract(IDAOAgendaManager)2060"
+      },
+      {
+        "astId": 1499,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "candidateFactory",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_contract(ICandidateFactory)1771"
+      },
+      {
+        "astId": 1502,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "layer2Registry",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_contract(ILayer2Registry)2436"
+      },
+      {
+        "astId": 1505,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "seigManager",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_contract(ISeigManager)2600"
+      },
+      {
+        "astId": 1508,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "candidates",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_array(t_address)dyn_storage"
+      },
+      {
+        "astId": 1511,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "members",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_array(t_address)dyn_storage"
+      },
+      {
+        "astId": 1513,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "maxMember",
+        "offset": 0,
+        "slot": "8",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 1518,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "_candidateInfos",
+        "offset": 0,
+        "slot": "9",
+        "type": "t_mapping(t_address,t_struct(CandidateInfo)1488_storage)"
+      },
+      {
+        "astId": 1520,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "quorum",
+        "offset": 0,
+        "slot": "10",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 1522,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "activityRewardPerSecond",
+        "offset": 0,
+        "slot": "11",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 355,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "_roles",
+        "offset": 0,
+        "slot": "12",
+        "type": "t_mapping(t_bytes32,t_struct(RoleData)350_storage)"
+      },
+      {
+        "astId": 893,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "_supportedInterfaces",
+        "offset": 0,
+        "slot": "13",
+        "type": "t_mapping(t_bytes4,t_bool)"
+      },
+      {
+        "astId": 3203,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "proxyImplementation",
+        "offset": 0,
+        "slot": "14",
+        "type": "t_mapping(t_uint256,t_address)"
+      },
+      {
+        "astId": 3207,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "aliveImplementation",
+        "offset": 0,
+        "slot": "15",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 3211,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "selectorImplementation",
+        "offset": 0,
+        "slot": "16",
+        "type": "t_mapping(t_bytes4,t_address)"
+      },
+      {
+        "astId": 2868,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "_implementation",
+        "offset": 0,
+        "slot": "17",
+        "type": "t_address"
+      },
+      {
+        "astId": 2870,
+        "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+        "label": "pauseProxy",
+        "offset": 20,
+        "slot": "17",
+        "type": "t_bool"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_address)dyn_storage": {
+        "encoding": "dynamic_array",
+        "label": "address[]",
+        "numberOfBytes": "32",
+        "base": "t_address"
+      },
+      "t_array(t_bytes32)dyn_storage": {
+        "encoding": "dynamic_array",
+        "label": "bytes32[]",
+        "numberOfBytes": "32",
+        "base": "t_bytes32"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_bytes4": {
+        "encoding": "inplace",
+        "label": "bytes4",
+        "numberOfBytes": "4"
+      },
+      "t_contract(ICandidateFactory)1771": {
+        "encoding": "inplace",
+        "label": "contract ICandidateFactory",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IDAOAgendaManager)2060": {
+        "encoding": "inplace",
+        "label": "contract IDAOAgendaManager",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IDAOVault)2382": {
+        "encoding": "inplace",
+        "label": "contract IDAOVault",
+        "numberOfBytes": "20"
+      },
+      "t_contract(ILayer2Registry)2436": {
+        "encoding": "inplace",
+        "label": "contract ILayer2Registry",
+        "numberOfBytes": "20"
+      },
+      "t_contract(ISeigManager)2600": {
+        "encoding": "inplace",
+        "label": "contract ISeigManager",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_address,t_struct(CandidateInfo)1488_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct StorageStateCommittee.CandidateInfo)",
+        "numberOfBytes": "32",
+        "value": "t_struct(CandidateInfo)1488_storage"
+      },
+      "t_mapping(t_bytes32,t_struct(RoleData)350_storage)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => struct AccessControl.RoleData)",
+        "numberOfBytes": "32",
+        "value": "t_struct(RoleData)350_storage"
+      },
+      "t_mapping(t_bytes32,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_bytes4,t_address)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_bytes4,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_bytes4",
+        "label": "mapping(bytes4 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_address)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_struct(AddressSet)1223_storage": {
+        "encoding": "inplace",
+        "label": "struct EnumerableSet.AddressSet",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 1222,
+            "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+            "label": "_inner",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_struct(Set)946_storage"
+          }
+        ]
+      },
+      "t_struct(CandidateInfo)1488_storage": {
+        "encoding": "inplace",
+        "label": "struct StorageStateCommittee.CandidateInfo",
+        "numberOfBytes": "128",
+        "members": [
+          {
+            "astId": 1479,
+            "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+            "label": "candidateContract",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 1481,
+            "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+            "label": "indexMembers",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1483,
+            "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+            "label": "memberJoinedTime",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 1485,
+            "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+            "label": "rewardPeriod",
+            "offset": 16,
+            "slot": "2",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 1487,
+            "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+            "label": "claimedTimestamp",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint128"
+          }
+        ]
+      },
+      "t_struct(RoleData)350_storage": {
+        "encoding": "inplace",
+        "label": "struct AccessControl.RoleData",
+        "numberOfBytes": "96",
+        "members": [
+          {
+            "astId": 347,
+            "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+            "label": "members",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_struct(AddressSet)1223_storage"
+          },
+          {
+            "astId": 349,
+            "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+            "label": "adminRole",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bytes32"
+          }
+        ]
+      },
+      "t_struct(Set)946_storage": {
+        "encoding": "inplace",
+        "label": "struct EnumerableSet.Set",
+        "numberOfBytes": "64",
+        "members": [
+          {
+            "astId": 941,
+            "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+            "label": "_values",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_array(t_bytes32)dyn_storage"
+          },
+          {
+            "astId": 945,
+            "contract": "src/DAOCommitteeProxy2/proxy/DAOCommitteeProxy2.sol:DAOCommitteeProxy2",
+            "label": "_indexes",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_bytes32,t_uint256)"
+          }
+        ]
+      },
+      "t_uint128": {
+        "encoding": "inplace",
+        "label": "uint128",
+        "numberOfBytes": "16"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  },
+  "linkedFrom": "DAOCommitteeProxy2"
+}

@@ -1,0 +1,35 @@
+{
+  "contractAddress": "0xe8fae91b80dd515c3d8b9fc02cb5b2ecfddabf43",
+  "contractName": "CoinageFactory",
+  "implementationName": "CoinageFactory",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "isProxy": false,
+  "implementationAddress": null,
+  "layout": {
+    "storage": [
+      {
+        "astId": 396,
+        "contract": "src/CoinageFactory/stake/factory/CoinageFactory.sol:CoinageFactory",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 2946,
+        "contract": "src/CoinageFactory/stake/factory/CoinageFactory.sol:CoinageFactory",
+        "label": "autoCoinageLogic",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}

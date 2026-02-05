@@ -3,10 +3,10 @@
  */
 
 import { readFileSync } from "fs";
-import { join } from "path";
 import type { ContractInfo, ContractsJson } from "../../../scripts/storage/types.ts";
+import { paths } from "../paths.ts";
 
-const CONTRACTS_PATH = join(import.meta.dir, "../../../scripts/mainnet/contracts.json");
+const CONTRACTS_PATH = paths.contractsJson;
 
 let _contractsJson: ContractsJson | null = null;
 let _allContracts: ContractInfo[] | null = null;

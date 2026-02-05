@@ -15,7 +15,10 @@ import {
 } from "viem";
 import { mainnet } from "viem/chains";
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { join } from "path";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const RPC_URL = process.env.ALCHEMY_RPC_URL || "http://127.0.0.1:8545";
 

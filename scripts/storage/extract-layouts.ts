@@ -6,14 +6,17 @@
  */
 
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from "fs";
-import { join, basename } from "path";
+import { dirname, join, basename } from "path";
+import { fileURLToPath } from "url";
 import { $ } from "bun";
 import type { ContractsJson, ContractInfo, StorageLayout } from "./types";
 
-const CONTRACTS_DIR = join(import.meta.dir, "../../contracts/src");
-const CONTRACTS_ROOT = join(import.meta.dir, "../../contracts");
-const LAYOUTS_DIR = join(import.meta.dir, "layouts");
-const CONTRACTS_JSON_PATH = join(import.meta.dir, "../mainnet/contracts.json");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const CONTRACTS_DIR = join(__dirname, "../../contracts/src");
+const CONTRACTS_ROOT = join(__dirname, "../../contracts");
+const LAYOUTS_DIR = join(__dirname, "layouts");
+const CONTRACTS_JSON_PATH = join(__dirname, "../mainnet/contracts.json");
 
 interface ContractMetadata {
   name: string;

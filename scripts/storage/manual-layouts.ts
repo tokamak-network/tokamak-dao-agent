@@ -4,9 +4,12 @@
  */
 
 import { writeFileSync, existsSync } from "fs";
-import { join } from "path";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
-const LAYOUTS_DIR = join(import.meta.dir, "layouts");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const LAYOUTS_DIR = join(__dirname, "layouts");
 
 // TON Token - Based on OpenZeppelin ERC20Mintable (Solidity 0.5.12)
 // Source: openzeppelin-solidity 2.x ERC20 standard

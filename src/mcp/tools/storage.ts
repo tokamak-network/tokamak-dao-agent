@@ -16,8 +16,9 @@ import {
   decodeAddress,
   decodePackedValue,
 } from "../../../scripts/storage/reader.ts";
+import { paths } from "../paths.ts";
 
-const LAYOUTS_DIR = join(import.meta.dir, "../../../scripts/storage/layouts");
+const LAYOUTS_DIR = paths.storageLayouts;
 
 interface LayoutFile {
   contractAddress: string;

@@ -6,8 +6,9 @@ import { z } from "zod";
 import { readFileSync, readdirSync, statSync, existsSync } from "fs";
 import { join, relative } from "path";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { paths } from "../paths.ts";
 
-const CONTRACTS_SRC = join(import.meta.dir, "../../../contracts/src");
+const CONTRACTS_SRC = paths.contractsSrc;
 
 /**
  * Recursively list all .sol files under a directory.

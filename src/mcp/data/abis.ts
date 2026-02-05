@@ -4,8 +4,9 @@
 
 import { readFileSync, readdirSync, statSync, existsSync } from "fs";
 import { join } from "path";
+import { paths } from "../paths.ts";
 
-const OUT_DIR = join(import.meta.dir, "../../../contracts/out");
+const OUT_DIR = paths.contractsOut;
 
 let _abiCache: Map<string, any[]> | null = null;
 

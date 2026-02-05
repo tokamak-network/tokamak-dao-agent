@@ -3,7 +3,8 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { join, dirname } from "path";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import type {
   ContractsJson,
   ContractInfo,
@@ -11,13 +12,15 @@ import type {
   MultiFileSource,
 } from "./types";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 if (!ETHERSCAN_API_KEY) {
   throw new Error("ETHERSCAN_API_KEY environment variable is required");
 }
 
-const CONTRACTS_DIR = join(import.meta.dir, "../../contracts/src");
-const CONTRACTS_JSON_PATH = join(import.meta.dir, "../mainnet/contracts.json");
+const CONTRACTS_DIR = join(__dirname, "../../contracts/src");
+const CONTRACTS_JSON_PATH = join(__dirname, "../mainnet/contracts.json");
 
 // Rate limiting: Etherscan allows 5 calls/sec for free tier
 const RATE_LIMIT_MS = 250;

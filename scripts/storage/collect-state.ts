@@ -3,7 +3,8 @@
  */
 
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from "fs";
-import { join } from "path";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import type { Address, Hex } from "viem";
 import {
   readSlot,
@@ -27,9 +28,11 @@ import type {
   KnownAddresses,
 } from "./types";
 
-const LAYOUTS_DIR = join(import.meta.dir, "layouts");
-const OUTPUT_DIR = join(import.meta.dir, "output");
-const CONTRACTS_JSON_PATH = join(import.meta.dir, "../mainnet/contracts.json");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const LAYOUTS_DIR = join(__dirname, "layouts");
+const OUTPUT_DIR = join(__dirname, "output");
+const CONTRACTS_JSON_PATH = join(__dirname, "../mainnet/contracts.json");
 
 // JSON replacer to handle BigInt serialization
 function bigIntReplacer(_key: string, value: unknown): unknown {

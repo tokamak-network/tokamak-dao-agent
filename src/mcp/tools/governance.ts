@@ -4,7 +4,6 @@
 
 import { z } from "zod";
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { join } from "path";
 import {
   decodeFunctionData,
   parseAbi,
@@ -15,8 +14,9 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
 import { getContractName } from "../data/contracts.ts";
 import { loadAllAbis } from "../data/abis.ts";
+import { paths } from "../paths.ts";
 
-const AGENDAS_PATH = join(import.meta.dir, "../../../scripts/mainnet/agendas.json");
+const AGENDAS_PATH = paths.agendasJson;
 
 const DAO_AGENDA_MANAGER = "0xcD4421d082752f363E1687544a09d5112cD4f484" as Address;
 

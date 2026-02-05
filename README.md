@@ -74,6 +74,20 @@ flowchart TB
 - [Bun](https://bun.sh) v1.3+
 - Alchemy API key (Ethereum mainnet)
 
+### Environment Variables
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and fill in the required values:
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `ALCHEMY_RPC_URL` | Yes | Ethereum mainnet RPC for on-chain queries |
+| `ETHERSCAN_API_KEY` | For scripts | Fetching verified contract sources |
+| `ANTHROPIC_API_KEY` | For chat UI | Anthropic API access |
+
 ### Install & Run
 
 ```bash
@@ -85,7 +99,7 @@ The MCP server is registered in `.claude/settings.json` and connects automatical
 Manual run:
 
 ```bash
-ALCHEMY_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/<key> bun run mcp
+bun run mcp
 ```
 
 ### Contracts (Foundry)
@@ -111,4 +125,4 @@ scripts/storage/
 
 ## License
 
-Private
+MIT

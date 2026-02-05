@@ -1,5 +1,15 @@
 {
   "enabledPlugins": {
     "ralph-loop@claude-plugins-official": true
+  },
+  "mcpServers": {
+    "tokamak-dao": {
+      "command": "bun",
+      "args": ["run", "src/mcp/server.ts"],
+      "cwd": "/Users/geonwoo/Workspace/tokamak-dao-agent",
+      "env": {
+        "ALCHEMY_RPC_URL": "${ALCHEMY_RPC_URL}"
+      }
+    }
   }
 }

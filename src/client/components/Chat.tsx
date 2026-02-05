@@ -1,15 +1,28 @@
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 
+interface ToolCall {
+  name: string;
+  result?: string;
+  isError?: boolean;
+  isRunning: boolean;
+}
+
+interface MessagePart {
+  type: "text" | "tool_call";
+  content?: string;
+  toolCall?: ToolCall;
+}
+
 interface Message {
   role: "user" | "assistant";
-  content: string;
+  content: string; // plain text for user, used for API history
+  parts: MessagePart[]; // structured parts for display
   timestamp: Date;
 }
 
 const SPINNER_FRAMES = ["|", "/", "-", "\\"];
 
-// Format timestamp as HH:MM
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("ko-KR", {
     hour: "2-digit",
@@ -18,91 +31,105 @@ function formatTime(date: Date): string {
   });
 }
 
-// ASCII Spinner Component
 function AsciiSpinner() {
   const [frame, setFrame] = useState(0);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setFrame((prev) => (prev + 1) % SPINNER_FRAMES.length);
     }, 100);
     return () => clearInterval(interval);
   }, []);
-
   return <span className="ascii-spinner">{SPINNER_FRAMES[frame]}</span>;
 }
 
-// Terminal Header with ASCII Art and Status
+// Collapsible tool call display
+function ToolCallBlock({ toolCall }: { toolCall: ToolCall }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="tool-call-block">
+      <div className="tool-call-header" onClick={() => setExpanded(!expanded)}>
+        <span className={`tool-call-chevron ${expanded ? "open" : ""}`}>
+          &#9654;
+        </span>
+        <span className="tool-call-name">{toolCall.name}</span>
+        {toolCall.isRunning ? (
+          <>
+            <span className="tool-spinner" />
+            <span className="tool-call-status running">running...</span>
+          </>
+        ) : toolCall.isError ? (
+          <span className="tool-call-status error">error</span>
+        ) : (
+          <span className="tool-call-status done">done</span>
+        )}
+      </div>
+      {expanded && toolCall.result && (
+        <div className="tool-call-body">{toolCall.result}</div>
+      )}
+    </div>
+  );
+}
+
 function TerminalHeader({
   isConnected,
   isLoading,
-  selectedModel,
-  onModelChange,
   showAsciiArt = true,
 }: {
   isConnected: boolean;
   isLoading: boolean;
-  selectedModel: string;
-  onModelChange: (model: string) => void;
   showAsciiArt?: boolean;
 }) {
-  const [showModelDropdown, setShowModelDropdown] = useState(false);
-  const modelDropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (modelDropdownRef.current && !modelDropdownRef.current.contains(e.target as Node)) {
-        setShowModelDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
     <div className="terminal-box-header">
       <div style={{ borderBottom: "1px solid var(--term-border)" }}>
         <div
           className="text-xs"
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px" }}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "8px 16px",
+          }}
         >
-          <div className="dropdown-wrapper" ref={modelDropdownRef}>
-            <button
-              onClick={() => setShowModelDropdown(!showModelDropdown)}
-              className="chat-model-btn"
-            >
-              {selectedModel}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-            {showModelDropdown && (
-              <ModelDropdown
-                selectedModel={selectedModel}
-                onSelect={onModelChange}
-                onClose={() => setShowModelDropdown(false)}
-              />
-            )}
-          </div>
+          <span style={{ color: "var(--term-text-muted)", fontSize: "13px" }}>
+            Tokamak DAO Agent
+          </span>
           <div className="flex items-center">
             <span
               className={`status-dot ${
-                isLoading ? "status-loading" : isConnected ? "status-connected" : "status-disconnected"
+                isLoading
+                  ? "status-loading"
+                  : isConnected
+                  ? "status-connected"
+                  : "status-disconnected"
               }`}
             />
             <span style={{ color: "var(--term-text-muted)" }}>
-              {isLoading ? "PROCESSING" : isConnected ? "CONNECTED" : "DISCONNECTED"}
+              {isLoading
+                ? "PROCESSING"
+                : isConnected
+                ? "CONNECTED"
+                : "DISCONNECTED"}
             </span>
           </div>
         </div>
       </div>
       {showAsciiArt && (
-        <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
+        <div
+          style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}
+        >
           <pre
             className="terminal-header-ascii phosphor-glow"
-            style={{ color: "var(--term-accent)", fontSize: "12px", lineHeight: "1.3", letterSpacing: "0.05em", textAlign: "center" }}
+            style={{
+              color: "var(--term-accent)",
+              fontSize: "12px",
+              lineHeight: "1.3",
+              letterSpacing: "0.05em",
+              textAlign: "center",
+            }}
           >
-{` _____ ___  _  __    _    __  __    _    _  __
+            {` _____ ___  _  __    _    __  __    _    _  __
 |_   _/ _ \\| |/ /   / \\  |  \\/  |  / \\  | |/ /
   | || | | | ' /   / _ \\ | |\\/| | / _ \\ | ' /
   | || |_| | . \\  / ___ \\| |  | |/ ___ \\| . \\
@@ -116,7 +143,6 @@ function TerminalHeader({
   );
 }
 
-// Chat Bubble Component
 function ChatBubble({
   message,
   isStreaming,
@@ -130,12 +156,22 @@ function ChatBubble({
   return (
     <div className={`chat-bubble-wrapper ${isUser ? "user" : "assistant"}`}>
       <div
-        className={`chat-bubble ${isUser ? "user" : "assistant"} ${!isUser ? "phosphor-glow" : ""}`}
+        className={`chat-bubble ${isUser ? "user" : "assistant"} ${
+          !isUser ? "phosphor-glow" : ""
+        }`}
       >
         {isUser ? (
           message.content
         ) : (
-          <ReactMarkdown>{message.content}</ReactMarkdown>
+          <>
+            {message.parts.map((part, i) =>
+              part.type === "text" ? (
+                <ReactMarkdown key={i}>{part.content || ""}</ReactMarkdown>
+              ) : part.toolCall ? (
+                <ToolCallBlock key={i} toolCall={part.toolCall} />
+              ) : null
+            )}
+          </>
         )}
         {isStreaming && <span className="cursor-blink" />}
       </div>
@@ -146,7 +182,6 @@ function ChatBubble({
   );
 }
 
-// Chat Loading Indicator (typing dots)
 function ChatLoader() {
   return (
     <div className="chat-bubble-wrapper assistant">
@@ -161,46 +196,6 @@ function ChatLoader() {
   );
 }
 
-// Model Dropdown Component
-function ModelDropdown({
-  selectedModel,
-  onSelect,
-  onClose,
-}: {
-  selectedModel: string;
-  onSelect: (model: string) => void;
-  onClose: () => void;
-}) {
-  const models = [
-    { id: "Opus 4.5", name: "Opus 4.5" },
-    { id: "Sonnet 4", name: "Sonnet 4" },
-    { id: "Haiku 3.5", name: "Haiku 3.5" },
-  ];
-
-  return (
-    <div className="model-dropdown">
-      {models.map((model) => (
-        <button
-          key={model.id}
-          className={`model-dropdown-item ${selectedModel === model.id ? "selected" : ""}`}
-          onClick={() => {
-            onSelect(model.id);
-            onClose();
-          }}
-        >
-          <span>{model.name}</span>
-          {selectedModel === model.id && (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          )}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// Chat Input Component
 function ChatInput({
   value,
   onChange,
@@ -252,7 +247,14 @@ function ChatInput({
             className="chat-send-btn"
             title="전송 (Enter)"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
               <line x1="12" y1="19" x2="12" y2="5" />
               <polyline points="5 12 12 5 19 12" />
             </svg>
@@ -266,40 +268,32 @@ function ChatInput({
   );
 }
 
-// Main Chat Component
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
-  const [selectedModel, setSelectedModel] = useState("Opus 4.5");
   const [showBootSequence, setShowBootSequence] = useState(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Boot sequence effect
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowBootSequence(false);
-    }, 2000);
+    const timer = setTimeout(() => setShowBootSequence(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Focus input on mount
   useEffect(() => {
-    if (!showBootSequence) {
-      inputRef.current?.focus();
-    }
+    if (!showBootSequence) inputRef.current?.focus();
   }, [showBootSequence]);
 
-  const handleModelChange = (model: string) => {
-    setSelectedModel(model);
+  const handleSuggestion = (text: string) => {
+    setInput(text);
+    inputRef.current?.focus();
   };
 
   const handleSubmit = async () => {
@@ -309,21 +303,27 @@ export default function Chat() {
     setInput("");
     if (inputRef.current) inputRef.current.style.height = "auto";
 
-    const newMessage: Message = {
+    const newUserMsg: Message = {
       role: "user",
       content: userMessage,
+      parts: [{ type: "text", content: userMessage }],
       timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, newMessage]);
+
+    setMessages((prev) => [...prev, newUserMsg]);
     setIsLoading(true);
 
     try {
+      // Build API message history (plain text only)
+      const apiMessages = [...messages, newUserMsg].map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messages, { role: "user", content: userMessage }],
-        }),
+        body: JSON.stringify({ messages: apiMessages }),
       });
 
       if (!response.ok) throw new Error("Failed to fetch");
@@ -332,49 +332,140 @@ export default function Chat() {
       if (!reader) throw new Error("No reader");
 
       const decoder = new TextDecoder();
-      let assistantMessage = "";
       const assistantTimestamp = new Date();
+      let textContent = "";
+      const parts: MessagePart[] = [];
+      let buffer = "";
 
+      // Add initial empty assistant message
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "", timestamp: assistantTimestamp },
+        {
+          role: "assistant",
+          content: "",
+          parts: [],
+          timestamp: assistantTimestamp,
+        },
       ]);
+
+      const updateAssistant = (
+        newContent: string,
+        newParts: MessagePart[]
+      ) => {
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: newContent,
+            parts: [...newParts],
+            timestamp: assistantTimestamp,
+          };
+          return updated;
+        });
+      };
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        for (const line of chunk.split("\n")) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(6);
-            if (data === "[DONE]") continue;
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.content) {
-                assistantMessage += parsed.content;
-                setMessages((prev) => {
-                  const updated = [...prev];
-                  updated[updated.length - 1] = {
-                    role: "assistant",
-                    content: assistantMessage,
-                    timestamp: assistantTimestamp,
-                  };
-                  return updated;
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process complete SSE lines
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (!line.startsWith("data:")) continue;
+          const data = line.slice(5).trim();
+          if (!data || data === "[DONE]") continue;
+
+          try {
+            const parsed = JSON.parse(data);
+
+            switch (parsed.type) {
+              case "text_delta":
+                textContent += parsed.content;
+                // Find or create current text part
+                if (
+                  parts.length === 0 ||
+                  parts[parts.length - 1]!.type !== "text"
+                ) {
+                  parts.push({ type: "text", content: parsed.content });
+                } else {
+                  parts[parts.length - 1]!.content =
+                    (parts[parts.length - 1]!.content || "") + parsed.content;
+                }
+                updateAssistant(textContent, parts);
+                break;
+
+              case "tool_use":
+                parts.push({
+                  type: "tool_call",
+                  toolCall: {
+                    name: parsed.name,
+                    isRunning: true,
+                  },
                 });
+                updateAssistant(textContent, parts);
+                break;
+
+              case "tool_result": {
+                // Find the last running tool call with this name and update it
+                for (let i = parts.length - 1; i >= 0; i--) {
+                  const part = parts[i]!;
+                  if (
+                    part.type === "tool_call" &&
+                    part.toolCall?.name === parsed.name &&
+                    part.toolCall?.isRunning
+                  ) {
+                    part.toolCall = {
+                      name: parsed.name,
+                      result: parsed.result,
+                      isError: parsed.is_error,
+                      isRunning: false,
+                    };
+                    break;
+                  }
+                }
+                updateAssistant(textContent, parts);
+                break;
               }
-            } catch {
-              // Ignore parse errors
+
+              case "error":
+                textContent += `\n\nERROR: ${parsed.message || "Unknown error"}`;
+                if (
+                  parts.length === 0 ||
+                  parts[parts.length - 1]!.type !== "text"
+                ) {
+                  parts.push({ type: "text", content: `ERROR: ${parsed.message}` });
+                } else {
+                  parts[parts.length - 1]!.content += `\n\nERROR: ${parsed.message}`;
+                }
+                updateAssistant(textContent, parts);
+                break;
+
+              case "done":
+                break;
             }
+          } catch {
+            // Ignore parse errors for partial data
           }
         }
       }
-    } catch {
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      console.error("[chat] error:", errorMsg);
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "ERROR: Request failed. Check connection and retry.",
+          content: `ERROR: ${errorMsg}`,
+          parts: [
+            {
+              type: "text",
+              content: `ERROR: ${errorMsg}`,
+            },
+          ],
           timestamp: new Date(),
         },
       ]);
@@ -392,7 +483,10 @@ export default function Chat() {
         className="h-full flex flex-col items-center justify-center p-8"
         style={{ background: "var(--term-bg-primary)" }}
       >
-        <div className="space-y-2 text-sm" style={{ color: "var(--term-accent)" }}>
+        <div
+          className="space-y-2 text-sm"
+          style={{ color: "var(--term-accent)" }}
+        >
           <div className="boot-line" style={{ animationDelay: "0ms" }}>
             TOKAMAK DAO AGENT v1.0.0
           </div>
@@ -414,21 +508,19 @@ export default function Chat() {
   }
 
   const isStreaming =
-    isLoading && messages.length > 0 && messages[messages.length - 1]?.role === "assistant";
+    isLoading &&
+    messages.length > 0 &&
+    messages[messages.length - 1]?.role === "assistant";
 
   return (
     <div className="chat-layout">
-      {/* Header */}
       <TerminalHeader
         isConnected={isConnected}
         isLoading={isLoading}
-        selectedModel={selectedModel}
-        onModelChange={handleModelChange}
         showAsciiArt={messages.length === 0}
       />
 
       {messages.length === 0 ? (
-        /* Welcome Screen - centered layout */
         <div className="welcome-container">
           <div style={{ maxWidth: "800px", width: "100%", padding: "0 24px" }}>
             <div className="chat-welcome">
@@ -439,13 +531,34 @@ export default function Chat() {
                 Tokamak DAO Agent가 질문에 답변해드립니다
               </div>
               <div className="chat-welcome-suggestions">
-                <button className="chat-suggestion-btn">DAO 거버넌스란?</button>
-                <button className="chat-suggestion-btn">TON 토큰 정보</button>
-                <button className="chat-suggestion-btn">스테이킹 방법</button>
-                <button className="chat-suggestion-btn">제안 생성하기</button>
+                <button
+                  className="chat-suggestion-btn"
+                  onClick={() => handleSuggestion("SeigManager 컨트랙트 정보 알려줘")}
+                >
+                  SeigManager 정보
+                </button>
+                <button
+                  className="chat-suggestion-btn"
+                  onClick={() => handleSuggestion("최근 DAO 안건 분석해줘")}
+                >
+                  DAO 안건 분석
+                </button>
+                <button
+                  className="chat-suggestion-btn"
+                  onClick={() => handleSuggestion("TON 토큰 컨트랙트 소스코드 보여줘")}
+                >
+                  컨트랙트 소스코드
+                </button>
+                <button
+                  className="chat-suggestion-btn"
+                  onClick={() =>
+                    handleSuggestion("DepositManager의 현재 스토리지 상태를 읽어줘")
+                  }
+                >
+                  온체인 상태 조회
+                </button>
               </div>
             </div>
-            {/* Input Area */}
             <ChatInput
               value={input}
               onChange={setInput}
@@ -456,7 +569,6 @@ export default function Chat() {
           </div>
         </div>
       ) : (
-        /* Chat Mode - messages with input at bottom */
         <>
           <div className="chat-messages-area">
             <div style={{ maxWidth: "800px", margin: "0 auto" }}>
@@ -468,16 +580,11 @@ export default function Chat() {
                     isStreaming={isStreaming && i === messages.length - 1}
                   />
                 ))}
-
-                {/* Loading indicator when waiting for response */}
                 {isLoading && !isStreaming && <ChatLoader />}
-
                 <div ref={messagesEndRef} />
               </div>
             </div>
           </div>
-
-          {/* Input Area */}
           <ChatInput
             value={input}
             onChange={setInput}

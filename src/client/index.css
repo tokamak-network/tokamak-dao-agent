@@ -720,3 +720,86 @@ body {
 .model-dropdown-item svg {
   flex-shrink: 0;
 }
+
+/* ==========================================
+   Tool Call Styles
+   ========================================== */
+
+.tool-call-block {
+  margin: 8px 0;
+  border: 1px solid var(--term-border);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 12px;
+}
+
+.tool-call-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--term-bg-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.tool-call-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tool-call-name {
+  color: var(--term-warning);
+  font-weight: 600;
+}
+
+.tool-call-status {
+  margin-left: auto;
+  font-size: 11px;
+}
+
+.tool-call-status.running {
+  color: var(--term-warning);
+}
+
+.tool-call-status.done {
+  color: var(--term-success);
+}
+
+.tool-call-status.error {
+  color: var(--term-error);
+}
+
+.tool-call-body {
+  padding: 8px 12px;
+  background: var(--term-bg-primary);
+  border-top: 1px solid var(--term-border);
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: var(--term-text-muted);
+  line-height: 1.4;
+}
+
+.tool-call-chevron {
+  color: var(--term-text-dim);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+
+.tool-call-chevron.open {
+  transform: rotate(90deg);
+}
+
+@keyframes tool-spinner {
+  to { transform: rotate(360deg); }
+}
+
+.tool-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--term-border);
+  border-top-color: var(--term-warning);
+  border-radius: 50%;
+  animation: tool-spinner 0.6s linear infinite;
+  flex-shrink: 0;
+}

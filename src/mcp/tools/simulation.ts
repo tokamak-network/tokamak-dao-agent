@@ -11,7 +11,6 @@ import {
   type Hex,
   formatEther,
 } from "viem";
-import { mainnet } from "viem/chains";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
 import { getContractName } from "../data/contracts.ts";

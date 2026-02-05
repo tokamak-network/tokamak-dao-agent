@@ -35,3 +35,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Task tracking (local only)
 tasks/
+
+# Foundry build artifacts
+contracts/cache/
+contracts/foundry.lock
+
+# Script output (regenerable)
+scripts/storage/output/

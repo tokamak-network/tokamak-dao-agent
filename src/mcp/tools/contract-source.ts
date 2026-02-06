@@ -7,6 +7,9 @@ import { readFileSync, readdirSync, statSync, existsSync } from "fs";
 import { join, relative } from "path";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { paths } from "../paths.ts";
+import { isPathSafe } from "./validation.ts";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
 const CONTRACTS_SRC = paths.contractsSrc;
 
@@ -60,9 +63,20 @@ export async function handleReadContractSource(args: {
     return `## ${args.contract_name} - Source Files\n\n${relPaths.map((p) => `- ${p}`).join("\n")}\n\nUse file_path parameter to read a specific file.`;
   }
 
+  // Security: Validate path is within contract directory (prevent path traversal)
+  if (!isPathSafe(dir, args.file_path)) {
+    return `Error: Invalid file path. Path must be within the contract directory.`;
+  }
+
   const fullPath = join(dir, args.file_path);
   if (!existsSync(fullPath)) {
     return `File not found: ${args.file_path}\n\nAvailable files:\n${listSolFiles(dir).map((f) => relative(dir, f)).join("\n")}`;
+  }
+
+  // Security: Check file size before reading
+  const stat = statSync(fullPath);
+  if (stat.size > MAX_FILE_SIZE) {
+    return `Error: File too large (${(stat.size / 1024 / 1024).toFixed(2)} MB). Maximum size is ${MAX_FILE_SIZE / 1024 / 1024} MB.`;
   }
 
   const source = readFileSync(fullPath, "utf-8");
@@ -73,9 +87,23 @@ export async function handleSearchContractCode(args: {
   pattern: string;
   contract_name?: string;
 }): Promise<string> {
-  const searchDir = args.contract_name
-    ? findContractDir(args.contract_name) || CONTRACTS_SRC
-    : CONTRACTS_SRC;
+  let searchDir: string;
+  let searchScope: string;
+
+  if (args.contract_name) {
+    const foundDir = findContractDir(args.contract_name);
+    if (!foundDir) {
+      const available = existsSync(CONTRACTS_SRC)
+        ? readdirSync(CONTRACTS_SRC).filter((e) => statSync(join(CONTRACTS_SRC, e)).isDirectory())
+        : [];
+      return `Contract "${args.contract_name}" not found.\n\nAvailable contracts:\n${available.join("\n")}`;
+    }
+    searchDir = foundDir;
+    searchScope = args.contract_name;
+  } else {
+    searchDir = CONTRACTS_SRC;
+    searchScope = "all contracts";
+  }
 
   if (!existsSync(searchDir)) {
     return "Contracts source directory not found.";
@@ -103,11 +131,11 @@ export async function handleSearchContractCode(args: {
   }
 
   if (matches.length === 0) {
-    return `No matches found for "${args.pattern}"${args.contract_name ? ` in ${args.contract_name}` : ""}.`;
+    return `No matches found for "${args.pattern}" in ${searchScope}.`;
   }
 
   const lines = matches.map((m) => `${m.file}:${m.line}: ${m.text}`);
-  const header = `Found ${matches.length}${matches.length >= MAX_MATCHES ? "+" : ""} matches for "${args.pattern}":\n\n`;
+  const header = `Found ${matches.length}${matches.length >= MAX_MATCHES ? "+" : ""} matches for "${args.pattern}" in ${searchScope}:\n\n`;
   return header + lines.join("\n");
 }
 

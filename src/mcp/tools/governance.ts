@@ -3,7 +3,8 @@
  */
 
 import { z } from "zod";
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, renameSync } from "fs";
+import { dirname, join } from "path";
 import {
   decodeFunctionData,
   parseAbi,
@@ -55,7 +56,28 @@ interface CachedAgenda {
 
 function loadCachedAgendas(): CachedAgenda[] {
   if (!existsSync(AGENDAS_PATH)) return [];
-  return JSON.parse(readFileSync(AGENDAS_PATH, "utf-8"));
+  try {
+    const content = readFileSync(AGENDAS_PATH, "utf-8");
+    const parsed = JSON.parse(content);
+    if (!Array.isArray(parsed)) {
+      console.error(`[governance] Invalid agendas cache: expected array`);
+      return [];
+    }
+    return parsed;
+  } catch (err) {
+    console.error(`[governance] Failed to load agendas cache: ${err instanceof Error ? err.message : String(err)}`);
+    return [];
+  }
+}
+
+/**
+ * Atomically write to file using temp file + rename pattern.
+ */
+function atomicWriteFile(filePath: string, content: string): void {
+  const dir = dirname(filePath);
+  const tempPath = join(dir, `.agendas.tmp.${Date.now()}.json`);
+  writeFileSync(tempPath, content, "utf-8");
+  renameSync(tempPath, filePath);
 }
 
 function tryDecodeCalldata(calldata: Hex): string {
@@ -188,7 +210,7 @@ export async function handleFetchAgenda(args: {
       cached.push(agenda);
       cached.sort((a, b) => a.id - b.id);
     }
-    writeFileSync(AGENDAS_PATH, JSON.stringify(cached, null, 2));
+    atomicWriteFile(AGENDAS_PATH, JSON.stringify(cached, null, 2));
   }
 
   const lines = [
@@ -289,7 +311,7 @@ export function registerGovernanceTools(server: McpServer) {
     "fetch_agenda",
     "Fetch a DAO agenda/proposal by ID. Returns status, votes, targets, decoded calldata, and voter list. Uses cache by default, set force_refresh to query on-chain.",
     {
-      agenda_id: z.number().describe("Agenda ID (0-based)"),
+      agenda_id: z.number().int().min(0).describe("Agenda ID (0-based, must be non-negative integer)"),
       force_refresh: z.boolean().optional().describe("Force on-chain refresh instead of using cache"),
     },
     async ({ agenda_id, force_refresh }) => {

@@ -15,6 +15,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
 import { getContractName } from "../data/contracts.ts";
 import { loadAllAbis } from "../data/abis.ts";
+import { validateAddress, validateHex, safeParseBigInt, validateBlockNumber } from "./validation.ts";
 
 /**
  * Try to decode return data using known ABIs.
@@ -53,10 +54,47 @@ export async function handleSimulateTransaction(args: {
   value?: string;
   block_number?: number;
 }): Promise<string> {
+  // Validate 'to' address
+  const toError = validateAddress(args.to);
+  if (toError) {
+    return `Error: ${toError}`;
+  }
+
+  // Validate 'from' address if provided
+  if (args.from) {
+    const fromError = validateAddress(args.from);
+    if (fromError) {
+      return `Error (from): ${fromError}`;
+    }
+  }
+
+  // Validate calldata is valid hex
+  const calldataError = validateHex(args.calldata, "calldata");
+  if (calldataError) {
+    return `Error: ${calldataError}`;
+  }
+
+  // Validate value if provided
+  let ethValue = 0n;
+  if (args.value) {
+    const parsed = safeParseBigInt(args.value);
+    if (parsed === null) {
+      return `Error: Invalid value '${args.value}'. Must be a valid integer (wei).`;
+    }
+    ethValue = parsed;
+  }
+
+  // Validate block_number if provided
+  if (args.block_number !== undefined) {
+    const blockError = validateBlockNumber(args.block_number);
+    if (blockError) {
+      return `Error: ${blockError}`;
+    }
+  }
+
   const sender = (args.from || "0x0000000000000000000000000000000000000001") as Address;
   const target = args.to as Address;
   const data = args.calldata as Hex;
-  const ethValue = args.value ? BigInt(args.value) : 0n;
 
   const lines: string[] = [
     `## Transaction Simulation`,
@@ -132,7 +170,7 @@ export function registerSimulationTool(server: McpServer) {
       calldata: z.string().describe("Hex-encoded calldata (0x...)"),
       from: z.string().optional().describe("Sender address (defaults to zero address)"),
       value: z.string().optional().describe("ETH value in wei (e.g. '1000000000000000000' for 1 ETH)"),
-      block_number: z.number().optional().describe("Block number to simulate at (defaults to latest)"),
+      block_number: z.number().int().min(1).optional().describe("Block number to simulate at (defaults to latest, must be >= 1)"),
     },
     async ({ to, calldata, from, value, block_number }) => {
       const text = await handleSimulateTransaction({ to, calldata, from, value, block_number });

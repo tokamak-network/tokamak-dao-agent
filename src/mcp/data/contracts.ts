@@ -14,7 +14,20 @@ let _addressMap: Map<string, ContractInfo> | null = null;
 
 function load(): ContractsJson {
   if (!_contractsJson) {
-    _contractsJson = JSON.parse(readFileSync(CONTRACTS_PATH, "utf-8")) as ContractsJson;
+    try {
+      const content = readFileSync(CONTRACTS_PATH, "utf-8");
+      _contractsJson = JSON.parse(content) as ContractsJson;
+    } catch (err) {
+      console.error(`[contracts] Failed to load ${CONTRACTS_PATH}: ${err instanceof Error ? err.message : String(err)}`);
+      // Return empty structure to prevent server crash
+      _contractsJson = {
+        coreTokens: [],
+        simpleStakingV2: [],
+        layerOperators: [],
+        daoContracts: [],
+        multiSig: [],
+      };
+    }
   }
   return _contractsJson;
 }

@@ -17,6 +17,7 @@ import {
   decodePackedValue,
 } from "../../../scripts/storage/reader.ts";
 import { paths } from "../paths.ts";
+import { validateAddress, validateSlot } from "./validation.ts";
 
 const LAYOUTS_DIR = paths.storageLayouts;
 
@@ -63,19 +64,32 @@ export async function handleReadStorageSlot(args: {
   decode_as?: "uint256" | "address" | "bool" | "bytes32" | "raw";
   mapping_key?: string;
 }): Promise<string> {
-  let slotHex: Hex;
-  if (args.slot.startsWith("0x")) {
-    slotHex = pad(args.slot as Hex, { size: 32 });
-  } else {
-    slotHex = pad(`0x${BigInt(args.slot).toString(16)}` as Hex, { size: 32 });
+  // Validate address
+  const addrError = validateAddress(args.address);
+  if (addrError) {
+    return `Error: ${addrError}`;
   }
 
+  // Validate slot
+  const slotResult = validateSlot(args.slot);
+  if (slotResult.error) {
+    return `Error: ${slotResult.error}`;
+  }
+
+  let slotHex: Hex = pad(`0x${slotResult.value.toString(16)}` as Hex, { size: 32 });
+
   if (args.mapping_key) {
-    const baseSlot = BigInt(slotHex);
+    const baseSlot = slotResult.value;
     slotHex = getMappingSlot(baseSlot, args.mapping_key as Address);
   }
 
-  const rawValue = await readSlotDirect(args.address as Address, slotHex);
+  let rawValue: Hex;
+  try {
+    rawValue = await readSlotDirect(args.address as Address, slotHex);
+  } catch (err) {
+    return `Error reading storage: ${err instanceof Error ? err.message : String(err)}`;
+  }
+
   const lines = [`**Slot**: ${slotHex}`, `**Raw**: ${rawValue}`];
 
   if (args.decode_as && args.decode_as !== "raw") {

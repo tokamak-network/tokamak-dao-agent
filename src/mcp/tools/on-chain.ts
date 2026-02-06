@@ -8,16 +8,30 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
 import { getContractByName, getAllContracts } from "../data/contracts.ts";
 import { loadAbi, getViewFunctions } from "../data/abis.ts";
+import { safeParseBigInt } from "./validation.ts";
 
 /**
  * Parse a string argument into the appropriate type for viem.
+ * Returns { value, error } to handle parsing failures gracefully.
  */
-function parseArg(value: string, abiType: string): any {
-  if (abiType === "bool") return value === "true";
-  if (abiType.startsWith("uint") || abiType.startsWith("int")) return BigInt(value);
-  if (abiType === "address") return value as Address;
-  if (abiType.startsWith("bytes")) return value;
-  return value;
+function parseArg(value: string, abiType: string, argName: string): { value: any; error: string | null } {
+  if (abiType === "bool") {
+    return { value: value === "true", error: null };
+  }
+  if (abiType.startsWith("uint") || abiType.startsWith("int")) {
+    const parsed = safeParseBigInt(value);
+    if (parsed === null) {
+      return { value: null, error: `Cannot parse '${value}' as ${abiType} for argument '${argName}'` };
+    }
+    return { value: parsed, error: null };
+  }
+  if (abiType === "address") {
+    return { value: value as Address, error: null };
+  }
+  if (abiType.startsWith("bytes")) {
+    return { value: value, error: null };
+  }
+  return { value: value, error: null };
 }
 
 /**
@@ -83,11 +97,24 @@ export async function handleQueryOnChain(args: {
     return `Function "${args.function_name}" not found in ${abiSource} ABI.\n\nAvailable view functions:\n${viewFns.join("\n")}`;
   }
 
+  // Validate argument count
+  const expectedArgCount = fnAbi.inputs?.length || 0;
+  const providedArgCount = args.args?.length || 0;
+  if (providedArgCount !== expectedArgCount) {
+    return `Argument count mismatch for ${args.function_name}: expected ${expectedArgCount}, got ${providedArgCount}.\n\nExpected inputs: ${fnAbi.inputs?.map((i: any) => `${i.name}: ${i.type}`).join(", ") || "(none)"}`;
+  }
+
   const parsedArgs: any[] = [];
   if (args.args && fnAbi.inputs) {
     for (let i = 0; i < args.args.length; i++) {
-      const inputType = fnAbi.inputs[i]?.type || "string";
-      parsedArgs.push(parseArg(args.args[i]!, inputType));
+      const input = fnAbi.inputs[i];
+      const inputType = input?.type || "string";
+      const inputName = input?.name || `arg${i}`;
+      const result = parseArg(args.args[i]!, inputType, inputName);
+      if (result.error) {
+        return `Error parsing arguments: ${result.error}`;
+      }
+      parsedArgs.push(result.value);
     }
   }
 

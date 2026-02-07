@@ -11,9 +11,11 @@ import { handleReadStorageSlot, handleReadContractState } from "./storage.ts";
 import { handleQueryOnChain } from "./on-chain.ts";
 import { handleFetchAgenda, handleDecodeCalldata } from "./governance.ts";
 import { handleSimulateTransaction } from "./simulation.ts";
+import { handleVerifyTokenCompatibility } from "./verification.ts";
+import { handleRunForkTest } from "./fork-test.ts";
 
 /**
- * Returns Anthropic API tool definitions for all 9 tools.
+ * Returns Anthropic API tool definitions for all 11 tools.
  */
 export function getToolDefinitions(): Tool[] {
   return [
@@ -211,6 +213,55 @@ export function getToolDefinitions(): Tool[] {
         required: ["to", "calldata"],
       },
     },
+    {
+      name: "verify_token_compatibility",
+      description:
+        "Verify if a token is compatible with a DEX protocol by simulating approve, transferFrom, and swap on-chain. Returns evidence-based results.",
+      input_schema: {
+        type: "object" as const,
+        properties: {
+          token_address: {
+            type: "string",
+            description: "Token contract address (0x...)",
+          },
+          dex: {
+            type: "string",
+            description: "DEX protocol: uniswap_v2, uniswap_v3, sushiswap",
+          },
+          scenarios: {
+            type: "array",
+            items: { type: "string" },
+            description:
+              "Scenarios to test: approve, transferFrom, swap (defaults to all)",
+          },
+        },
+        required: ["token_address", "dex"],
+      },
+    },
+    {
+      name: "run_fork_test",
+      description:
+        "Run Foundry fork tests against Ethereum mainnet. Verifies on-chain behavior with real state.",
+      input_schema: {
+        type: "object" as const,
+        properties: {
+          test_pattern: {
+            type: "string",
+            description:
+              "Test function name pattern (e.g. 'test_TON_UniswapV2')",
+          },
+          contract_pattern: {
+            type: "string",
+            description: "Contract name pattern to filter",
+          },
+          verbosity: {
+            type: "number",
+            description: "Output verbosity 1-5 (default: 3)",
+          },
+        },
+        required: ["test_pattern"],
+      },
+    },
   ];
 }
 
@@ -238,6 +289,10 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       return handleDecodeCalldata(args as any);
     case "simulate_transaction":
       return handleSimulateTransaction(args as any);
+    case "verify_token_compatibility":
+      return handleVerifyTokenCompatibility(args as any);
+    case "run_fork_test":
+      return handleRunForkTest(args as any);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

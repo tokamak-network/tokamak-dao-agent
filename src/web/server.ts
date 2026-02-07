@@ -19,7 +19,7 @@ app.use("/api/*", cors());
 
 const anthropic = new Anthropic();
 const MODEL = process.env.CHAT_MODEL || "claude-opus-4-6";
-const MAX_TOOL_ROUNDS = 10;
+const MAX_TOOL_ROUNDS = 50;
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));
 
@@ -62,7 +62,7 @@ app.post("/api/chat", async (c) => {
 
         const response = await anthropic.messages.create({
           model: MODEL,
-          max_tokens: 8192,
+          max_tokens: 16384,
           system: SYSTEM_PROMPT,
           tools,
           messages,
@@ -135,7 +135,7 @@ app.post("/api/chat", async (c) => {
                 await sendEvent({
                   type: "tool_result",
                   name: currentToolUse.name,
-                  result: result.slice(0, 2000),
+                  result: result.slice(0, 8000),
                   is_error: isError,
                 });
 
@@ -173,6 +173,10 @@ app.post("/api/chat", async (c) => {
         messages.push({ role: "user", content: toolResults });
       }
 
+      await sendEvent({
+        type: "text_delta",
+        content: "\n\n⚠️ 도구 호출 라운드 제한(50회)에 도달하여 분석이 중단되었습니다. 추가 질문을 통해 이어갈 수 있습니다.",
+      });
       await sendEvent({ type: "done" });
     } catch (err) {
       console.error("[chat] error:", err);

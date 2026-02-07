@@ -5,6 +5,7 @@
 import { readFileSync } from "fs";
 import type { ContractInfo, ContractsJson } from "../../../scripts/storage/types.ts";
 import { paths } from "../paths.ts";
+import { formatError } from "../tools/validation.ts";
 
 const CONTRACTS_PATH = paths.contractsJson;
 
@@ -18,7 +19,7 @@ function load(): ContractsJson {
       const content = readFileSync(CONTRACTS_PATH, "utf-8");
       _contractsJson = JSON.parse(content) as ContractsJson;
     } catch (err) {
-      console.error(`[contracts] Failed to load ${CONTRACTS_PATH}: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(`[contracts] Failed to load ${CONTRACTS_PATH}: ${formatError(err)}`);
       // Return empty structure to prevent server crash
       _contractsJson = {
         coreTokens: [],
@@ -131,4 +132,18 @@ export function findRelatedContracts(contract: ContractInfo): ContractInfo[] {
   }
 
   return related;
+}
+
+/**
+ * Resolve the call-through address for a contract.
+ * If the contract is an implementation, returns its proxy address.
+ */
+export function resolveCallAddress(contract: ContractInfo): string {
+  if (contract.type === "implementation") {
+    const proxy = getAllContracts().find(
+      (c) => c.implementation?.toLowerCase() === contract.address.toLowerCase()
+    );
+    if (proxy) return proxy.address;
+  }
+  return contract.address;
 }

@@ -8,7 +8,7 @@ import { join } from "path";
 import { pad, type Address, type Hex } from "viem";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
-import { getContractByName, getAllContracts } from "../data/contracts.ts";
+import { getContractByName, getAllContracts, resolveCallAddress } from "../data/contracts.ts";
 import type { StorageLayout, StorageType } from "../../../scripts/storage/types.ts";
 import {
   getMappingSlot,
@@ -17,7 +17,7 @@ import {
   decodePackedValue,
 } from "../../../scripts/storage/reader.ts";
 import { paths } from "../paths.ts";
-import { validateAddress, validateSlot } from "./validation.ts";
+import { validateAddress, validateSlot, formatError } from "./validation.ts";
 
 const LAYOUTS_DIR = paths.storageLayouts;
 
@@ -87,7 +87,7 @@ export async function handleReadStorageSlot(args: {
   try {
     rawValue = await readSlotDirect(args.address as Address, slotHex);
   } catch (err) {
-    return `Error reading storage: ${err instanceof Error ? err.message : String(err)}`;
+    return `Error reading storage: ${formatError(err)}`;
   }
 
   const lines = [`**Slot**: ${slotHex}`, `**Raw**: ${rawValue}`];
@@ -132,13 +132,9 @@ export async function handleReadContractState(args: {
     return `No storage layout found for "${args.contract_name}".\n\nAvailable layouts: ${available.join(", ")}`;
   }
 
-  const readAddress = (
-    layout.isProxy && contract.type === "implementation"
-      ? getAllContracts().find(
-          (c) => c.implementation?.toLowerCase() === contract.address.toLowerCase()
-        )?.address
-      : contract.address
-  ) || contract.address;
+  const readAddress = layout.isProxy
+    ? resolveCallAddress(contract)
+    : contract.address;
 
   const storageSlots = layout.layout.storage;
   const filteredSlots = args.variables

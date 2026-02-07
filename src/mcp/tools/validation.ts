@@ -121,3 +121,10 @@ export function validateBlockNumber(value: number): string | null {
   }
   return null;
 }
+
+/**
+ * Format unknown error to string message.
+ */
+export function formatError(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}

@@ -10,6 +10,7 @@ import { cors } from "hono/cors";
 import { stream } from "hono/streaming";
 import Anthropic from "@anthropic-ai/sdk";
 import { getToolDefinitions, executeTool } from "../mcp/tools/handlers.ts";
+import { formatError } from "../mcp/tools/validation.ts";
 import { SYSTEM_PROMPT } from "./system-prompt.ts";
 
 const app = new Hono();
@@ -126,7 +127,7 @@ app.post("/api/chat", async (c) => {
                 try {
                   result = await executeTool(currentToolUse.name, input);
                 } catch (err) {
-                  result = err instanceof Error ? err.message : String(err);
+                  result = formatError(err);
                   isError = true;
                   console.error(`[chat] tool error:`, result);
                 }
@@ -177,7 +178,7 @@ app.post("/api/chat", async (c) => {
       console.error("[chat] error:", err);
       await sendEvent({
         type: "error",
-        message: err instanceof Error ? err.message : String(err),
+        message: formatError(err),
       });
       await sendEvent({ type: "done" });
     }

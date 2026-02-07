@@ -6,9 +6,9 @@ import { z } from "zod";
 import { type Address } from "viem";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
-import { getContractByName, getAllContracts } from "../data/contracts.ts";
+import { getContractByName, resolveCallAddress } from "../data/contracts.ts";
 import { loadAbi, getViewFunctions } from "../data/abis.ts";
-import { safeParseBigInt } from "./validation.ts";
+import { safeParseBigInt, formatError } from "./validation.ts";
 
 /**
  * Parse a string argument into the appropriate type for viem.
@@ -57,18 +57,10 @@ export async function handleQueryOnChain(args: {
 }): Promise<string> {
   const contract = getContractByName(args.contract_name);
   if (!contract) {
-    return `Contract "${args.contract_name}" not found. Available: ${getAllContracts().map((c) => c.name).join(", ")}`;
+    return `Contract "${args.contract_name}" not found. Use get_contract_info to search.`;
   }
 
-  let callAddress = contract.address as Address;
-  if (contract.type === "implementation") {
-    const proxy = getAllContracts().find(
-      (c) => c.implementation?.toLowerCase() === contract.address.toLowerCase()
-    );
-    if (proxy) {
-      callAddress = proxy.address as Address;
-    }
-  }
+  const callAddress = resolveCallAddress(contract) as Address;
 
   const namesToTry = [args.contract_name, contract.name];
   const baseName = contract.name.replace(/V\d+_?\d*$/, "");
@@ -134,7 +126,7 @@ export async function handleQueryOnChain(args: {
 
     return lines.join("\n");
   } catch (err) {
-    throw new Error(`Error calling ${args.function_name}: ${err instanceof Error ? err.message : String(err)}`);
+    throw new Error(`Error calling ${args.function_name}: ${formatError(err)}`);
   }
 }
 
@@ -155,7 +147,7 @@ export function registerOnChainTool(server: McpServer) {
         return {
           content: [{
             type: "text" as const,
-            text: err instanceof Error ? err.message : String(err),
+            text: formatError(err),
           }],
           isError: true,
         };

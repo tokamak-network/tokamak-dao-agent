@@ -9,8 +9,8 @@ You are reviewing the current approach to ensure alignment with the project miss
 
 First, thoroughly explore the codebase to understand what exists:
 
-1. **Knowledge Base**: Read `src/server/knowledge/` to understand what knowledge we have
-2. **Documents**: Scan `src/server/knowledge/documents/` to see what's documented
+1. **MCP Tools**: Read `src/mcp/tools/` to understand available tools
+2. **Data Layer**: Scan `src/mcp/data/` for contract registry and ABI loading
 3. **Scripts**: Check `scripts/` for data collection capabilities
 4. **Tasks**: Read `tasks/todo.md` for completed and pending work
 5. **Contracts**: Check `contracts/src/` for collected contract sources

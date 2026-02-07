@@ -17,7 +17,7 @@ const app = new Hono();
 app.use("/api/*", cors());
 
 const anthropic = new Anthropic();
-const MODEL = process.env.CHAT_MODEL || "claude-sonnet-4.5";
+const MODEL = process.env.CHAT_MODEL || "claude-sonnet-4-5-20250929";
 const MAX_TOOL_ROUNDS = 10;
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));

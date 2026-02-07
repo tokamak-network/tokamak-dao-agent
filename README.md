@@ -9,10 +9,26 @@ Connected to Claude Code as an MCP (Model Context Protocol) server, it performs 
 ```mermaid
 flowchart TB
     Claude["Claude Code"]
+    Browser["Web Browser"]
 
-    Claude <-->|"MCP (stdio)"| Server
+    Claude <-->|"MCP (stdio)"| MCP
+    Browser <-->|"HTTP/SSE"| Web
 
-    subgraph Server["MCP Server (Bun)"]
+    subgraph MCP["MCP Server (Bun)"]
+        direction LR
+        mcp_entry["src/mcp/server.ts"]
+    end
+
+    subgraph Web["Web Server (Bun)"]
+        direction LR
+        web_entry["src/web/server.ts"]
+        web_client["src/client/ (React)"]
+    end
+
+    MCP --> Handlers
+    Web -->|"Anthropic API"| Handlers
+
+    subgraph Handlers["Shared Tool Handlers"]
         direction TB
 
         subgraph tools1["Code Exploration"]
@@ -32,8 +48,10 @@ flowchart TB
             decode_calldata
         end
 
-        subgraph tools4["Simulation"]
+        subgraph tools4["Simulation & Verification"]
             simulate_transaction
+            verify_token_compatibility
+            run_fork_test
         end
     end
 
@@ -66,6 +84,8 @@ flowchart TB
 | `fetch_agenda` | Fetch DAO proposal details |
 | `decode_calldata` | Decode transaction calldata |
 | `simulate_transaction` | Simulate transactions via eth_call |
+| `verify_token_compatibility` | Verify token compatibility with DEX protocols |
+| `run_fork_test` | Execute Foundry fork tests against mainnet |
 
 ## Setup
 
@@ -99,7 +119,9 @@ The MCP server is registered in `.claude/settings.json` and connects automatical
 Manual run:
 
 ```bash
-bun run mcp
+bun run mcp        # MCP server (stdio, for Claude Code)
+bun run dev:web    # Web chat server (hot reload)
+bun run dev:client # Vite dev server for React frontend
 ```
 
 ### Contracts (Foundry)
@@ -112,9 +134,12 @@ forge build
 ## Project Structure
 
 ```
-src/mcp/                  MCP server and tool implementations
+src/mcp/                  MCP server and tool handlers
+src/web/                  Web chat server and system prompt
+src/client/               React frontend (Vite)
 contracts/src/             Verified Solidity sources (44 contracts)
 contracts/out/             Compiled ABIs (Foundry)
+contracts/test/            Fork tests (TON compatibility, etc.)
 scripts/mainnet/
   ├── contracts.json       Contract registry
   └── agendas.json         Cached DAO proposal data

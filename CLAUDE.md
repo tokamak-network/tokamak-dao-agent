@@ -77,6 +77,10 @@ Tokamak MCP Server                   Tokamak Web Server
 **Foundry Fork Tests** (`contracts/test/`):
 - `TONCompatibility.t.sol` - TON/WTON DEX compatibility tests
 
+**Shared Validation** (`src/mcp/tools/validation.ts`):
+- Address, hex, slot, block number, path safety validation
+- Error formatting utility (`formatError`)
+
 **Interfaces**:
 - **Claude Code**: MCP server via stdio (`src/mcp/server.ts`)
 - **Web Chat UI**: Anthropic API agentic loop (`src/web/server.ts`), system prompt with verification-first protocol

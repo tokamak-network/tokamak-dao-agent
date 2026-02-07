@@ -45,10 +45,10 @@ function findContractDir(contractName: string): string | null {
   return statSync(full).isDirectory() ? full : null;
 }
 
-export async function handleReadContractSource(args: {
+export function handleReadContractSource(args: {
   contract_name: string;
   file_path?: string;
-}): Promise<string> {
+}): string {
   const dir = findContractDir(args.contract_name);
   if (!dir) {
     const available = existsSync(CONTRACTS_SRC)
@@ -83,10 +83,10 @@ export async function handleReadContractSource(args: {
   return `## ${args.contract_name}/${args.file_path}\n\n\`\`\`solidity\n${source}\n\`\`\``;
 }
 
-export async function handleSearchContractCode(args: {
+export function handleSearchContractCode(args: {
   pattern: string;
   contract_name?: string;
-}): Promise<string> {
+}): string {
   let searchDir: string;
   let searchScope: string;
 

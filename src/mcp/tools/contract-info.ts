@@ -6,7 +6,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { searchContracts, findRelatedContracts } from "../data/contracts.ts";
 
-export async function handleGetContractInfo(args: { query: string }): Promise<string> {
+export function handleGetContractInfo(args: { query: string }): string {
   const results = searchContracts(args.query);
 
   if (results.length === 0) {

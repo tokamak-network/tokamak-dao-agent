@@ -86,10 +86,12 @@ function TerminalHeader({
   isConnected,
   isLoading,
   showAsciiArt = true,
+  onNewChat,
 }: {
   isConnected: boolean;
   isLoading: boolean;
   showAsciiArt?: boolean;
+  onNewChat?: () => void;
 }) {
   return (
     <div className="terminal-box-header">
@@ -103,9 +105,32 @@ function TerminalHeader({
             padding: "8px 16px",
           }}
         >
-          <span style={{ color: "var(--term-text-muted)", fontSize: "13px" }}>
-            Tokamak DAO Agent
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ color: "var(--term-text-muted)", fontSize: "13px" }}>
+              Tokamak DAO Agent
+            </span>
+            {onNewChat && (
+              <button
+                className="new-chat-btn"
+                onClick={onNewChat}
+                title="New Chat"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+              </button>
+            )}
+          </div>
           <div className="flex items-center">
             <span
               className={`status-dot ${
@@ -247,7 +272,7 @@ function ChatInput({
               adjustHeight();
             }}
             onKeyDown={handleKeyDown}
-            placeholder="메시지를 입력하세요..."
+            placeholder="Type a message..."
             disabled={isLoading}
             rows={1}
             className="chat-input-textarea"
@@ -256,7 +281,7 @@ function ChatInput({
             onClick={onSubmit}
             disabled={isLoading || !value.trim()}
             className="chat-send-btn"
-            title="전송 (Enter)"
+            title="Send (Enter)"
           >
             <svg
               width="18"
@@ -273,7 +298,7 @@ function ChatInput({
         </div>
       </div>
       <div className="chat-input-hint">
-        AI 응답에는 오류가 있을 수 있습니다. 중요한 정보는 확인하세요.
+        AI responses may contain errors. Please verify important information.
       </div>
     </div>
   );
@@ -301,6 +326,14 @@ export default function Chat() {
   useEffect(() => {
     if (!showBootSequence) inputRef.current?.focus();
   }, [showBootSequence]);
+
+  const handleNewChat = () => {
+    setMessages([]);
+    setInput("");
+    setIsLoading(false);
+    if (inputRef.current) inputRef.current.style.height = "auto";
+    inputRef.current?.focus();
+  };
 
   const handleSuggestion = (text: string) => {
     setInput(text);
@@ -529,6 +562,7 @@ export default function Chat() {
         isConnected={isConnected}
         isLoading={isLoading}
         showAsciiArt={messages.length === 0}
+        onNewChat={messages.length > 0 ? handleNewChat : undefined}
       />
 
       {messages.length === 0 ? (
@@ -536,37 +570,37 @@ export default function Chat() {
           <div style={{ maxWidth: "800px", width: "100%", padding: "0 24px" }}>
             <div className="chat-welcome">
               <div className="chat-welcome-title phosphor-glow">
-                무엇을 도와드릴까요?
+                How can I help you?
               </div>
               <div className="chat-welcome-subtitle">
-                Tokamak DAO Agent가 질문에 답변해드립니다
+                Tokamak DAO Agent answers your questions
               </div>
               <div className="chat-welcome-suggestions">
                 <button
                   className="chat-suggestion-btn"
-                  onClick={() => handleSuggestion("SeigManager 컨트랙트 정보 알려줘")}
+                  onClick={() => handleSuggestion("Show me SeigManager contract info")}
                 >
-                  SeigManager 정보
+                  SeigManager Info
                 </button>
                 <button
                   className="chat-suggestion-btn"
-                  onClick={() => handleSuggestion("최근 DAO 안건 분석해줘")}
+                  onClick={() => handleSuggestion("Analyze recent DAO proposals")}
                 >
-                  DAO 안건 분석
+                  DAO Proposals
                 </button>
                 <button
                   className="chat-suggestion-btn"
-                  onClick={() => handleSuggestion("TON 토큰 컨트랙트 소스코드 보여줘")}
+                  onClick={() => handleSuggestion("Show me TON token contract source code")}
                 >
-                  컨트랙트 소스코드
+                  Contract Source
                 </button>
                 <button
                   className="chat-suggestion-btn"
                   onClick={() =>
-                    handleSuggestion("DepositManager의 현재 스토리지 상태를 읽어줘")
+                    handleSuggestion("Read the current storage state of DepositManager")
                   }
                 >
-                  온체인 상태 조회
+                  On-chain State
                 </button>
               </div>
             </div>

@@ -79,6 +79,12 @@ body {
   color: var(--term-bg-primary);
 }
 
+.chat-bubble.user ::selection,
+.chat-bubble.user::selection {
+  background: var(--term-border);
+  color: var(--term-accent);
+}
+
 /* Phosphor Glow for Text */
 .phosphor-glow {
   text-shadow:
@@ -152,6 +158,26 @@ body {
   flex-shrink: 0;
   background: var(--term-bg-header);
   border-bottom: 1px solid var(--term-border);
+}
+
+.new-chat-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--term-border);
+  color: var(--term-text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.new-chat-btn:hover {
+  background: var(--term-bg-secondary);
+  color: var(--term-text-primary);
+  border-color: var(--term-text-dim);
 }
 
 /* Message Prompt Styles */
@@ -654,7 +680,7 @@ body {
   flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
-  max-width: 600px;
+  max-width: 700px;
 }
 
 .chat-suggestion-btn {

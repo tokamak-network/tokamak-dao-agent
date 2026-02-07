@@ -18,7 +18,7 @@ const app = new Hono();
 app.use("/api/*", cors());
 
 const anthropic = new Anthropic();
-const MODEL = process.env.CHAT_MODEL || "claude-sonnet-4-5-20250929";
+const MODEL = process.env.CHAT_MODEL || "claude-opus-4-6";
 const MAX_TOOL_ROUNDS = 10;
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));
@@ -108,7 +108,7 @@ app.post("/api/chat", async (c) => {
                 let input: Record<string, any> = {};
                 try {
                   input = JSON.parse(currentToolUse.inputJson || "{}");
-                } catch {}
+                } catch { }
 
                 assistantContent.push({
                   type: "tool_use",

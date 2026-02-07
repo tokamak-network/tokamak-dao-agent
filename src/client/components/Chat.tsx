@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ToolCall {
   name: string;
@@ -22,6 +23,16 @@ interface Message {
 }
 
 const SPINNER_FRAMES = ["|", "/", "-", "\\"];
+
+/**
+ * Fix bold/italic markers adjacent to CJK characters.
+ * Markdown parsers require word boundaries around emphasis markers,
+ * but no boundary exists between `**` and Korean characters like `**텍스트**를`.
+ * Inserting a zero-width space provides the needed boundary.
+ */
+function fixCjkEmphasis(text: string): string {
+  return text.replace(/(\*{1,3})(.+?)\1(?=[가-힣ㄱ-ㅎㅏ-ㅣ一-龥])/g, '$&\u200B');
+}
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("ko-KR", {
@@ -166,7 +177,7 @@ function ChatBubble({
           <>
             {message.parts.map((part, i) =>
               part.type === "text" ? (
-                <ReactMarkdown key={i}>{part.content || ""}</ReactMarkdown>
+                <ReactMarkdown key={i} remarkPlugins={[remarkGfm]}>{fixCjkEmphasis(part.content || "")}</ReactMarkdown>
               ) : part.toolCall ? (
                 <ToolCallBlock key={i} toolCall={part.toolCall} />
               ) : null

@@ -9,6 +9,8 @@ import { registerStorageTools } from "./storage.ts";
 import { registerOnChainTool } from "./on-chain.ts";
 import { registerGovernanceTools } from "./governance.ts";
 import { registerSimulationTool } from "./simulation.ts";
+import { registerVerificationTool } from "./verification.ts";
+import { registerForkTestTool } from "./fork-test.ts";
 
 export function registerAllTools(server: McpServer) {
   // Phase 1: Code exploration
@@ -24,4 +26,8 @@ export function registerAllTools(server: McpServer) {
 
   // Phase 4: Simulation
   registerSimulationTool(server);
+
+  // Phase 5: Verification
+  registerVerificationTool(server);
+  registerForkTestTool(server);
 }

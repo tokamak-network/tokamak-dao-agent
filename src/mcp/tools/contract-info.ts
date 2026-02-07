@@ -18,6 +18,11 @@ export async function handleGetContractInfo(args: { query: string }): Promise<st
     lines.push(`## ${contract.name}`);
     lines.push(`- **Address**: ${contract.address}`);
     lines.push(`- **Type**: ${contract.type}`);
+    if (contract.type === "token") {
+      lines.push("");
+      lines.push("⚠️ **VERIFICATION REQUIRED**: This is a token contract. To check DEX compatibility (trading, swapping), you MUST call `verify_token_compatibility` or `run_fork_test` before answering. Do NOT assume ERC-20 compliance means DEX compatibility — some tokens have restricted `transferFrom` that prevents DEX trading.");
+      lines.push("");
+    }
     lines.push(`- **Description**: ${contract.description}`);
     if (contract.implementation) {
       lines.push(`- **Implementation**: ${contract.implementation}`);

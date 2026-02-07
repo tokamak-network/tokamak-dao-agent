@@ -184,7 +184,7 @@ app.post("/api/chat", async (c) => {
   });
 });
 
-const port = Number(process.env.PORT) || 3000;
+const port = Number(process.env.PORT) || 3333;
 
 console.log(`Tokamak DAO Agent web server starting on port ${port}...`);
 

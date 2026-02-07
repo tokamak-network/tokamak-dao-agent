@@ -6,10 +6,33 @@
     "tokamak-dao": {
       "command": "bun",
       "args": ["run", "src/mcp/server.ts"],
-      "cwd": "/Users/geonwoo/Workspace/tokamak-dao-agent",
       "env": {
         "ALCHEMY_RPC_URL": "${ALCHEMY_RPC_URL}"
       }
     }
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/check-verification.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/require-verification.sh"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -13,6 +13,13 @@
       "type": "token",
       "docId": "con-002",
       "description": "Wrapped TON for staking with RAY precision (27 decimals)"
+    },
+    {
+      "name": "StakedWTON",
+      "address": "0x47e264ea9b229368aa90c331D3f4CBe0b4c0f01d",
+      "type": "token",
+      "docId": "con-003",
+      "description": "sWTON - Total staked WTON tracking token (SeigManager.tot)"
     }
   ],
   "simpleStakingV2": [
@@ -186,6 +193,35 @@
       "type": "implementation",
       "docId": "con-034",
       "description": "DepositManager V1.1 implementation"
+    },
+    {
+      "name": "SeigManagerV0",
+      "address": "0x710936500aC59e8551331871Cbad3D33d5e0D909",
+      "type": "implementation",
+      "docId": "con-035",
+      "description": "Original SeigManager implementation (Solidity 0.5.12, pre-upgrade)"
+    },
+    {
+      "name": "PowerTONUpgrade",
+      "address": "0x0AA0191e9cc7BE9B7228D4d3E3Dd65749C93551F",
+      "type": "implementation",
+      "docId": "con-036",
+      "description": "PowerTON swapper implementation"
+    },
+    {
+      "name": "PowerTONSwapperProxy",
+      "address": "0x970298189050aBd4dc4F119ccae14ee145ad9371",
+      "type": "proxy",
+      "implementation": "0x0AA0191e9cc7BE9B7228D4d3E3Dd65749C93551F",
+      "docId": "con-037",
+      "description": "PowerTON swapper proxy (SeigManager.powerton)"
+    },
+    {
+      "name": "L1BridgeRegistryProxy_Legacy",
+      "address": "0x17Fa32DFf4c26cf0AC65Ff6700B57a4826513Fa0",
+      "type": "proxy",
+      "docId": "con-038",
+      "description": "Legacy L1 Bridge Registry proxy (agenda 13 target)"
     }
   ],
   "layerOperators": [

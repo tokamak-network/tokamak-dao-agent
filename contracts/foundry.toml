@@ -19,6 +19,16 @@ remappings = [
 # EVM version
 evm_version = "london"
 
+# Test configuration
+test = "test"
+
+# Fuzz testing
+[profile.default.fuzz]
+runs = 256
+
+[profile.default.invariant]
+runs = 256
+
 # Allow multiple Solidity versions
 [profile.default.model_checker]
 
@@ -31,3 +41,18 @@ solc_version = "0.6.12"
 
 [profile.v7]
 solc_version = "0.7.6"
+
+# Fork testing profile - excludes legacy src/ contracts
+# Usage: FOUNDRY_PROFILE=fork forge test --fork-url $ALCHEMY_RPC_URL
+[profile.fork]
+src = "test"
+out = "out"
+libs = ["lib"]
+test = "test"
+solc_version = "0.8.24"
+evm_version = "paris"
+optimizer = true
+optimizer_runs = 200
+remappings = [
+    "forge-std/=lib/forge-std/src/"
+]

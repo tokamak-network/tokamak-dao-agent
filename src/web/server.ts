@@ -18,8 +18,9 @@ const app = new Hono();
 app.use("/api/*", cors());
 
 const anthropic = new Anthropic();
-const MODEL = process.env.CHAT_MODEL || "claude-opus-4-6";
+const MODEL = process.env.CHAT_MODEL || "claude-sonnet-4-5-20250929";
 const MAX_TOOL_ROUNDS = 50;
+const MAX_TOOL_RESULT_CHARS = 12000;
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));
 
@@ -55,7 +56,7 @@ app.post("/api/chat", async (c) => {
           inputJson: string;
         } | null = null;
         const assistantContent: Anthropic.ContentBlockParam[] = [];
-        const toolResults: Anthropic.ToolResultBlockParam[] = [];
+        const pendingTools: { id: string; name: string; input: Record<string, any> }[] = [];
         let stopReason: string | null = null;
 
         console.log(`[chat] round ${round + 1}, messages: ${messages.length}`);
@@ -69,6 +70,7 @@ app.post("/api/chat", async (c) => {
           stream: true,
         });
 
+        // Phase 1: Stream response, collect tool calls (don't execute yet)
         for await (const event of response) {
           switch (event.type) {
             case "content_block_start":
@@ -117,33 +119,10 @@ app.post("/api/chat", async (c) => {
                   input,
                 });
 
-                console.log(
-                  `[chat] executing tool: ${currentToolUse.name}`,
-                  JSON.stringify(input).slice(0, 200)
-                );
-
-                let result: string;
-                let isError = false;
-                try {
-                  result = await executeTool(currentToolUse.name, input);
-                } catch (err) {
-                  result = formatError(err);
-                  isError = true;
-                  console.error(`[chat] tool error:`, result);
-                }
-
-                await sendEvent({
-                  type: "tool_result",
+                pendingTools.push({
+                  id: currentToolUse.id,
                   name: currentToolUse.name,
-                  result: result.slice(0, 8000),
-                  is_error: isError,
-                });
-
-                toolResults.push({
-                  type: "tool_result",
-                  tool_use_id: currentToolUse.id,
-                  content: result,
-                  ...(isError ? { is_error: true } : {}),
+                  input,
                 });
 
                 currentToolUse = null;
@@ -164,13 +143,54 @@ app.post("/api/chat", async (c) => {
           }
         }
 
-        if (stopReason !== "tool_use" || toolResults.length === 0) {
+        // Phase 2: Execute all tool calls in parallel
+        if (pendingTools.length === 0 || stopReason !== "tool_use") {
           await sendEvent({ type: "done" });
           return;
         }
 
+        console.log(`[chat] executing ${pendingTools.length} tools in parallel`);
+
+        const toolResults: Anthropic.ToolResultBlockParam[] = await Promise.all(
+          pendingTools.map(async (tool) => {
+            console.log(`[chat] tool: ${tool.name}`, JSON.stringify(tool.input).slice(0, 200));
+
+            let result: string;
+            let isError = false;
+            try {
+              result = await executeTool(tool.name, tool.input);
+            } catch (err) {
+              result = formatError(err);
+              isError = true;
+              console.error(`[chat] tool error:`, result);
+            }
+
+            await sendEvent({
+              type: "tool_result",
+              name: tool.name,
+              result: result.slice(0, 8000),
+              is_error: isError,
+            });
+
+            const truncatedResult =
+              result.length > MAX_TOOL_RESULT_CHARS
+                ? result.slice(0, MAX_TOOL_RESULT_CHARS) +
+                  `\n\n[... truncated ${result.length - MAX_TOOL_RESULT_CHARS} chars]`
+                : result;
+
+            return {
+              type: "tool_result" as const,
+              tool_use_id: tool.id,
+              content: truncatedResult,
+              ...(isError ? { is_error: true } : {}),
+            };
+          })
+        );
+
         messages.push({ role: "assistant", content: assistantContent });
         messages.push({ role: "user", content: toolResults });
+
+        await sendEvent({ type: "thinking" });
       }
 
       await sendEvent({
@@ -196,4 +216,5 @@ console.log(`Tokamak DAO Agent web server starting on port ${port}...`);
 export default {
   port,
   fetch: app.fetch,
+  idleTimeout: 120, // seconds — prevent Bun from killing SSE during long API calls
 };

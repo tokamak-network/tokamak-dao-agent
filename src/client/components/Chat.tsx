@@ -10,7 +10,7 @@ interface ToolCall {
 }
 
 interface MessagePart {
-  type: "text" | "tool_call";
+  type: "text" | "tool_call" | "thinking";
   content?: string;
   toolCall?: ToolCall;
 }
@@ -203,6 +203,15 @@ function ChatBubble({
             {message.parts.map((part, i) =>
               part.type === "text" ? (
                 <ReactMarkdown key={i} remarkPlugins={[remarkGfm]}>{fixCjkEmphasis(part.content || "")}</ReactMarkdown>
+              ) : part.type === "thinking" ? (
+                <div key={i} className="thinking-indicator">
+                  <span className="thinking-dots">
+                    <span className="thinking-dot" />
+                    <span className="thinking-dot" />
+                    <span className="thinking-dot" />
+                  </span>
+                  <span className="thinking-label">Analyzing...</span>
+                </div>
               ) : part.toolCall ? (
                 <ToolCallBlock key={i} toolCall={part.toolCall} />
               ) : null
@@ -429,6 +438,13 @@ export default function Chat() {
             switch (parsed.type) {
               case "text_delta":
                 textContent += parsed.content;
+                // Remove thinking indicator when text arrives
+                if (
+                  parts.length > 0 &&
+                  parts[parts.length - 1]!.type === "thinking"
+                ) {
+                  parts.pop();
+                }
                 // Find or create current text part
                 if (
                   parts.length === 0 ||
@@ -443,6 +459,13 @@ export default function Chat() {
                 break;
 
               case "tool_use":
+                // Remove thinking indicator when new tool call arrives
+                if (
+                  parts.length > 0 &&
+                  parts[parts.length - 1]!.type === "thinking"
+                ) {
+                  parts.pop();
+                }
                 parts.push({
                   type: "tool_call",
                   toolCall: {
@@ -488,7 +511,27 @@ export default function Chat() {
                 updateAssistant(textContent, parts);
                 break;
 
+              case "thinking":
+                // Remove previous thinking indicator if any
+                if (
+                  parts.length > 0 &&
+                  parts[parts.length - 1]!.type === "thinking"
+                ) {
+                  parts.pop();
+                }
+                parts.push({ type: "thinking" });
+                updateAssistant(textContent, parts);
+                break;
+
               case "done":
+                // Remove thinking indicator on completion
+                if (
+                  parts.length > 0 &&
+                  parts[parts.length - 1]!.type === "thinking"
+                ) {
+                  parts.pop();
+                  updateAssistant(textContent, parts);
+                }
                 break;
             }
           } catch {

@@ -107,6 +107,8 @@ Edit `.env` and fill in the required values:
 | `ALCHEMY_RPC_URL` | Yes | Ethereum mainnet RPC for on-chain queries |
 | `ETHERSCAN_API_KEY` | For scripts | Fetching verified contract sources |
 | `ANTHROPIC_API_KEY` | For chat UI | Anthropic API access |
+| `ANTHROPIC_BASE_URL` | No | Custom API endpoint (optional) |
+| `ANTHROPIC_MODEL` | No | Model override (default: `claude-sonnet-4.5`) |
 
 ### Install & Run
 
@@ -134,18 +136,29 @@ forge build
 ## Project Structure
 
 ```
-src/mcp/                  MCP server and tool handlers
-src/web/                  Web chat server and system prompt
-src/client/               React frontend (Vite)
-contracts/src/             Verified Solidity sources (44 contracts)
-contracts/out/             Compiled ABIs (Foundry)
-contracts/test/            Fork tests (TON compatibility, etc.)
-scripts/mainnet/
-  ├── contracts.json       Contract registry
-  └── agendas.json         Cached DAO proposal data
-scripts/storage/
-  ├── layouts/             Storage layout JSONs
-  └── reader.ts            Storage reading utilities
+src/
+├── config.ts              Shared constants (tool rounds, token limits, etc.)
+├── mcp/
+│   ├── server.ts          MCP server entry (stdio transport)
+│   ├── client.ts          viem public client instance
+│   ├── paths.ts           Path resolution utilities
+│   ├── data/              Contract registry, ABI, DEX protocol configs
+│   └── tools/             11 tool handlers + validation + dispatcher
+├── web/
+│   ├── server.ts          Web chat server (Hono + SSE streaming)
+│   └── system-prompt.ts   AI system prompt (verification-first rule)
+└── client/                React frontend (Vite)
+contracts/
+├── src/                   Verified Solidity sources (42 contracts, 746 files)
+├── out/                   Compiled ABIs (Foundry)
+└── test/                  Fork tests (TON compatibility, etc.)
+scripts/
+├── mainnet/
+│   ├── contracts.json     Contract registry (addresses, types, proxy relationships)
+│   └── agendas.json       Cached DAO proposal data
+└── storage/
+    ├── layouts/           Storage layout JSONs (40 files)
+    └── reader.ts          Storage reading utilities
 ```
 
 ## License

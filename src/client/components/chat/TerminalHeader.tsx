@@ -1,19 +1,24 @@
+import { ModelSelector } from "./ModelSelector";
+
 export function TerminalHeader({
   isConnected,
   isLoading,
   showAsciiArt = true,
   onNewChat,
+  model,
+  onModelChange,
 }: {
   isConnected: boolean;
   isLoading: boolean;
   showAsciiArt?: boolean;
   onNewChat?: () => void;
+  model?: string;
+  onModelChange?: (model: string) => void;
 }) {
   return (
     <div className="terminal-box-header">
       <div style={{ borderBottom: "1px solid var(--term-border)" }}>
         <div
-          className="text-xs"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -21,6 +26,7 @@ export function TerminalHeader({
             padding: "8px 16px",
           }}
         >
+          {/* Left: title + new chat */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ color: "var(--term-text-muted)", fontSize: "13px" }}>
               Tokamak DAO Agent
@@ -47,23 +53,42 @@ export function TerminalHeader({
               </button>
             )}
           </div>
-          <div className="flex items-center">
-            <span
-              className={`status-dot ${
-                isLoading
-                  ? "status-loading"
+
+          {/* Right: model selector + status */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {model && onModelChange ? (
+              <ModelSelector current={model} onSelect={onModelChange} />
+            ) : model ? (
+              <span
+                style={{
+                  color: "var(--term-text-muted)",
+                  fontSize: "12px",
+                  padding: "2px 8px",
+                  border: "1px solid var(--term-border)",
+                  borderRadius: "4px",
+                }}
+              >
+                {model}
+              </span>
+            ) : null}
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <span
+                className={`status-dot ${
+                  isLoading
+                    ? "status-loading"
+                    : isConnected
+                    ? "status-connected"
+                    : "status-disconnected"
+                }`}
+              />
+              <span style={{ color: "var(--term-text-muted)", fontSize: "12px" }}>
+                {isLoading
+                  ? "PROCESSING"
                   : isConnected
-                  ? "status-connected"
-                  : "status-disconnected"
-              }`}
-            />
-            <span style={{ color: "var(--term-text-muted)" }}>
-              {isLoading
-                ? "PROCESSING"
-                : isConnected
-                ? "CONNECTED"
-                : "DISCONNECTED"}
-            </span>
+                  ? "CONNECTED"
+                  : "DISCONNECTED"}
+              </span>
+            </div>
           </div>
         </div>
       </div>

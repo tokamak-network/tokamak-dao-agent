@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import type { Message, MessagePart } from "./types";
 
-export function useChat() {
+export function useChat(selectedModel?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +50,10 @@ export function useChat() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages }),
+        body: JSON.stringify({
+          messages: apiMessages,
+          ...(selectedModel ? { model: selectedModel } : {}),
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to fetch");

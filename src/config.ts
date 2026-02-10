@@ -15,4 +15,5 @@ export const MAX_TOOL_ROUNDS = 50;
 export const MAX_TOOL_RESULT_CHARS = 12_000;
 export const MAX_TOOL_RESULT_DISPLAY_CHARS = 8_000;
 export const CHAT_MAX_TOKENS = 16_384;
+// Supports provider prefix: "openai:gpt-4o", "anthropic:claude-sonnet-4-5-20250929"
 export const DEFAULT_CHAT_MODEL = "claude-sonnet-4-5-20250929";

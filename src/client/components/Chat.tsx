@@ -7,6 +7,10 @@ import { ChatLoader } from "./chat/ChatLoader";
 import { ChatInput } from "./chat/ChatInput";
 
 export default function Chat() {
+  const [showBootSequence, setShowBootSequence] = useState(true);
+  const [providerName, setProviderName] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string | undefined>();
+
   const {
     messages,
     input,
@@ -18,9 +22,18 @@ export default function Chat() {
     handleNewChat,
     handleSuggestion,
     handleSubmit,
-  } = useChat();
+  } = useChat(selectedModel);
 
-  const [showBootSequence, setShowBootSequence] = useState(true);
+  useEffect(() => {
+    fetch("/api/health")
+      .then((r) => r.json())
+      .then((data) => {
+        setProviderName(data.provider);
+        // Only set default model if user hasn't already picked one
+        setSelectedModel((prev) => prev ?? data.model);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowBootSequence(false), 2000);
@@ -56,7 +69,7 @@ export default function Chat() {
             Loading language models...
           </div>
           <div className="boot-line" style={{ animationDelay: "600ms" }}>
-            Connecting to Anthropic API...
+            {`Connecting to ${providerName ?? "AI"} API...`}
           </div>
           <div className="boot-line" style={{ animationDelay: "800ms" }}>
             <AsciiSpinner /> System ready.
@@ -78,6 +91,8 @@ export default function Chat() {
         isLoading={isLoading}
         showAsciiArt={messages.length === 0}
         onNewChat={messages.length > 0 ? handleNewChat : undefined}
+        model={selectedModel}
+        onModelChange={setSelectedModel}
       />
 
       {messages.length === 0 ? (

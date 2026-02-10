@@ -4,7 +4,7 @@
  * Provides Anthropic API tool definitions and a single executeTool() dispatcher.
  */
 
-import type { Tool } from "@anthropic-ai/sdk/resources/messages.js";
+import type { ToolDefinition } from "../../web/providers/types.ts";
 import { handleGetContractInfo } from "./contract-info.ts";
 import { handleReadContractSource, handleSearchContractCode } from "./contract-source.ts";
 import { handleReadStorageSlot, handleReadContractState } from "./storage.ts";
@@ -17,7 +17,7 @@ import { handleRunForkTest } from "./fork-test.ts";
 /**
  * Returns Anthropic API tool definitions for all 11 tools.
  */
-export function getToolDefinitions(): Tool[] {
+export function getToolDefinitions(): ToolDefinition[] {
   return [
     {
       name: "get_contract_info",

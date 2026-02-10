@@ -9,9 +9,9 @@ import { z } from "zod";
 import { join } from "path";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { PROJECT_ROOT } from "../paths.ts";
+import { FORK_TEST_TIMEOUT_MS, FORK_TEST_MAX_OUTPUT } from "../../config.ts";
 
 const CONTRACTS_DIR = join(PROJECT_ROOT, "contracts");
-const TIMEOUT_MS = 120_000; // 2 minutes
 
 /**
  * Validate test pattern to prevent command injection.
@@ -74,8 +74,8 @@ async function runForgeTest(args: {
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
         proc.kill();
-        reject(new Error(`Forge test timed out after ${TIMEOUT_MS / 1000}s`));
-      }, TIMEOUT_MS);
+        reject(new Error(`Forge test timed out after ${FORK_TEST_TIMEOUT_MS / 1000}s`));
+      }, FORK_TEST_TIMEOUT_MS);
     });
 
     const exitCode = await Promise.race([proc.exited, timeoutPromise]);
@@ -147,9 +147,8 @@ function formatResult(
   }
 
   // Include full output (truncated) for detailed analysis
-  const MAX_OUTPUT = 3000;
-  const fullOutput = output.length > MAX_OUTPUT
-    ? output.slice(0, MAX_OUTPUT) + "\n... (truncated)"
+  const fullOutput = output.length > FORK_TEST_MAX_OUTPUT
+    ? output.slice(0, FORK_TEST_MAX_OUTPUT) + "\n... (truncated)"
     : output;
 
   lines.push("<details>");

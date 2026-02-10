@@ -128,3 +128,17 @@ export function validateBlockNumber(value: number): string | null {
 export function formatError(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
+
+/**
+ * Extract a human-readable revert reason from an EVM error.
+ * Handles standard reason strings, custom errors, and raw reverts.
+ */
+export function extractRevertReason(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  const reasonMatch = message.match(/reverted with reason string ['"]([^'"]+)['"]/);
+  if (reasonMatch) return reasonMatch[1]!;
+  const customMatch = message.match(/reverted with custom error ['"]([^'"]+)['"]/);
+  if (customMatch) return `Custom error: ${customMatch[1]}`;
+  if (message.includes("execution reverted")) return message.slice(0, 300);
+  return message.slice(0, 200);
+}

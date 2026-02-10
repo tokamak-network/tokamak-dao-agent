@@ -266,33 +266,51 @@ export function getToolDefinitions(): Tool[] {
 }
 
 /**
+ * Type-safe argument map for each tool handler.
+ * Keeps executeTool free of `as any` casts while adding compile-time checks.
+ */
+interface ToolArgsMap {
+  get_contract_info: { query: string };
+  read_contract_source: { contract_name: string; file_path?: string };
+  search_contract_code: { pattern: string; contract_name?: string };
+  read_storage_slot: { address: string; slot: string; decode_as?: "uint256" | "address" | "bool" | "bytes32" | "raw"; mapping_key?: string };
+  read_contract_state: { contract_name: string; variables?: string[] };
+  query_on_chain: { contract_name: string; function_name: string; args?: string[] };
+  fetch_agenda: { agenda_id: number; force_refresh?: boolean };
+  decode_calldata: { calldata: string; target_address?: string };
+  simulate_transaction: { to: string; calldata: string; from?: string; value?: string; block_number?: number };
+  verify_token_compatibility: { token_address: string; dex: string; scenarios?: string[] };
+  run_fork_test: { test_pattern: string; contract_pattern?: string; verbosity?: number };
+}
+
+/**
  * Execute a tool by name with the given arguments.
  * Returns the text result or throws on error.
  */
 export async function executeTool(name: string, args: Record<string, any>): Promise<string> {
   switch (name) {
     case "get_contract_info":
-      return handleGetContractInfo(args as any);
+      return handleGetContractInfo(args as ToolArgsMap["get_contract_info"]);
     case "read_contract_source":
-      return handleReadContractSource(args as any);
+      return handleReadContractSource(args as ToolArgsMap["read_contract_source"]);
     case "search_contract_code":
-      return handleSearchContractCode(args as any);
+      return handleSearchContractCode(args as ToolArgsMap["search_contract_code"]);
     case "read_storage_slot":
-      return handleReadStorageSlot(args as any);
+      return handleReadStorageSlot(args as ToolArgsMap["read_storage_slot"]);
     case "read_contract_state":
-      return handleReadContractState(args as any);
+      return handleReadContractState(args as ToolArgsMap["read_contract_state"]);
     case "query_on_chain":
-      return handleQueryOnChain(args as any);
+      return handleQueryOnChain(args as ToolArgsMap["query_on_chain"]);
     case "fetch_agenda":
-      return handleFetchAgenda(args as any);
+      return handleFetchAgenda(args as ToolArgsMap["fetch_agenda"]);
     case "decode_calldata":
-      return handleDecodeCalldata(args as any);
+      return handleDecodeCalldata(args as ToolArgsMap["decode_calldata"]);
     case "simulate_transaction":
-      return handleSimulateTransaction(args as any);
+      return handleSimulateTransaction(args as ToolArgsMap["simulate_transaction"]);
     case "verify_token_compatibility":
-      return handleVerifyTokenCompatibility(args as any);
+      return handleVerifyTokenCompatibility(args as ToolArgsMap["verify_token_compatibility"]);
     case "run_fork_test":
-      return handleRunForkTest(args as any);
+      return handleRunForkTest(args as ToolArgsMap["run_fork_test"]);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

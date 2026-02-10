@@ -8,8 +8,7 @@ import { join, relative } from "path";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { paths } from "../paths.ts";
 import { isPathSafe } from "./validation.ts";
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
+import { MAX_FILE_SIZE, MAX_SEARCH_MATCHES } from "../../config.ts";
 
 const CONTRACTS_SRC = paths.contractsSrc;
 
@@ -112,14 +111,13 @@ export function handleSearchContractCode(args: {
   const solFiles = listSolFiles(searchDir);
   const patternLower = args.pattern.toLowerCase();
   const matches: { file: string; line: number; text: string }[] = [];
-  const MAX_MATCHES = 100;
 
   for (const file of solFiles) {
-    if (matches.length >= MAX_MATCHES) break;
+    if (matches.length >= MAX_SEARCH_MATCHES) break;
     const content = readFileSync(file, "utf-8");
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
-      if (matches.length >= MAX_MATCHES) break;
+      if (matches.length >= MAX_SEARCH_MATCHES) break;
       if (lines[i]!.toLowerCase().includes(patternLower)) {
         matches.push({
           file: relative(CONTRACTS_SRC, file),
@@ -135,7 +133,7 @@ export function handleSearchContractCode(args: {
   }
 
   const lines = matches.map((m) => `${m.file}:${m.line}: ${m.text}`);
-  const header = `Found ${matches.length}${matches.length >= MAX_MATCHES ? "+" : ""} matches for "${args.pattern}" in ${searchScope}:\n\n`;
+  const header = `Found ${matches.length}${matches.length >= MAX_SEARCH_MATCHES ? "+" : ""} matches for "${args.pattern}" in ${searchScope}:\n\n`;
   return header + lines.join("\n");
 }
 

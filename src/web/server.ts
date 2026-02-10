@@ -12,15 +12,20 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getToolDefinitions, executeTool } from "../mcp/tools/handlers.ts";
 import { formatError } from "../mcp/tools/validation.ts";
 import { SYSTEM_PROMPT } from "./system-prompt.ts";
+import {
+  MAX_TOOL_ROUNDS,
+  MAX_TOOL_RESULT_CHARS,
+  MAX_TOOL_RESULT_DISPLAY_CHARS,
+  CHAT_MAX_TOKENS,
+  DEFAULT_CHAT_MODEL,
+} from "../config.ts";
 
 const app = new Hono();
 
 app.use("/api/*", cors());
 
 const anthropic = new Anthropic();
-const MODEL = process.env.CHAT_MODEL || "claude-sonnet-4-5-20250929";
-const MAX_TOOL_ROUNDS = 50;
-const MAX_TOOL_RESULT_CHARS = 12000;
+const MODEL = process.env.CHAT_MODEL || DEFAULT_CHAT_MODEL;
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));
 
@@ -63,7 +68,7 @@ app.post("/api/chat", async (c) => {
 
         const response = await anthropic.messages.create({
           model: MODEL,
-          max_tokens: 16384,
+          max_tokens: CHAT_MAX_TOKENS,
           system: SYSTEM_PROMPT,
           tools,
           messages,
@@ -168,7 +173,7 @@ app.post("/api/chat", async (c) => {
             await sendEvent({
               type: "tool_result",
               name: tool.name,
-              result: result.slice(0, 8000),
+              result: result.slice(0, MAX_TOOL_RESULT_DISPLAY_CHARS),
               is_error: isError,
             });
 

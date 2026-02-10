@@ -126,7 +126,7 @@ export async function handleQueryOnChain(args: {
 
     return lines.join("\n");
   } catch (err) {
-    throw new Error(`Error calling ${args.function_name}: ${formatError(err)}`);
+    return `Error calling ${args.function_name}: ${formatError(err)}`;
   }
 }
 

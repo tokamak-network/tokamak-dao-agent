@@ -21,7 +21,7 @@ import {
   ERC20_ABI,
   type DexProtocol,
 } from "../data/dex-protocols.ts";
-import { validateAddress } from "./validation.ts";
+import { validateAddress, extractRevertReason } from "./validation.ts";
 
 /**
  * Verification scenarios
@@ -146,28 +146,6 @@ function generateApproveCalldata(spender: Address, amount: bigint): Hex {
     functionName: "approve",
     args: [spender, amount],
   });
-}
-
-/**
- * Extract revert reason from error message
- */
-function extractRevertReason(error: any): string {
-  const message = error instanceof Error ? error.message : String(error);
-
-  // Try to extract reason string
-  const reasonMatch = message.match(/reverted with reason string ['"]([^'"]+)['"]/);
-  if (reasonMatch) return reasonMatch[1]!;
-
-  // Try custom error
-  const customMatch = message.match(/reverted with custom error ['"]([^'"]+)['"]/);
-  if (customMatch) return `Custom error: ${customMatch[1]}`;
-
-  // Fallback to truncated message
-  if (message.includes("execution reverted")) {
-    return message.slice(0, 300);
-  }
-
-  return message.slice(0, 200);
 }
 
 /**

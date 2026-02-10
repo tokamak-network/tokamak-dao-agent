@@ -15,7 +15,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
 import { getContractName } from "../data/contracts.ts";
 import { loadAllAbis } from "../data/abis.ts";
-import { validateAddress, validateHex, safeParseBigInt, validateBlockNumber } from "./validation.ts";
+import { validateAddress, validateHex, safeParseBigInt, validateBlockNumber, extractRevertReason } from "./validation.ts";
 
 /**
  * Try to decode return data using known ABIs.
@@ -142,20 +142,9 @@ export async function handleSimulateTransaction(args: {
         lines.push(`**Decoded**: ${decoded}`);
       }
     }
-  } catch (err: any) {
+  } catch (err) {
     lines.push(`### Result: REVERTED`);
-    const message = err instanceof Error ? err.message : String(err);
-
-    if (message.includes("revert")) {
-      const revertMatch = message.match(/reverted with reason string '([^']+)'/);
-      if (revertMatch) {
-        lines.push(`**Revert reason**: ${revertMatch[1]}`);
-      } else {
-        lines.push(`**Error**: ${message.slice(0, 500)}`);
-      }
-    } else {
-      lines.push(`**Error**: ${message.slice(0, 500)}`);
-    }
+    lines.push(`**Revert reason**: ${extractRevertReason(err)}`);
   }
 
   return lines.join("\n");

@@ -159,6 +159,7 @@ app.post("/api/chat", async (c) => {
               };
               await sendEvent({
                 type: "tool_use",
+                tool_id: event.id,
                 name: event.name,
                 input: {},
               });
@@ -221,6 +222,7 @@ app.post("/api/chat", async (c) => {
           `[chat] executing ${pendingTools.length} tools in parallel`,
         );
 
+        // Execute tools in parallel, but collect results first
         const toolResults = await Promise.all(
           pendingTools.map(async (tool) => {
             console.log(
@@ -238,13 +240,6 @@ app.post("/api/chat", async (c) => {
               console.error(`[chat] tool error:`, result);
             }
 
-            await sendEvent({
-              type: "tool_result",
-              name: tool.name,
-              result: result.slice(0, MAX_TOOL_RESULT_DISPLAY_CHARS),
-              is_error: isError,
-            });
-
             const truncatedResult =
               result.length > MAX_TOOL_RESULT_CHARS
                 ? result.slice(0, MAX_TOOL_RESULT_CHARS) +
@@ -253,14 +248,35 @@ app.post("/api/chat", async (c) => {
 
             return {
               tool_use_id: tool.id,
+              name: tool.name,
+              displayResult: result.slice(0, MAX_TOOL_RESULT_DISPLAY_CHARS),
+              isError,
               content: truncatedResult,
-              ...(isError ? { is_error: true as const } : {}),
             };
           }),
         );
 
+        // Send tool_result SSE events sequentially to prevent stream write interleaving
+        for (const tr of toolResults) {
+          await sendEvent({
+            type: "tool_result",
+            tool_id: tr.tool_use_id,
+            name: tr.name,
+            result: tr.displayResult,
+            is_error: tr.isError,
+          });
+        }
+
         messages.push({ role: "assistant", content: assistantContent });
-        messages.push(...provider.buildToolResultsMessage(toolResults));
+        messages.push(
+          ...provider.buildToolResultsMessage(
+            toolResults.map((tr) => ({
+              tool_use_id: tr.tool_use_id,
+              content: tr.content,
+              ...(tr.isError ? { is_error: true as const } : {}),
+            })),
+          ),
+        );
 
         await sendEvent({ type: "thinking" });
       }

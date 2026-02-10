@@ -146,6 +146,7 @@ export function useChat(selectedModel?: string) {
                 parts.push({
                   type: "tool_call",
                   toolCall: {
+                    id: parsed.tool_id,
                     name: parsed.name,
                     isRunning: true,
                   },
@@ -154,21 +155,44 @@ export function useChat(selectedModel?: string) {
                 break;
 
               case "tool_result": {
-                // Find the last running tool call with this name and update it
-                for (let i = parts.length - 1; i >= 0; i--) {
-                  const part = parts[i]!;
-                  if (
-                    part.type === "tool_call" &&
-                    part.toolCall?.name === parsed.name &&
-                    part.toolCall?.isRunning
-                  ) {
-                    part.toolCall = {
-                      name: parsed.name,
-                      result: parsed.result,
-                      isError: parsed.is_error,
-                      isRunning: false,
-                    };
-                    break;
+                // Match by tool_id (preferred) or fall back to name-based matching
+                let matched = false;
+                if (parsed.tool_id) {
+                  for (let i = parts.length - 1; i >= 0; i--) {
+                    const part = parts[i]!;
+                    if (
+                      part.type === "tool_call" &&
+                      part.toolCall?.id === parsed.tool_id
+                    ) {
+                      part.toolCall = {
+                        id: parsed.tool_id,
+                        name: parsed.name,
+                        result: parsed.result,
+                        isError: parsed.is_error,
+                        isRunning: false,
+                      };
+                      matched = true;
+                      break;
+                    }
+                  }
+                }
+                if (!matched) {
+                  // Fallback: match by name (last running with this name)
+                  for (let i = parts.length - 1; i >= 0; i--) {
+                    const part = parts[i]!;
+                    if (
+                      part.type === "tool_call" &&
+                      part.toolCall?.name === parsed.name &&
+                      part.toolCall?.isRunning
+                    ) {
+                      part.toolCall = {
+                        name: parsed.name,
+                        result: parsed.result,
+                        isError: parsed.is_error,
+                        isRunning: false,
+                      };
+                      break;
+                    }
                   }
                 }
                 updateAssistant(textContent, parts);
@@ -200,16 +224,26 @@ export function useChat(selectedModel?: string) {
                 updateAssistant(textContent, parts);
                 break;
 
-              case "done":
+              case "done": {
                 // Remove thinking indicator on completion
+                let changed = false;
                 if (
                   parts.length > 0 &&
                   parts[parts.length - 1]!.type === "thinking"
                 ) {
                   parts.pop();
-                  updateAssistant(textContent, parts);
+                  changed = true;
                 }
+                // Mark any remaining running tools as done (defensive cleanup)
+                for (const part of parts) {
+                  if (part.type === "tool_call" && part.toolCall?.isRunning) {
+                    part.toolCall.isRunning = false;
+                    changed = true;
+                  }
+                }
+                if (changed) updateAssistant(textContent, parts);
                 break;
+              }
             }
           } catch {
             // Ignore parse errors for partial data

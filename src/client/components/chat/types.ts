@@ -1,4 +1,5 @@
 export interface ToolCall {
+  id?: string;
   name: string;
   result?: string;
   isError?: boolean;

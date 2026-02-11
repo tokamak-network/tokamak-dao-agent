@@ -1,0 +1,444 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated": "2026-02-11",
+    "verifiedBlock": "latest",
+    "network": "ethereum-mainnet"
+  },
+  "subsystems": {
+    "tokens": {
+      "description": "Core token layer: TON, WTON, and staking coinages",
+      "contracts": ["TON", "WTON", "StakedWTON", "CoinageFactory"]
+    },
+    "staking": {
+      "description": "Seigniorage calculation, deposit/withdrawal management",
+      "contracts": ["SeigManagerProxy", "DepositManagerProxy", "Layer2RegistryProxy", "PowerTONSwapperProxy"]
+    },
+    "governance": {
+      "description": "DAO proposal lifecycle, treasury management",
+      "contracts": ["DAOCommitteeProxy", "DAOAgendaManager", "DAOVault", "CandidateFactoryProxy", "CandidateAddOnFactoryProxy"]
+    },
+    "layer2": {
+      "description": "L2 operator registration, bridge tracking, seigniorage distribution",
+      "contracts": ["Layer2ManagerProxy", "L1BridgeRegistryProxy", "OperatorManagerFactory"]
+    }
+  },
+  "contracts": {
+    "TON": {
+      "address": "0x2be5e8c109e2197D077D13A82dAead6a9b3433C5",
+      "type": "token",
+      "upgradeable": false,
+      "compiler": "v0.5.12",
+      "decimals": 18,
+      "subsystem": "tokens",
+      "description": "Native utility token with restricted transferFrom (msg.sender == sender || recipient)",
+      "dependencies": [],
+      "onChainState": {
+        "seigManager": "0x0000000000000000000000000000000000000000"
+      },
+      "knownRestrictions": [
+        "transferFrom requires msg.sender == sender || msg.sender == recipient",
+        "Cannot be traded on DEX (Uniswap, Sushiswap)",
+        "setSeigManager() is permanently disabled (reverts)"
+      ]
+    },
+    "WTON": {
+      "address": "0xc4A11aaf6ea915Ed7Ac194161d2fC9384F15bff2",
+      "type": "token",
+      "upgradeable": false,
+      "compiler": "v0.5.12",
+      "decimals": 27,
+      "subsystem": "tokens",
+      "description": "Wrapped TON for staking with RAY precision. Standard ERC20 compatible.",
+      "dependencies": ["TON"],
+      "onChainState": {
+        "seigManager": "0x710936500aC59e8551331871Cbad3D33d5e0D909",
+        "seigManagerNote": "Points to SeigManagerV0, NOT current proxy"
+      },
+      "minterOf": "TON",
+      "mintedBy": ["SeigManagerProxy"]
+    },
+    "StakedWTON": {
+      "address": "0x47e264ea9b229368aa90c331D3f4CBe0b4c0f01d",
+      "type": "token",
+      "upgradeable": false,
+      "subsystem": "tokens",
+      "description": "Total staked WTON tracking token (SeigManager.tot). Uses RefactorCoinageSnapshot with auto-compounding factor."
+    },
+    "CoinageFactory": {
+      "address": "0xe8fAe91B80dd515c3D8B9FC02CB5B2ecFDDABf43",
+      "type": "factory",
+      "upgradeable": false,
+      "subsystem": "tokens",
+      "description": "Creates RefactorCoinageSnapshotProxy instances (sWTON) for per-Layer2 staking tracking",
+      "creates": "RefactorCoinageSnapshotProxy"
+    },
+    "SeigManagerProxy": {
+      "address": "0x0b55a0f463b6defb81c6063973763951712d0e5f",
+      "type": "proxy",
+      "upgradeable": true,
+      "proxyPattern": "ProxyStorage (multi-implementation, selector routing)",
+      "subsystem": "staking",
+      "description": "Central hub for seigniorage calculation and distribution. Routes to V1_2 by default, V1_3 for L2-specific functions.",
+      "implementations": {
+        "default": {
+          "address": "0xb1958719b3Af9B4d85D93EFC5e317C97cCe9aBc4",
+          "name": "SeigManagerV1_2",
+          "functions": "Most functions including updateSeigniorage, onDeposit, onWithdraw"
+        },
+        "selectorRouted": {
+          "address": "0xce18C6F84F10881eA47A43AF7311A29bb116F628",
+          "name": "SeigManagerV1_3",
+          "selectors": {
+            "0x2c1e0156": "excludeFromL2Seigniorage(address)",
+            "0x5015cb2b": "estimatedDistribute(uint256,address)"
+          }
+        }
+      },
+      "historicalImplementations": [
+        {"version": "V0", "address": "0x710936500aC59e8551331871Cbad3D33d5e0D909"},
+        {"version": "V1 (current default)", "address": "0x3b1e59c2ff4b850d78ab50cb13a4a482101681b6"},
+        {"version": "V1_2 (current default)", "address": "0xb1958719b3Af9B4d85D93EFC5e317C97cCe9aBc4"},
+        {"version": "V1_3 (selector-routed)", "address": "0xce18C6F84F10881eA47A43AF7311A29bb116F628"}
+      ],
+      "admin": "DAOCommitteeProxy",
+      "dependencies": ["TON", "WTON", "Layer2RegistryProxy", "DepositManagerProxy", "CoinageFactory", "DAOVault", "PowerTONSwapperProxy", "Layer2ManagerProxy", "L1BridgeRegistryProxy"],
+      "onChainState": {
+        "ton": "0x2be5e8c109e2197D077D13A82dAead6a9b3433C5",
+        "wton": "0xc4A11aaf6ea915Ed7Ac194161d2fC9384F15bff2",
+        "registry": "0x7846c2248A7B4dE77E9C2Bae7FBB93bfC286837B",
+        "depositManager": "0x0b58ca72b12F01FC05F8f252e226f3E2089BD00E",
+        "factory": "0xe8fAe91B80dd515c3D8B9FC02CB5B2ecFDDABf43",
+        "dao": "0x2520CD65BAa2cEEe9E6Ad6EBD3F45490C42dd303",
+        "powerton": "0x970298189050aBd4dc4F119ccae14ee145ad9371",
+        "layer2Manager": "0xD6Bf6B2b7553c8064Ba763AD6989829060FdFC1D",
+        "l1BridgeRegistry": "0x39d43281A4A5e922AB0DCf89825D73273D8C5BA4",
+        "seigPerBlock": "3920000000000000000000000000"
+      }
+    },
+    "DepositManagerProxy": {
+      "address": "0x0b58ca72b12f01fc05f8f252e226f3e2089bd00e",
+      "type": "proxy",
+      "upgradeable": true,
+      "proxyPattern": "ProxyStorage",
+      "subsystem": "staking",
+      "description": "WTON custody for staking. Manages deposit, withdrawal requests with delay period, and L2 bridging (V1.1).",
+      "implementations": {
+        "default": {
+          "address": "0x76C01207959DF1242C2824B4445CdE48eb55D2f1",
+          "name": "DepositManager"
+        }
+      },
+      "admin": "DAOCommitteeProxy",
+      "dependencies": ["WTON", "SeigManagerProxy", "Layer2RegistryProxy"]
+    },
+    "Layer2RegistryProxy": {
+      "address": "0x7846c2248a7b4de77e9c2bae7fbb93bfc286837b",
+      "type": "proxy",
+      "upgradeable": true,
+      "proxyPattern": "ProxyStorage",
+      "subsystem": "staking",
+      "description": "Tracks registered Layer2 operators. Deploys coinages via SeigManager.",
+      "implementations": {
+        "default": {
+          "address": "0x296EF64487ECfddcDd03EaB35C81c9262dAB88Ba",
+          "name": "Layer2Registry"
+        }
+      },
+      "admin": "DAOCommitteeProxy",
+      "dependencies": ["SeigManagerProxy"],
+      "onChainState": {
+        "numLayer2s": 10
+      }
+    },
+    "PowerTONSwapperProxy": {
+      "address": "0x970298189050aBd4dc4F119ccae14ee145ad9371",
+      "type": "proxy",
+      "upgradeable": true,
+      "subsystem": "staking",
+      "description": "Receives portion of seigniorage from SeigManager. Implementation query reverts — uses different proxy interface.",
+      "knowledgeGap": "Cannot query implementation via implementation2(). Different proxy pattern or paused.",
+      "implementations": {
+        "declaredInRegistry": {
+          "address": "0x0AA0191e9cc7BE9B7228D4d3E3Dd65749C93551F",
+          "name": "PowerTONUpgrade"
+        }
+      }
+    },
+    "DAOCommitteeProxy": {
+      "address": "0xDD9f0cCc044B0781289Ee318e5971b0139602C26",
+      "type": "proxy",
+      "upgradeable": true,
+      "proxyPattern": "ProxyStorage2 (dual-implementation)",
+      "subsystem": "governance",
+      "description": "Core governance proxy. Owns all major contracts. Uses dual implementation: main logic + owner/admin functions.",
+      "implementations": {
+        "default": {
+          "address": "0x9050Af1638f379A018737880aD946CdDA9101A25",
+          "name": "Unknown (not in contracts.json)",
+          "alive": true,
+          "note": "Main DAOCommittee logic — newer than DAOCommittee_V1"
+        },
+        "secondary": {
+          "address": "0xcb9859Dc0fBECa68eFFf2bce289150513fdF7D92",
+          "name": "Unknown (not in contracts.json)",
+          "alive": true,
+          "note": "Likely DAOCommitteeOwner functions"
+        },
+        "deprecated": {
+          "address": "0xcC88dFa531512f24A8a5CbCB88F7B6731807EEFe",
+          "name": "DAOCommittee_V1",
+          "alive": false,
+          "note": "Original implementation, no longer active"
+        }
+      },
+      "onChainState": {
+        "maxMember": 3,
+        "quorum": 2,
+        "seigManager": "0x0b55a0f463b6DEFb81c6063973763951712D0E5F",
+        "layer2Registry": "0x7846c2248A7B4dE77E9C2Bae7FBB93bfC286837B",
+        "agendaManager": "0xcD4421d082752f363E1687544a09d5112cD4f484",
+        "daoVault": "0x2520CD65BAa2cEEe9E6Ad6EBD3F45490C42dd303",
+        "candidateFactory": "0x9FC7100a16407eE24a79C834A56E6ECA555A5D7c"
+      },
+      "owns": ["SeigManagerProxy", "DepositManagerProxy", "Layer2RegistryProxy", "DAOAgendaManager", "DAOVault"]
+    },
+    "DAOCommitteeProxy2": {
+      "address": "0xD6175F575F4d32392508Ee2FBbDec9a2E8B3c01a",
+      "type": "proxy",
+      "subsystem": "governance",
+      "description": "Second DAOCommittee proxy — EMPTY/UNUSED. Implementation is address(0).",
+      "implementations": {
+        "default": {
+          "address": "0x0000000000000000000000000000000000000000",
+          "note": "No implementation set — contract is inactive"
+        }
+      }
+    },
+    "DAOAgendaManager": {
+      "address": "0xcD4421d082752f363E1687544a09d5112cD4f484",
+      "type": "manager",
+      "upgradeable": false,
+      "subsystem": "governance",
+      "description": "Manages DAO proposal lifecycle: creation, voting, execution tracking.",
+      "owner": "DAOCommitteeProxy",
+      "onChainState": {
+        "numAgendas": 16
+      }
+    },
+    "DAOVault": {
+      "address": "0x2520CD65BAa2cEEe9E6Ad6EBD3F45490C42dd303",
+      "type": "vault",
+      "upgradeable": false,
+      "subsystem": "governance",
+      "description": "DAO treasury holding TON, WTON, and ERC-20 tokens. Also receives seigniorage (SeigManager.dao).",
+      "owner": "DAOCommitteeProxy",
+      "dependencies": ["TON", "WTON"]
+    },
+    "DAOCommittee_V1": {
+      "address": "0xcC88dFa531512f24A8a5CbCB88F7B6731807EEFe",
+      "type": "implementation",
+      "subsystem": "governance",
+      "description": "DEPRECATED. Original DAOCommittee implementation. No longer alive on DAOCommitteeProxy.",
+      "status": "deprecated"
+    },
+    "DAOCommitteeOwner": {
+      "address": "0x5991Aebb5271522d33C457bf6DF26d83c0dAa221",
+      "type": "owner",
+      "subsystem": "governance",
+      "description": "Admin configuration contract for DAOCommittee governance parameters."
+    },
+    "CandidateFactoryProxy": {
+      "address": "0x9fc7100a16407ee24a79c834a56e6eca555a5d7c",
+      "type": "proxy",
+      "upgradeable": true,
+      "proxyPattern": "ProxyStorage",
+      "subsystem": "governance",
+      "description": "Factory for deploying Candidate contracts representing Layer2 operators in DAO.",
+      "implementations": {
+        "default": {
+          "address": "0xC5eb1c5Ce7196BdB49Ea7500CA18a1B9f1fA3fFB",
+          "name": "CandidateFactory"
+        }
+      },
+      "creates": "CandidateProxy"
+    },
+    "Candidate": {
+      "address": "0x1a8f59017e0434efc27e89640ac4b7d7d194c0a3",
+      "type": "implementation",
+      "subsystem": "governance",
+      "description": "Implementation for Candidate proxies. Wraps EOA operators or Layer2 contracts for DAO participation (voting, member slots, rewards)."
+    },
+    "CandidateAddOnFactoryProxy": {
+      "address": "0xFA8ce5caF456115E72B96E5074769b8f66AA5861",
+      "type": "proxy",
+      "upgradeable": true,
+      "proxyPattern": "ProxyStorage",
+      "subsystem": "governance",
+      "description": "Factory for CandidateAddOn contracts (extended operator representation).",
+      "implementations": {
+        "default": {
+          "address": "0x557E24b5CbFbDA3e5aC1bD01F38EcDe865791Bc5",
+          "name": "CandidateAddOnFactory"
+        }
+      },
+      "creates": "CandidateAddOnProxy"
+    },
+    "CandidateAddOnV1_1": {
+      "address": "0x73Bfd5cAEC63307784C7B6d2555F18ec24D96E2e",
+      "type": "implementation",
+      "subsystem": "governance",
+      "description": "Implementation for CandidateAddOn proxies. Extended candidate with OperatorManager integration."
+    },
+    "Layer2ManagerProxy": {
+      "address": "0xD6Bf6B2b7553c8064Ba763AD6989829060FdFC1D",
+      "type": "proxy",
+      "upgradeable": true,
+      "proxyPattern": "ProxyStorage",
+      "subsystem": "layer2",
+      "description": "Manages L2 operator registration, CandidateAddOn creation, and seigniorage transfer to operators.",
+      "implementations": {
+        "default": {
+          "address": "0x2EB7f500125f11544392B83B87cDEb9456f3509f",
+          "name": "Layer2ManagerV1_1"
+        }
+      },
+      "dependencies": ["L1BridgeRegistryProxy", "OperatorManagerFactory", "DAOCommitteeProxy", "SeigManagerProxy", "DepositManagerProxy", "WTON", "TON"]
+    },
+    "L1BridgeRegistryProxy": {
+      "address": "0x39d43281A4A5e922AB0DCf89825D73273D8C5BA4",
+      "type": "proxy",
+      "upgradeable": true,
+      "proxyPattern": "ProxyStorage",
+      "subsystem": "layer2",
+      "description": "Tracks L1 bridges/portals and rollup configurations. Controls L2 seigniorage eligibility.",
+      "implementations": {
+        "default": {
+          "address": "0x259Ac335EB42d345A61bE48104eC0Ec20b283F14",
+          "name": "L1BridgeRegistryV1_1"
+        }
+      },
+      "dependencies": ["Layer2ManagerProxy", "SeigManagerProxy", "TON"]
+    },
+    "L1BridgeRegistryProxy_Legacy": {
+      "address": "0x17Fa32DFf4c26cf0AC65Ff6700B57a4826513Fa0",
+      "type": "proxy",
+      "subsystem": "layer2",
+      "description": "Legacy L1BridgeRegistry proxy. Has a different implementation (0x70aFe7...). Targeted by agenda 13.",
+      "implementations": {
+        "default": {
+          "address": "0x70aFe7e41e7F7406BCC446f652e2f94ae5b76282",
+          "name": "Unknown legacy implementation"
+        }
+      },
+      "status": "legacy"
+    },
+    "OperatorManagerFactory": {
+      "address": "0xAf86b21edDdC78ea27E23A7F2151d60d4e069450",
+      "type": "factory",
+      "upgradeable": false,
+      "subsystem": "layer2",
+      "description": "Creates OperatorManager instances using CREATE2 (deterministic addresses). Uses ERC1967 pattern (outlier).",
+      "proxyPattern": "ERC1967Proxy (NOT ProxyStorage)",
+      "creates": "OperatorManagerProxy"
+    },
+    "OperatorManagerV1_1": {
+      "address": "0xB5F3b31dFB4DCe9a2FA12dE50A97250d60823750",
+      "type": "implementation",
+      "subsystem": "layer2",
+      "description": "Implementation for OperatorManager proxies. Manages operator stakes and L2 withdrawals."
+    },
+    "SwapProxy": {
+      "address": "0x30e65B3A6e6868F044944Aa0e9C5d52F8dcb138d",
+      "type": "proxy",
+      "subsystem": "staking",
+      "description": "TON/WTON swap proxy. Implementation query reverts — source code not available.",
+      "knowledgeGap": "No source code in contracts/src/. Implementation unknown. Different proxy interface."
+    },
+    "MultiSigWallet": {
+      "address": "0xE3F72E959834d0A72aFb2ea79F5ec2b4243d2d95",
+      "type": "multisig",
+      "description": "Tokamak Network multisig wallet with 3 signers.",
+      "onChainState": {
+        "owners": [
+          "0x77b9D55e98126CD457D8F914647e634613D2A7fc",
+          "0x9de8cAc67B6514837c31F367aC18a457d8f34c3D",
+          "0xa4ABB4Bb512Fc1fecF5556ADDa9B8a4C96dc3790"
+        ]
+      }
+    },
+    "RefactorCoinageSnapshot": {
+      "address": "0xef12310ff8a6e96357b7d2c4a759b19ce94f7dfb",
+      "type": "implementation",
+      "subsystem": "tokens",
+      "description": "Auto-compounding ERC20 with RAY factor. Used as sWTON (staked WTON) for per-Layer2 balance tracking."
+    }
+  },
+  "layerOperators": [
+    {"name": "tokamak1", "address": "0xf3B17FDB808c7d0Df9ACd24dA34700ce069007DF"},
+    {"name": "DXM Corp", "address": "0x44e3605d0ed58FD125E9C47D1bf25a4406c13b57"},
+    {"name": "DSRV", "address": "0x2B67D8D4E61b68744885E243EfAF988f1Fc66E2D"},
+    {"name": "Talken", "address": "0x36101b31e74c5E8f9a9cec378407Bbb776287761"},
+    {"name": "staked", "address": "0x2c25A6be0e6f9017b5bf77879c487eed466F2194"},
+    {"name": "level", "address": "0x0F42D1C40b95DF7A1478639918fc358B4aF5298D"},
+    {"name": "decipher", "address": "0xbc602C1D9f3aE99dB4e9fD3662CE3D02e593ec5d"},
+    {"name": "DeSpread", "address": "0xC42cCb12515b52B59c02eEc303c887C8658f5854"},
+    {"name": "Danal Fintech", "address": "0xf3CF23D896Ba09d8EcdcD4655d918f71925E3FE5"},
+    {"name": "Hammer DAO", "address": "0x06D34f65869Ec94B3BA8c0E08BCEb532f65005E2"}
+  ],
+  "ownershipChain": {
+    "DAOCommitteeProxy": {
+      "address": "0xDD9f0cCc044B0781289Ee318e5971b0139602C26",
+      "owns": [
+        "SeigManagerProxy (isAdmin=true)",
+        "DepositManagerProxy (isAdmin=true)",
+        "Layer2RegistryProxy (isAdmin=true)",
+        "DAOAgendaManager (owner)",
+        "DAOVault (owner)"
+      ]
+    }
+  },
+  "minterRelationships": {
+    "TON": {
+      "mintedBy": ["WTON (isMinter=true)"]
+    },
+    "WTON": {
+      "mintedBy": ["SeigManagerProxy (isMinter=true)"],
+      "mints": "TON (via swapToTON)"
+    }
+  },
+  "knowledgeGaps": [
+    {
+      "contract": "SwapProxy",
+      "address": "0x30e65B3A6e6868F044944Aa0e9C5d52F8dcb138d",
+      "issue": "No source code. implementation2() reverts. Purpose and implementation unknown."
+    },
+    {
+      "contract": "PowerTONSwapperProxy",
+      "address": "0x970298189050aBd4dc4F119ccae14ee145ad9371",
+      "issue": "implementation2() reverts. May use different proxy interface. Role unclear beyond receiving seigniorage."
+    },
+    {
+      "contract": "DAOCommitteeProxy implementations",
+      "issue": "Current implementations (0x9050Af..., 0xcb9859...) are not in contracts.json. Need to identify what contract code they contain."
+    },
+    {
+      "contract": "DAOCommitteeProxy2",
+      "address": "0xD6175F575F4d32392508Ee2FBbDec9a2E8B3c01a",
+      "issue": "Implementation is address(0). Purpose of having two DAOCommittee proxies unclear."
+    },
+    {
+      "contract": "L1BridgeRegistryProxy_Legacy",
+      "address": "0x17Fa32DFf4c26cf0AC65Ff6700B57a4826513Fa0",
+      "issue": "Has different implementation (0x70aFe7...) from current L1BridgeRegistryProxy. Relationship unclear."
+    },
+    {
+      "contract": "WTON.seigManager",
+      "issue": "Points to SeigManagerV0 (0x710936...), not the current SeigManagerProxy. Callback may be stale."
+    },
+    {
+      "contract": "MultiSigWallet",
+      "issue": "required() query reverts. Need to determine threshold and what this wallet owns/controls."
+    }
+  ]
+}

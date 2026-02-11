@@ -21,7 +21,7 @@ export function registerAllTools(server: McpServer) {
   registerStorageTools(server);
   registerOnChainTool(server);
 
-  // Phase 3: Governance analysis
+  // Phase 3: Calldata decoding
   registerGovernanceTools(server);
 
   // Phase 4: Simulation

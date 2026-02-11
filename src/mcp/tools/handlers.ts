@@ -9,13 +9,13 @@ import { handleGetContractInfo } from "./contract-info.ts";
 import { handleReadContractSource, handleSearchContractCode } from "./contract-source.ts";
 import { handleReadStorageSlot, handleReadContractState } from "./storage.ts";
 import { handleQueryOnChain } from "./on-chain.ts";
-import { handleFetchAgenda, handleDecodeCalldata } from "./governance.ts";
+import { handleDecodeCalldata } from "./governance.ts";
 import { handleSimulateTransaction } from "./simulation.ts";
 import { handleVerifyTokenCompatibility } from "./verification.ts";
 import { handleRunForkTest } from "./fork-test.ts";
 
 /**
- * Returns Anthropic API tool definitions for all 11 tools.
+ * Returns Anthropic API tool definitions for all 10 tools.
  */
 export function getToolDefinitions(): ToolDefinition[] {
   return [
@@ -145,25 +145,6 @@ export function getToolDefinitions(): ToolDefinition[] {
       },
     },
     {
-      name: "fetch_agenda",
-      description:
-        "Fetch a DAO agenda/proposal by ID. Returns status, votes, targets, decoded calldata, and voter list.",
-      input_schema: {
-        type: "object" as const,
-        properties: {
-          agenda_id: {
-            type: "number",
-            description: "Agenda ID (0-based)",
-          },
-          force_refresh: {
-            type: "boolean",
-            description: "Force on-chain refresh instead of using cache",
-          },
-        },
-        required: ["agenda_id"],
-      },
-    },
-    {
       name: "decode_calldata",
       description:
         "Decode raw calldata (transaction data) using known Tokamak contract ABIs. Returns function name and parameters.",
@@ -276,7 +257,6 @@ interface ToolArgsMap {
   read_storage_slot: { address: string; slot: string; decode_as?: "uint256" | "address" | "bool" | "bytes32" | "raw"; mapping_key?: string };
   read_contract_state: { contract_name: string; variables?: string[] };
   query_on_chain: { contract_name: string; function_name: string; args?: string[] };
-  fetch_agenda: { agenda_id: number; force_refresh?: boolean };
   decode_calldata: { calldata: string; target_address?: string };
   simulate_transaction: { to: string; calldata: string; from?: string; value?: string; block_number?: number };
   verify_token_compatibility: { token_address: string; dex: string; scenarios?: string[] };
@@ -301,8 +281,6 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       return handleReadContractState(args as ToolArgsMap["read_contract_state"]);
     case "query_on_chain":
       return handleQueryOnChain(args as ToolArgsMap["query_on_chain"]);
-    case "fetch_agenda":
-      return handleFetchAgenda(args as ToolArgsMap["fetch_agenda"]);
     case "decode_calldata":
       return handleDecodeCalldata(args as ToolArgsMap["decode_calldata"]);
     case "simulate_transaction":

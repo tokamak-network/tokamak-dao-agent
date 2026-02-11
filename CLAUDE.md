@@ -52,7 +52,7 @@ Validate all work against these questions:
 
 ## Architecture
 
-Two interfaces share the same **11 tools** for analyzing Tokamak Network:
+Two interfaces share the same **10 tools** for analyzing Tokamak Network:
 
 ```
 Claude Code                          Web Chat UI (src/web/)
@@ -67,7 +67,6 @@ Tokamak MCP Server                   Tokamak Web Server
         ├── read_storage_slot           → Raw storage slot reading
         ├── read_contract_state         → Full state decoding via layouts
         ├── query_on_chain              → View function calls
-        ├── fetch_agenda                → DAO proposal lookup
         ├── decode_calldata             → Transaction data decoding
         ├── simulate_transaction        → eth_call simulation
         ├── verify_token_compatibility  → DEX compatibility verification ⭐
@@ -76,6 +75,10 @@ Tokamak MCP Server                   Tokamak Web Server
 
 **Foundry Fork Tests** (`contracts/test/`):
 - `TONCompatibility.t.sol` - TON/WTON DEX compatibility tests
+- `StakingDeposit.t.sol` - WTON deposit to Layer2 via DepositManager
+- `StakingWithdraw.t.sol` - Withdrawal request and processing with delay
+- `Seigniorage.t.sol` - SeigManager seigniorage distribution and view functions
+- `ApproveAndCall.t.sol` - Full TON→WTON→DepositManager callback chain
 
 **Shared Validation** (`src/mcp/tools/validation.ts`):
 - Address, hex, slot, block number, path safety validation

@@ -43,8 +43,7 @@ flowchart TB
             query_on_chain
         end
 
-        subgraph tools3["Governance"]
-            fetch_agenda
+        subgraph tools3["Calldata Decoding"]
             decode_calldata
         end
 
@@ -60,14 +59,13 @@ flowchart TB
         sources["contracts/src/\n(746 Solidity files)"]
         abis["contracts/out/\n(compiled ABIs)"]
         layouts["storage/layouts/\n(slot mappings)"]
-        agendas["agendas.json\n(cached proposals)"]
     end
 
     RPC["Ethereum Mainnet\n(Alchemy RPC)"]
 
     tools1 --> contracts_json & sources & abis
     tools2 --> layouts & abis & RPC
-    tools3 --> agendas & abis & RPC
+    tools3 --> abis
     tools4 --> RPC
 ```
 
@@ -81,7 +79,6 @@ flowchart TB
 | `read_storage_slot` | Read raw storage slot data |
 | `read_contract_state` | Decode full state via storage layouts |
 | `query_on_chain` | Call view/pure functions |
-| `fetch_agenda` | Fetch DAO proposal details |
 | `decode_calldata` | Decode transaction calldata |
 | `simulate_transaction` | Simulate transactions via eth_call |
 | `verify_token_compatibility` | Verify token compatibility with DEX protocols |
@@ -143,7 +140,7 @@ src/
 │   ├── client.ts          viem public client instance
 │   ├── paths.ts           Path resolution utilities
 │   ├── data/              Contract registry, ABI, DEX protocol configs
-│   └── tools/             11 tool handlers + validation + dispatcher
+│   └── tools/             10 tool handlers + validation + dispatcher
 ├── web/
 │   ├── server.ts          Web chat server (Hono + SSE streaming)
 │   └── system-prompt.ts   AI system prompt (verification-first rule)
@@ -151,11 +148,10 @@ src/
 contracts/
 ├── src/                   Verified Solidity sources (42 contracts, 746 files)
 ├── out/                   Compiled ABIs (Foundry)
-└── test/                  Fork tests (TON compatibility, etc.)
+└── test/                  Fork tests (staking, seigniorage, DEX compatibility)
 scripts/
 ├── mainnet/
-│   ├── contracts.json     Contract registry (addresses, types, proxy relationships)
-│   └── agendas.json       Cached DAO proposal data
+│   └── contracts.json     Contract registry (addresses, types, proxy relationships)
 └── storage/
     ├── layouts/           Storage layout JSONs (40 files)
     └── reader.ts          Storage reading utilities

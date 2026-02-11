@@ -12,7 +12,7 @@
       "address": "0xc4A11aaf6ea915Ed7Ac194161d2fC9384F15bff2",
       "type": "token",
       "docId": "con-002",
-      "description": "Wrapped TON for staking with RAY precision (27 decimals)"
+      "description": "Wrapped TON for staking with RAY precision (27 decimals). Note: seigManager() points directly to SeigManagerV0 (0x7109...), not SeigManagerProxy"
     },
     {
       "name": "StakedWTON",
@@ -34,9 +34,13 @@
       "name": "SeigManagerProxy",
       "address": "0x0b55a0f463b6defb81c6063973763951712d0e5f",
       "type": "proxy",
-      "implementation": "0x3b1e59c2ff4b850d78ab50cb13a4a482101681b6",
+      "implementation": "0xb1958719b3Af9B4d85D93EFC5e317C97cCe9aBc4",
+      "implementations": {
+        "slot0": "0xb1958719b3Af9B4d85D93EFC5e317C97cCe9aBc4",
+        "slot1": "0xce18C6F84F10881eA47A43AF7311A29bb116F628"
+      },
       "docId": "con-012",
-      "description": "Upgradeable proxy for SeigManager"
+      "description": "Upgradeable proxy for SeigManager. Currently delegates to V1.2 (slot 0) and V1.3 (slot 1)"
     },
     {
       "name": "DepositManager",
@@ -106,9 +110,9 @@
     {
       "name": "SwapProxy",
       "address": "0x30e65B3A6e6868F044944Aa0e9C5d52F8dcb138d",
-      "type": "proxy",
+      "type": "callback",
       "docId": "con-022",
-      "description": "TON/WTON swap proxy contract"
+      "description": "TON/WTON swap approveAndCall receiver (onApprove handler, NOT a proxy). Minimal 357-byte contract with only supportsInterface and onApprove"
     },
     {
       "name": "L1BridgeRegistryV1_1",
@@ -121,8 +125,9 @@
       "name": "L1BridgeRegistryProxy",
       "address": "0x39d43281A4A5e922AB0DCf89825D73273D8C5BA4",
       "type": "proxy",
+      "implementation": "0x259Ac335EB42d345A61bE48104eC0Ec20b283F14",
       "docId": "con-024",
-      "description": "Upgradeable proxy for L1BridgeRegistry"
+      "description": "Upgradeable proxy for L1BridgeRegistry, currently pointing to V1.1"
     },
     {
       "name": "OperatorManagerV1_1",
@@ -220,8 +225,9 @@
       "name": "L1BridgeRegistryProxy_Legacy",
       "address": "0x17Fa32DFf4c26cf0AC65Ff6700B57a4826513Fa0",
       "type": "proxy",
+      "implementation": "0x70aFe7e41e7F7406BCC446f652e2f94ae5b76282",
       "docId": "con-038",
-      "description": "Legacy L1 Bridge Registry proxy (agenda 13 target)"
+      "description": "Legacy L1 Bridge Registry proxy (agenda 13 target). Points to older implementation 0x70aF..., not V1.1"
     }
   ],
   "layerOperators": [
@@ -315,29 +321,47 @@
       "name": "DAOCommitteeProxy",
       "address": "0xDD9f0cCc044B0781289Ee318e5971b0139602C26",
       "type": "proxy",
+      "implementations": {
+        "slot0": "0x9050Af1638f379A018737880aD946CdDA9101A25",
+        "slot1": "0xcb9859Dc0fBECa68eFFf2bce289150513fdF7D92"
+      },
       "docId": "con-073",
-      "description": "Upgradeable proxy for DAOCommittee"
+      "description": "Upgradeable proxy for DAOCommittee. Multi-implementation pattern with two alive impls. V1 (0xcC88...) and Owner (0x5991...) are no longer alive"
     },
     {
       "name": "DAOCommitteeProxy2",
       "address": "0xD6175F575F4d32392508Ee2FBbDec9a2E8B3c01a",
       "type": "proxy",
       "docId": "con-074",
-      "description": "Second DAOCommittee proxy contract"
+      "description": "Second DAOCommittee proxy contract. UNINITIALIZED: no implementation set, deployed but never activated. Uses AccessControl-based upgrade pattern"
     },
     {
       "name": "DAOCommittee_V1",
       "address": "0xcC88dFa531512f24A8a5CbCB88F7B6731807EEFe",
       "type": "implementation",
       "docId": "con-075",
-      "description": "DAOCommittee V1 implementation"
+      "description": "DAOCommittee V1 implementation (no longer alive on DAOCommitteeProxy)"
     },
     {
       "name": "DAOCommitteeOwner",
       "address": "0x5991Aebb5271522d33C457bf6DF26d83c0dAa221",
       "type": "owner",
       "docId": "con-076",
-      "description": "DAOCommittee owner contract"
+      "description": "DAOCommittee owner contract (no longer alive as implementation on DAOCommitteeProxy)"
+    },
+    {
+      "name": "DAOCommittee_Current_Slot0",
+      "address": "0x9050Af1638f379A018737880aD946CdDA9101A25",
+      "type": "implementation",
+      "docId": "con-077",
+      "description": "Current DAOCommittee implementation at proxy slot 0 (alive)"
+    },
+    {
+      "name": "DAOCommittee_Current_Slot1",
+      "address": "0xcb9859Dc0fBECa68eFFf2bce289150513fdF7D92",
+      "type": "implementation",
+      "docId": "con-078",
+      "description": "Current DAOCommittee implementation at proxy slot 1 (alive)"
     }
   ],
   "multiSig": [
@@ -346,7 +370,7 @@
       "address": "0xE3F72E959834d0A72aFb2ea79F5ec2b4243d2d95",
       "type": "multisig",
       "docId": "con-081",
-      "description": "Tokamak Network MultiSig wallet"
+      "description": "Tokamak Network MultiSig wallet (2-of-3, owners: 0x77b9...fc, 0x9de8...3D, 0xa4AB...90)"
     }
   ]
 }

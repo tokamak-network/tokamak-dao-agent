@@ -12,6 +12,9 @@ import { registerSimulationTool } from "./simulation.ts";
 import { registerVerificationTool } from "./verification.ts";
 import { registerForkTestTool } from "./fork-test.ts";
 import { registerWebFetchTool } from "./web-fetch.ts";
+import { registerEncodeTool } from "./encode.ts";
+import { registerListDaoActionsTool } from "./dao-actions-tool.ts";
+import { registerAnalysisTool } from "./agenda-analysis.ts";
 
 export function registerAllTools(server: McpServer) {
   // Phase 1: Code exploration
@@ -32,6 +35,13 @@ export function registerAllTools(server: McpServer) {
   registerVerificationTool(server);
   registerForkTestTool(server);
 
-  // Phase 6: External data
+  // Phase 6: Proposal building
+  registerEncodeTool(server);
+  registerListDaoActionsTool(server);
+
+  // Phase 7: Proposal analysis
+  registerAnalysisTool(server);
+
+  // Phase 8: External data
   registerWebFetchTool(server);
 }

@@ -158,6 +158,34 @@ contract TONCompatibility is Test {
     }
 
     /**
+     * @notice Test: Uniswap V3 swap with TON should REVERT
+     * @dev V3 router also calls transferFrom internally, same restriction applies
+     */
+    function test_TON_UniswapV3_Swap_Reverts() public {
+        uint256 amountIn = 10 ether;
+
+        // User approves V3 router
+        vm.prank(user);
+        ton.approve(UNISWAP_V3_ROUTER, amountIn);
+
+        // Attempt V3 swap - should revert due to transferFrom restriction
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+            tokenIn: TON,
+            tokenOut: WETH,
+            fee: 3000,
+            recipient: user,
+            deadline: block.timestamp + 3600,
+            amountIn: amountIn,
+            amountOutMinimum: 0,
+            sqrtPriceLimitX96: 0
+        });
+
+        vm.prank(user);
+        vm.expectRevert();
+        ISwapRouter(UNISWAP_V3_ROUTER).exactInputSingle(params);
+    }
+
+    /**
      * @notice Test: WTON can be swapped on Uniswap V2
      * @dev WTON has no transfer restrictions, so DEX swaps work
      */
@@ -193,4 +221,19 @@ interface IUniswapV2Router {
         address to,
         uint256 deadline
     ) external returns (uint256[] memory amounts);
+}
+
+interface ISwapRouter {
+    struct ExactInputSingleParams {
+        address tokenIn;
+        address tokenOut;
+        uint24 fee;
+        address recipient;
+        uint256 deadline;
+        uint256 amountIn;
+        uint256 amountOutMinimum;
+        uint160 sqrtPriceLimitX96;
+    }
+
+    function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut);
 }

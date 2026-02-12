@@ -197,7 +197,11 @@ export function getToolDefinitions(): ToolDefinition[] {
     {
       name: "verify_token_compatibility",
       description:
-        "Verify if a token is compatible with a DEX protocol by simulating approve, transferFrom, and swap on-chain. Returns evidence-based results.",
+        "Verify if a token is compatible with a DEX by simulating approve, transferFrom, and swap on-chain. " +
+        "BEFORE calling: 1) Confirm the DEX exists on Ethereum mainnet (web search), " +
+        "2) Find the router address from official docs, " +
+        "3) Determine V2 or V3 interface. " +
+        "If the DEX does not exist, do NOT call this tool.",
       input_schema: {
         type: "object" as const,
         properties: {
@@ -205,9 +209,18 @@ export function getToolDefinitions(): ToolDefinition[] {
             type: "string",
             description: "Token contract address (0x...)",
           },
-          dex: {
+          router_address: {
             type: "string",
-            description: "DEX protocol: uniswap_v2, uniswap_v3, sushiswap",
+            description: "DEX router contract address (0x...) — discovered by the agent via web search",
+          },
+          dex_name: {
+            type: "string",
+            description: "DEX display name (e.g. 'SushiSwap', 'Uniswap V2')",
+          },
+          dex_version: {
+            type: "string",
+            enum: ["v2", "v3"],
+            description: "Router interface version: 'v2' (swapExactTokensForTokens) or 'v3' (exactInputSingle). Defaults to 'v2'.",
           },
           scenarios: {
             type: "array",
@@ -216,7 +229,7 @@ export function getToolDefinitions(): ToolDefinition[] {
               "Scenarios to test: approve, transferFrom, swap (defaults to all)",
           },
         },
-        required: ["token_address", "dex"],
+        required: ["token_address", "router_address", "dex_name"],
       },
     },
     {
@@ -259,7 +272,7 @@ interface ToolArgsMap {
   query_on_chain: { contract_name: string; function_name: string; args?: string[] };
   decode_calldata: { calldata: string; target_address?: string };
   simulate_transaction: { to: string; calldata: string; from?: string; value?: string; block_number?: number };
-  verify_token_compatibility: { token_address: string; dex: string; scenarios?: string[] };
+  verify_token_compatibility: { token_address: string; router_address: string; dex_name: string; dex_version?: string; scenarios?: string[] };
   run_fork_test: { test_pattern: string; contract_pattern?: string; verbosity?: number };
 }
 

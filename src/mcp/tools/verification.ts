@@ -1,7 +1,8 @@
 /**
- * verify_token_compatibility tool - Test token compatibility with DEX protocols
+ * verify_token_compatibility tool - Test token compatibility with any DEX
  *
- * Generates swap calldata, simulates via eth_call, and returns evidence-based results.
+ * The agent discovers the DEX router address dynamically (via web search)
+ * and passes it directly. No hardcoded DEX registry.
  */
 
 import { z } from "zod";
@@ -14,14 +15,13 @@ import {
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
 import {
-  DEX_PROTOCOLS,
-  getDexProtocol,
-  getAvailableDexProtocols,
   COMMON_TOKENS,
   ERC20_ABI,
-  type DexProtocol,
+  V2_SWAP_ABI,
+  V3_SWAP_ABI,
 } from "../data/dex-protocols.ts";
 import { validateAddress, extractRevertReason } from "./validation.ts";
+import { handleRunForkTest } from "./fork-test.ts";
 
 /**
  * Verification scenarios
@@ -84,17 +84,17 @@ function generateV2SwapCalldata(
   amountIn: bigint,
   recipient: Address
 ): Hex {
-  const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600); // 1 hour from now
+  const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
 
   return encodeFunctionData({
-    abi: DEX_PROTOCOLS.uniswap_v2.swapAbi,
+    abi: V2_SWAP_ABI,
     functionName: "swapExactTokensForTokens",
     args: [amountIn, 0n, [tokenIn, tokenOut], recipient, deadline],
   });
 }
 
 /**
- * Generate swap calldata for Uniswap V3
+ * Generate swap calldata for Uniswap V3-style routers
  */
 function generateV3SwapCalldata(
   tokenIn: Address,
@@ -105,7 +105,7 @@ function generateV3SwapCalldata(
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
 
   return encodeFunctionData({
-    abi: DEX_PROTOCOLS.uniswap_v3.swapAbi,
+    abi: V3_SWAP_ABI,
     functionName: "exactInputSingle",
     args: [
       {
@@ -158,7 +158,6 @@ async function simulateCall(
   value: bigint = 0n
 ): Promise<{ success: boolean; error?: string; gasEstimate?: bigint }> {
   try {
-    // First try gas estimation (provides better error messages)
     const gasEstimate = await publicClient.estimateGas({
       account: from,
       to,
@@ -166,7 +165,6 @@ async function simulateCall(
       value,
     });
 
-    // Then do the actual call
     await publicClient.call({
       account: from,
       to,
@@ -185,30 +183,30 @@ async function simulateCall(
  */
 async function verifySwap(
   tokenAddress: Address,
-  dex: DexProtocol,
+  routerAddress: Address,
+  version: string,
   holder: Address
 ): Promise<VerificationResult> {
   const evidence: string[] = [];
   const tokenOut = COMMON_TOKENS.WETH;
-  const amountIn = parseEther("1"); // 1 token
+  const amountIn = parseEther("1");
 
   evidence.push(`Token: ${tokenAddress}`);
-  evidence.push(`DEX Router: ${dex.routerAddress}`);
+  evidence.push(`DEX Router: ${routerAddress}`);
   evidence.push(`Swap path: TOKEN → WETH`);
   evidence.push(`Simulated holder: ${holder}`);
 
   // Generate calldata based on DEX version
   let calldata: Hex;
-  if (dex.version === "v3") {
+  if (version === "v3") {
     calldata = generateV3SwapCalldata(tokenAddress, tokenOut, amountIn, holder);
   } else {
     calldata = generateV2SwapCalldata(tokenAddress, tokenOut, amountIn, holder);
   }
 
-  evidence.push(`Function: ${dex.version === "v3" ? "exactInputSingle" : "swapExactTokensForTokens"}`);
+  evidence.push(`Function: ${version === "v3" ? "exactInputSingle" : "swapExactTokensForTokens"}`);
 
-  // Simulate the swap (called by router, transferFrom from holder)
-  const result = await simulateCall(holder, dex.routerAddress, calldata);
+  const result = await simulateCall(holder, routerAddress, calldata);
 
   if (result.success) {
     return {
@@ -229,27 +227,26 @@ async function verifySwap(
 
 /**
  * Run the transferFrom verification scenario
- * Tests if a third party (like a DEX router) can call transferFrom
+ * Tests if the DEX router (third party) can call transferFrom
  */
 async function verifyTransferFrom(
   tokenAddress: Address,
+  routerAddress: Address,
   holder: Address
 ): Promise<VerificationResult> {
   const evidence: string[] = [];
-  const router = DEX_PROTOCOLS.uniswap_v2.routerAddress;
   const recipient = "0x0000000000000000000000000000000000000002" as Address;
   const amount = parseEther("1");
 
   evidence.push(`Token: ${tokenAddress}`);
-  evidence.push(`Caller (Router): ${router}`);
+  evidence.push(`Caller (Router): ${routerAddress}`);
   evidence.push(`From: ${holder}`);
   evidence.push(`To: ${recipient}`);
   evidence.push(`Scenario: Router calling transferFrom on behalf of user`);
 
   const calldata = generateTransferFromCalldata(holder, recipient, amount);
 
-  // Simulate router calling transferFrom (third-party transfer)
-  const result = await simulateCall(router, tokenAddress, calldata);
+  const result = await simulateCall(routerAddress, tokenAddress, calldata);
 
   if (result.success) {
     return {
@@ -273,17 +270,17 @@ async function verifyTransferFrom(
  */
 async function verifyApprove(
   tokenAddress: Address,
+  routerAddress: Address,
   holder: Address
 ): Promise<VerificationResult> {
   const evidence: string[] = [];
-  const spender = DEX_PROTOCOLS.uniswap_v2.routerAddress;
-  const amount = parseEther("1000000"); // Large approval
+  const amount = parseEther("1000000");
 
   evidence.push(`Token: ${tokenAddress}`);
   evidence.push(`Owner: ${holder}`);
-  evidence.push(`Spender (Router): ${spender}`);
+  evidence.push(`Spender (Router): ${routerAddress}`);
 
-  const calldata = generateApproveCalldata(spender, amount);
+  const calldata = generateApproveCalldata(routerAddress, amount);
 
   const result = await simulateCall(holder, tokenAddress, calldata);
 
@@ -302,6 +299,48 @@ async function verifyApprove(
     revertReason: result.error,
     evidence,
   };
+}
+
+/**
+ * Fallback to fork tests when no holder is found for simulation.
+ * Maps known token+DEX combinations to existing test patterns.
+ */
+async function fallbackToForkTest(
+  tokenAddress: Address,
+  dexName: string
+): Promise<string> {
+  // Map known tokens to fork test patterns
+  const TOKEN_TEST_MAP: Record<string, string> = {
+    [COMMON_TOKENS.TON.toLowerCase()]: "test_TON_",
+    [COMMON_TOKENS.WTON.toLowerCase()]: "test_WTON_",
+  };
+
+  const prefix = TOKEN_TEST_MAP[tokenAddress.toLowerCase()];
+  if (!prefix) {
+    return [
+      `Error: Could not find a token holder for simulation of ${tokenAddress}.`,
+      "",
+      "**Suggested next step**: Use `run_fork_test` to write and execute a custom Foundry test",
+      "that uses `deal()` to mint tokens to a test address before simulating the swap.",
+    ].join("\n");
+  }
+
+  // Try running matching fork tests
+  const testPattern = `${prefix}*`;
+  const result = await handleRunForkTest({
+    test_pattern: testPattern,
+    contract_pattern: "TONCompatibility",
+    verbosity: 3,
+  });
+
+  return [
+    `## Holder Not Found — Fork Test Fallback`,
+    "",
+    `Could not find an on-chain holder for \`${tokenAddress}\` to simulate against \`${dexName}\`.`,
+    `Ran fork tests matching \`${testPattern}\` instead:`,
+    "",
+    result,
+  ].join("\n");
 }
 
 /**
@@ -371,27 +410,26 @@ function formatResults(
  */
 export async function handleVerifyTokenCompatibility(args: {
   token_address: string;
-  dex: string;
+  router_address: string;
+  dex_name: string;
+  dex_version?: string;
   scenarios?: string[];
 }): Promise<string> {
-  // Validate token address
-  const addrError = validateAddress(args.token_address);
-  if (addrError) {
-    return `Error: ${addrError}`;
-  }
+  // Validate addresses
+  const tokenError = validateAddress(args.token_address);
+  if (tokenError) return `Error: token_address — ${tokenError}`;
 
-  // Get DEX protocol
-  const dex = getDexProtocol(args.dex);
-  if (!dex) {
-    return `Error: Unknown DEX "${args.dex}". Available: ${getAvailableDexProtocols().join(", ")}`;
-  }
+  const routerError = validateAddress(args.router_address);
+  if (routerError) return `Error: router_address — ${routerError}`;
 
   const tokenAddress = args.token_address as Address;
+  const routerAddress = args.router_address as Address;
+  const version = args.dex_version ?? "v2";
 
   // Find a token holder for simulation
   const holder = await findTokenHolder(tokenAddress);
   if (!holder) {
-    return `Error: Could not find a token holder for simulation`;
+    return fallbackToForkTest(tokenAddress, args.dex_name);
   }
 
   // Determine which scenarios to run
@@ -410,35 +448,57 @@ export async function handleVerifyTokenCompatibility(args: {
   for (const scenario of scenarios) {
     switch (scenario) {
       case "approve":
-        results.push(await verifyApprove(tokenAddress, holder));
+        results.push(await verifyApprove(tokenAddress, routerAddress, holder));
         break;
       case "transferFrom":
-        results.push(await verifyTransferFrom(tokenAddress, holder));
+        results.push(await verifyTransferFrom(tokenAddress, routerAddress, holder));
         break;
       case "swap":
-        results.push(await verifySwap(tokenAddress, dex, holder));
+        results.push(await verifySwap(tokenAddress, routerAddress, version, holder));
         break;
     }
   }
 
-  return formatResults(args.token_address, dex.name, results);
+  return formatResults(args.token_address, args.dex_name, results);
 }
+
+const TOOL_DESCRIPTION = `Verify if a token is compatible with a DEX by simulating approve, transferFrom, and swap on-chain.
+
+BEFORE calling this tool, you MUST:
+1. Confirm the DEX exists on Ethereum mainnet (web search)
+2. Find the router contract address from official docs or GitHub
+3. Determine if it uses V2-style (swapExactTokensForTokens) or V3-style (exactInputSingle) interface
+
+If the DEX does not exist or is not on Ethereum, do NOT call this tool — answer directly.
+
+Returns evidence-based results with revert reasons when incompatible.`;
 
 export function registerVerificationTool(server: McpServer) {
   server.tool(
     "verify_token_compatibility",
-    "Verify if a token is compatible with a DEX protocol by simulating swaps. Returns evidence-based results showing success or failure with revert reasons.",
+    TOOL_DESCRIPTION,
     {
       token_address: z.string().describe("Token contract address (0x...)"),
-      dex: z.string().describe("DEX protocol key: uniswap_v2, uniswap_v3, sushiswap"),
+      router_address: z.string().describe("DEX router contract address (0x...) — discovered by the agent via web search"),
+      dex_name: z.string().describe("DEX display name (e.g. 'SushiSwap', 'Uniswap V2')"),
+      dex_version: z
+        .enum(["v2", "v3"])
+        .optional()
+        .describe("Router interface version: 'v2' (swapExactTokensForTokens) or 'v3' (exactInputSingle). Defaults to 'v2'."),
       scenarios: z
         .array(z.string())
         .optional()
         .describe("Specific scenarios to test: approve, transferFrom, swap (defaults to all)"),
     },
-    async ({ token_address, dex, scenarios }) => {
+    async ({ token_address, router_address, dex_name, dex_version, scenarios }) => {
       try {
-        const text = await handleVerifyTokenCompatibility({ token_address, dex, scenarios });
+        const text = await handleVerifyTokenCompatibility({
+          token_address,
+          router_address,
+          dex_name,
+          dex_version,
+          scenarios,
+        });
         return { content: [{ type: "text" as const, text }] };
       } catch (err) {
         return {

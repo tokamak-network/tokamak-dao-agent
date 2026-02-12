@@ -1,138 +1,102 @@
 /**
- * DEX Protocol metadata for token compatibility verification
+ * DEX Protocol ABIs and common token addresses for token compatibility verification.
+ *
+ * NOTE: This module no longer maintains a hardcoded DEX registry.
+ * The agent discovers DEX router addresses dynamically and passes them
+ * directly to verify_token_compatibility.
  */
-
-export interface DexProtocol {
-  name: string;
-  routerAddress: `0x${string}`;
-  factoryAddress?: `0x${string}`;
-  version: string;
-  swapAbi: readonly any[];
-}
 
 /**
- * Uniswap V2 Router02 - Standard AMM
+ * Uniswap V2-style swap ABI (used by Uniswap V2, SushiSwap, and most V2 forks)
  */
-export const UNISWAP_V2: DexProtocol = {
-  name: "Uniswap V2",
-  routerAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-  factoryAddress: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
-  version: "v2",
-  swapAbi: [
-    {
-      name: "swapExactTokensForTokens",
-      type: "function",
-      stateMutability: "nonpayable",
-      inputs: [
-        { name: "amountIn", type: "uint256" },
-        { name: "amountOutMin", type: "uint256" },
-        { name: "path", type: "address[]" },
-        { name: "to", type: "address" },
-        { name: "deadline", type: "uint256" },
-      ],
-      outputs: [{ name: "amounts", type: "uint256[]" }],
-    },
-    {
-      name: "swapTokensForExactTokens",
-      type: "function",
-      stateMutability: "nonpayable",
-      inputs: [
-        { name: "amountOut", type: "uint256" },
-        { name: "amountInMax", type: "uint256" },
-        { name: "path", type: "address[]" },
-        { name: "to", type: "address" },
-        { name: "deadline", type: "uint256" },
-      ],
-      outputs: [{ name: "amounts", type: "uint256[]" }],
-    },
-    {
-      name: "getAmountsOut",
-      type: "function",
-      stateMutability: "view",
-      inputs: [
-        { name: "amountIn", type: "uint256" },
-        { name: "path", type: "address[]" },
-      ],
-      outputs: [{ name: "amounts", type: "uint256[]" }],
-    },
-  ] as const,
-};
+export const V2_SWAP_ABI = [
+  {
+    name: "swapExactTokensForTokens",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "amountIn", type: "uint256" },
+      { name: "amountOutMin", type: "uint256" },
+      { name: "path", type: "address[]" },
+      { name: "to", type: "address" },
+      { name: "deadline", type: "uint256" },
+    ],
+    outputs: [{ name: "amounts", type: "uint256[]" }],
+  },
+  {
+    name: "swapTokensForExactTokens",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "amountOut", type: "uint256" },
+      { name: "amountInMax", type: "uint256" },
+      { name: "path", type: "address[]" },
+      { name: "to", type: "address" },
+      { name: "deadline", type: "uint256" },
+    ],
+    outputs: [{ name: "amounts", type: "uint256[]" }],
+  },
+  {
+    name: "getAmountsOut",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "amountIn", type: "uint256" },
+      { name: "path", type: "address[]" },
+    ],
+    outputs: [{ name: "amounts", type: "uint256[]" }],
+  },
+] as const;
 
 /**
- * Uniswap V3 SwapRouter - Concentrated liquidity
+ * Uniswap V3-style swap ABI (used by Uniswap V3 and V3 forks)
  */
-export const UNISWAP_V3: DexProtocol = {
-  name: "Uniswap V3",
-  routerAddress: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-  factoryAddress: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-  version: "v3",
-  swapAbi: [
-    {
-      name: "exactInputSingle",
-      type: "function",
-      stateMutability: "payable",
-      inputs: [
-        {
-          name: "params",
-          type: "tuple",
-          components: [
-            { name: "tokenIn", type: "address" },
-            { name: "tokenOut", type: "address" },
-            { name: "fee", type: "uint24" },
-            { name: "recipient", type: "address" },
-            { name: "deadline", type: "uint256" },
-            { name: "amountIn", type: "uint256" },
-            { name: "amountOutMinimum", type: "uint256" },
-            { name: "sqrtPriceLimitX96", type: "uint160" },
-          ],
-        },
-      ],
-      outputs: [{ name: "amountOut", type: "uint256" }],
-    },
-    {
-      name: "exactOutputSingle",
-      type: "function",
-      stateMutability: "payable",
-      inputs: [
-        {
-          name: "params",
-          type: "tuple",
-          components: [
-            { name: "tokenIn", type: "address" },
-            { name: "tokenOut", type: "address" },
-            { name: "fee", type: "uint24" },
-            { name: "recipient", type: "address" },
-            { name: "deadline", type: "uint256" },
-            { name: "amountOut", type: "uint256" },
-            { name: "amountInMaximum", type: "uint256" },
-            { name: "sqrtPriceLimitX96", type: "uint160" },
-          ],
-        },
-      ],
-      outputs: [{ name: "amountIn", type: "uint256" }],
-    },
-  ] as const,
-};
-
-/**
- * Sushiswap Router - Uniswap V2 fork
- */
-export const SUSHISWAP: DexProtocol = {
-  name: "Sushiswap",
-  routerAddress: "0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F",
-  factoryAddress: "0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac",
-  version: "v2",
-  swapAbi: UNISWAP_V2.swapAbi,
-};
-
-/**
- * All supported DEX protocols indexed by key
- */
-export const DEX_PROTOCOLS: Record<string, DexProtocol> = {
-  uniswap_v2: UNISWAP_V2,
-  uniswap_v3: UNISWAP_V3,
-  sushiswap: SUSHISWAP,
-};
+export const V3_SWAP_ABI = [
+  {
+    name: "exactInputSingle",
+    type: "function",
+    stateMutability: "payable",
+    inputs: [
+      {
+        name: "params",
+        type: "tuple",
+        components: [
+          { name: "tokenIn", type: "address" },
+          { name: "tokenOut", type: "address" },
+          { name: "fee", type: "uint24" },
+          { name: "recipient", type: "address" },
+          { name: "deadline", type: "uint256" },
+          { name: "amountIn", type: "uint256" },
+          { name: "amountOutMinimum", type: "uint256" },
+          { name: "sqrtPriceLimitX96", type: "uint160" },
+        ],
+      },
+    ],
+    outputs: [{ name: "amountOut", type: "uint256" }],
+  },
+  {
+    name: "exactOutputSingle",
+    type: "function",
+    stateMutability: "payable",
+    inputs: [
+      {
+        name: "params",
+        type: "tuple",
+        components: [
+          { name: "tokenIn", type: "address" },
+          { name: "tokenOut", type: "address" },
+          { name: "fee", type: "uint24" },
+          { name: "recipient", type: "address" },
+          { name: "deadline", type: "uint256" },
+          { name: "amountOut", type: "uint256" },
+          { name: "amountInMaximum", type: "uint256" },
+          { name: "sqrtPriceLimitX96", type: "uint160" },
+        ],
+      },
+    ],
+    outputs: [{ name: "amountIn", type: "uint256" }],
+  },
+] as const;
 
 /**
  * Common token addresses on Ethereum mainnet
@@ -147,7 +111,7 @@ export const COMMON_TOKENS = {
 };
 
 /**
- * ERC20 ABI subset for approvals and balance checks
+ * ERC20 ABI subset for approvals, transfers, and balance checks
  */
 export const ERC20_ABI = [
   {
@@ -189,17 +153,3 @@ export const ERC20_ABI = [
     outputs: [{ name: "", type: "bool" }],
   },
 ] as const;
-
-/**
- * Get DEX protocol by name
- */
-export function getDexProtocol(key: string): DexProtocol | undefined {
-  return DEX_PROTOCOLS[key.toLowerCase().replace(/[\s-]/g, "_")];
-}
-
-/**
- * Get all available DEX protocol keys
- */
-export function getAvailableDexProtocols(): string[] {
-  return Object.keys(DEX_PROTOCOLS);
-}

@@ -11,13 +11,12 @@ import { handleReadStorageSlot, handleReadContractState } from "./storage.ts";
 import { handleQueryOnChain } from "./on-chain.ts";
 import { handleDecodeCalldata } from "./governance.ts";
 import { handleSimulateTransaction } from "./simulation.ts";
-
+import { handleTestTokenTransfer } from "./verification.ts";
 import { handleRunForkTest } from "./fork-test.ts";
-import { handleEncodeCalldata } from "./encode.ts";
-import { handleAnalyzeAgenda } from "./agenda-analysis.ts";
+import { handleWebFetch } from "./web-fetch.ts";
 
 /**
- * Returns Anthropic API tool definitions for all 11 tools.
+ * Returns Anthropic API tool definitions for all tools.
  */
 export function getToolDefinitions(): ToolDefinition[] {
   return [
@@ -197,6 +196,39 @@ export function getToolDefinitions(): ToolDefinition[] {
       },
     },
     {
+      name: "test_token_transfer",
+      description:
+        "Test if a token's transferFrom works with a DEX router/vault. Simulates approve, transferFrom, and swap on-chain. Supports known DEXes (via 'dex') or any arbitrary router address (via 'router_address').",
+      input_schema: {
+        type: "object" as const,
+        properties: {
+          token_address: {
+            type: "string",
+            description: "Token contract address (0x...)",
+          },
+          dex: {
+            type: "string",
+            description: "Known DEX protocol key: uniswap_v2, uniswap_v3, sushiswap, cowswap. Either 'dex' or 'router_address' is required.",
+          },
+          router_address: {
+            type: "string",
+            description: "Any DEX router/vault/settlement contract address (0x...). Use this for DEXes not in the known registry.",
+          },
+          router_label: {
+            type: "string",
+            description: "Human-readable name for the router (e.g. 'Balancer Vault'). Used in output display.",
+          },
+          scenarios: {
+            type: "array",
+            items: { type: "string" },
+            description:
+              "Scenarios to test: approve, transferFrom, swap (defaults to all)",
+          },
+        },
+        required: ["token_address"],
+      },
+    },
+    {
       name: "run_fork_test",
       description:
         "Run Foundry fork tests against Ethereum mainnet. Verifies on-chain behavior with real state.",
@@ -216,65 +248,23 @@ export function getToolDefinitions(): ToolDefinition[] {
             type: "number",
             description: "Output verbosity 1-5 (default: 3)",
           },
-          env_vars: {
-            type: "object",
-            description: "Environment variables to pass to forge (e.g. { AGENDA_ID: '1' })",
-            additionalProperties: { type: "string" },
-          },
         },
         required: ["test_pattern"],
       },
     },
     {
-      name: "encode_calldata",
+      name: "web_fetch",
       description:
-        "Encode a function call into calldata for a Tokamak Network contract. Returns the target address and hex calldata for use in DAO proposals.",
+        "Fetch data from trusted DeFi APIs. Use to look up DEX router addresses, protocol info, or token data. Allowed domains: api.llama.fi, api.etherscan.io, api.dexscreener.com, api.coingecko.com.",
       input_schema: {
         type: "object" as const,
         properties: {
-          contract_name: {
+          url: {
             type: "string",
-            description: "Contract name (e.g. SeigManager, DepositManager)",
-          },
-          function_name: {
-            type: "string",
-            description: "Function name to encode (e.g. setSeigPerBlock, setMinimumAmount)",
-          },
-          args: {
-            type: "array",
-            items: { type: "string" },
-            description: "Function arguments as strings",
+            description: "HTTPS URL to fetch. Must be from an allowed domain.",
           },
         },
-        required: ["contract_name", "function_name"],
-      },
-    },
-    {
-      name: "analyze_agenda",
-      description:
-        "Analyze a DAO agenda or proposal. Decodes calldata, simulates execution, runs fork tests, and provides risk assessment.",
-      input_schema: {
-        type: "object" as const,
-        properties: {
-          agenda_id: {
-            type: "string",
-            description: "On-chain agenda ID number",
-          },
-          targets: {
-            type: "array",
-            items: { type: "string" },
-            description: "Array of target contract addresses",
-          },
-          function_bytecodes: {
-            type: "array",
-            items: { type: "string" },
-            description: "Array of hex-encoded calldata for each target",
-          },
-          atomic_execute: {
-            type: "boolean",
-            description: "Whether all calls should execute atomically",
-          },
-        },
+        required: ["url"],
       },
     },
   ];
@@ -293,10 +283,9 @@ interface ToolArgsMap {
   query_on_chain: { contract_name: string; function_name: string; args?: string[] };
   decode_calldata: { calldata: string; target_address?: string };
   simulate_transaction: { to: string; calldata: string; from?: string; value?: string; block_number?: number };
-
-  run_fork_test: { test_pattern: string; contract_pattern?: string; verbosity?: number; env_vars?: Record<string, string> };
-  encode_calldata: { contract_name: string; function_name: string; args?: string[] };
-  analyze_agenda: { agenda_id?: string; targets?: string[]; function_bytecodes?: string[]; atomic_execute?: boolean };
+  test_token_transfer: { token_address: string; dex?: string; router_address?: string; router_label?: string; scenarios?: string[] };
+  run_fork_test: { test_pattern: string; contract_pattern?: string; verbosity?: number };
+  web_fetch: { url: string };
 }
 
 /**
@@ -321,13 +310,12 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       return handleDecodeCalldata(args as ToolArgsMap["decode_calldata"]);
     case "simulate_transaction":
       return handleSimulateTransaction(args as ToolArgsMap["simulate_transaction"]);
-
+    case "test_token_transfer":
+      return handleTestTokenTransfer(args as ToolArgsMap["test_token_transfer"]);
     case "run_fork_test":
       return handleRunForkTest(args as ToolArgsMap["run_fork_test"]);
-    case "encode_calldata":
-      return handleEncodeCalldata(args as ToolArgsMap["encode_calldata"]);
-    case "analyze_agenda":
-      return handleAnalyzeAgenda(args as ToolArgsMap["analyze_agenda"]);
+    case "web_fetch":
+      return handleWebFetch(args as ToolArgsMap["web_fetch"]);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

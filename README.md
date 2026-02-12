@@ -49,6 +49,7 @@ flowchart TB
 
         subgraph tools4["Simulation & Verification"]
             simulate_transaction
+            test_token_transfer
             run_fork_test
         end
     end
@@ -80,6 +81,7 @@ flowchart TB
 | `query_on_chain` | Call view/pure functions |
 | `decode_calldata` | Decode transaction calldata |
 | `simulate_transaction` | Simulate transactions via eth_call |
+| `test_token_transfer` | Verify token compatibility with DEX protocols |
 | `run_fork_test` | Execute Foundry fork tests against mainnet |
 
 ## Setup

@@ -20,7 +20,7 @@ export function handleGetContractInfo(args: { query: string }): string {
     lines.push(`- **Type**: ${contract.type}`);
     if (contract.type === "token") {
       lines.push("");
-      lines.push("⚠️ **VERIFICATION REQUIRED**: This is a token contract. To check DEX compatibility (trading, swapping), you MUST call `run_fork_test` before answering. Do NOT assume ERC-20 compliance means DEX compatibility — some tokens have restricted `transferFrom` that prevents DEX trading.");
+      lines.push("⚠️ **VERIFICATION REQUIRED**: This is a token contract. To check DEX compatibility (trading, swapping), you MUST call `test_token_transfer` or `run_fork_test` before answering. Do NOT assume ERC-20 compliance means DEX compatibility — some tokens have restricted `transferFrom` that prevents DEX trading.");
       lines.push("");
     }
     lines.push(`- **Description**: ${contract.description}`);

@@ -55,7 +55,7 @@ if not has_keywords:
     sys.exit(0)
 
 # 5. Check if verification tools were called anywhere in the transcript
-verification_tools = ["verify_token_compatibility", "run_fork_test", "simulate_transaction"]
+verification_tools = ["test_token_transfer", "run_fork_test", "simulate_transaction"]
 for tool in verification_tools:
     if tool in content:
         print("allow")
@@ -67,7 +67,7 @@ PYEOF
 )
 
 if [ "$RESULT" = "block" ]; then
-  echo "STOP BLOCKED: You answered a question about on-chain behavior (token trading, DEX compatibility, transaction success) WITHOUT calling verification tools. This is a violation of the #1 project rule. You MUST call verify_token_compatibility or run_fork_test MCP tools NOW, then answer based on the results. Do NOT speculate based on code reading or ERC-20 assumptions." >&2
+  echo "STOP BLOCKED: You answered a question about on-chain behavior (token trading, DEX compatibility, transaction success) WITHOUT calling verification tools. This is a violation of the #1 project rule. You MUST call test_token_transfer or run_fork_test MCP tools NOW, then answer based on the results. Do NOT speculate based on code reading or ERC-20 assumptions." >&2
   exit 2
 fi
 

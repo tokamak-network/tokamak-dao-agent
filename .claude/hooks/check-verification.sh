@@ -18,5 +18,5 @@ KEYWORDS="거래|스왑|가능|호환|trade|swap|uniswap|sushiswap|transferfrom|
 
 if echo "$PROMPT_LOWER" | grep -qiE "$KEYWORDS"; then
   # Plain text stdout is injected as additionalContext by Claude Code
-  echo "⚠️ MANDATORY VERIFICATION REQUIRED: This question is about on-chain behavior. You MUST call verify_token_compatibility or run_fork_test MCP tools BEFORE writing any answer. Speculation is FORBIDDEN. Do NOT answer based on code reading alone — run the verification tools first, then answer based on their results only."
+  echo "⚠️ MANDATORY VERIFICATION REQUIRED: This question is about on-chain behavior. You MUST call test_token_transfer or run_fork_test MCP tools BEFORE writing any answer. Speculation is FORBIDDEN. Do NOT answer based on code reading alone — run the verification tools first, then answer based on their results only."
 fi

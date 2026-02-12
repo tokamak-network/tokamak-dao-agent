@@ -12,13 +12,14 @@ import { detectProvider, getOrCreateProvider } from "./providers/index.ts";
 import type { ChatMessage, ContentBlock, ChatProvider } from "./providers/types.ts";
 import { getToolDefinitions, executeTool } from "../mcp/tools/handlers.ts";
 import { formatError } from "../mcp/tools/validation.ts";
-import { SYSTEM_PROMPT } from "./system-prompt.ts";
+import { getSystemPrompt } from "./system-prompt.ts";
 import {
   MAX_TOOL_ROUNDS,
   MAX_TOOL_RESULT_CHARS,
   MAX_TOOL_RESULT_DISPLAY_CHARS,
   CHAT_MAX_TOKENS,
   DEFAULT_CHAT_MODEL,
+  MODE_MODELS,
 } from "../config.ts";
 
 const app = new Hono();
@@ -86,14 +87,15 @@ app.post("/api/chat", async (c) => {
   const body = await c.req.json<{
     messages: { role: "user" | "assistant"; content: string }[];
     model?: string;
+    mode?: string;
   }>();
 
   const tools = getToolDefinitions();
 
-  // Resolve model: per-request override or server default
-  const requestConfig = body.model
-    ? detectProvider(body.model)
-    : defaultConfig;
+  // Resolve model: per-request override → mode default → server default
+  const resolvedModel =
+    body.model || (body.mode && MODE_MODELS[body.mode]) || MODEL_RAW;
+  const requestConfig = detectProvider(resolvedModel);
   const provider: ChatProvider = await getOrCreateProvider(
     requestConfig.provider,
   );
@@ -116,6 +118,18 @@ app.post("/api/chat", async (c) => {
         content: m.content,
       }));
 
+      // In make_proposal mode, after initial research (assistant already responded),
+      // restrict tools to encode_calldata only to prevent unnecessary research loops.
+      let activeTools = tools;
+      if (body.mode === "make_proposal") {
+        const assistantMsgCount = body.messages.filter(
+          (m) => m.role === "assistant",
+        ).length;
+        if (assistantMsgCount >= 1) {
+          activeTools = tools.filter((t) => t.name === "encode_calldata");
+        }
+      }
+
       for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
         let currentText = "";
         let currentToolUse: {
@@ -137,9 +151,9 @@ app.post("/api/chat", async (c) => {
 
         const events = provider.createStream({
           model: modelName,
-          system: SYSTEM_PROMPT,
+          system: getSystemPrompt(body.mode),
           messages,
-          tools,
+          tools: activeTools,
           maxTokens: CHAT_MAX_TOKENS,
         });
 
@@ -284,7 +298,7 @@ app.post("/api/chat", async (c) => {
       await sendEvent({
         type: "text_delta",
         content:
-          "\n\n⚠️ 도구 호출 라운드 제한(50회)에 도달하여 분석이 중단되었습니다. 추가 질문을 통해 이어갈 수 있습니다.",
+          "\n\n⚠️ Tool call round limit (250) reached. Analysis has been stopped. You can continue with follow-up questions.",
       });
       await sendEvent({ type: "done" });
     } catch (err) {

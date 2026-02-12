@@ -14,7 +14,7 @@
 
 | 질문 패턴 | 필수 도구 |
 |-----------|----------|
-| "X 토큰이 Y DEX에서 거래 가능?" | `verify_token_compatibility` → `run_fork_test` |
+| "X 토큰이 Y DEX에서 거래 가능?" | `run_fork_test` |
 | "이 트랜잭션이 성공할까?" | `simulate_transaction` |
 | "X의 현재 값은?" | `query_on_chain` 또는 `read_contract_state` |
 | "컨트랙트 X가 Y와 호환?" | `run_fork_test` |
@@ -24,7 +24,7 @@
 질문: "TON이 유니스왑에서 거래 가능한가요?"
 
 ❌ 틀림: "TON은 표준 ERC20이므로 가능합니다."
-✅ 맞음: [verify_token_compatibility 호출 → 결과 확인 → revert 확인 → 불가능 답변]
+✅ 맞음: [run_fork_test 호출 → 결과 확인 → revert 확인 → 불가능 답변]
 
 ---
 
@@ -52,7 +52,7 @@ Validate all work against these questions:
 
 ## Architecture
 
-Two interfaces share the same **10 tools** for analyzing Tokamak Network:
+Two interfaces share the same **11 tools** for analyzing Tokamak Network:
 
 ```
 Claude Code                          Web Chat UI (src/web/)
@@ -68,8 +68,9 @@ Tokamak MCP Server                   Tokamak Web Server
         ├── read_contract_state         → Full state decoding via layouts
         ├── query_on_chain              → View function calls
         ├── decode_calldata             → Transaction data decoding
+        ├── encode_calldata             → Proposal calldata encoding
         ├── simulate_transaction        → eth_call simulation
-        ├── verify_token_compatibility  → DEX compatibility verification ⭐
+        ├── analyze_agenda              → Comprehensive agenda analysis
         └── run_fork_test               → Foundry fork test execution ⭐
 ```
 

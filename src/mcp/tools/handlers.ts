@@ -11,11 +11,13 @@ import { handleReadStorageSlot, handleReadContractState } from "./storage.ts";
 import { handleQueryOnChain } from "./on-chain.ts";
 import { handleDecodeCalldata } from "./governance.ts";
 import { handleSimulateTransaction } from "./simulation.ts";
-import { handleVerifyTokenCompatibility } from "./verification.ts";
+
 import { handleRunForkTest } from "./fork-test.ts";
+import { handleEncodeCalldata } from "./encode.ts";
+import { handleAnalyzeAgenda } from "./agenda-analysis.ts";
 
 /**
- * Returns Anthropic API tool definitions for all 10 tools.
+ * Returns Anthropic API tool definitions for all 11 tools.
  */
 export function getToolDefinitions(): ToolDefinition[] {
   return [
@@ -195,44 +197,6 @@ export function getToolDefinitions(): ToolDefinition[] {
       },
     },
     {
-      name: "verify_token_compatibility",
-      description:
-        "Verify if a token is compatible with a DEX by simulating approve, transferFrom, and swap on-chain. " +
-        "BEFORE calling: 1) Confirm the DEX exists on Ethereum mainnet (web search), " +
-        "2) Find the router address from official docs, " +
-        "3) Determine V2 or V3 interface. " +
-        "If the DEX does not exist, do NOT call this tool.",
-      input_schema: {
-        type: "object" as const,
-        properties: {
-          token_address: {
-            type: "string",
-            description: "Token contract address (0x...)",
-          },
-          router_address: {
-            type: "string",
-            description: "DEX router contract address (0x...) — discovered by the agent via web search",
-          },
-          dex_name: {
-            type: "string",
-            description: "DEX display name (e.g. 'SushiSwap', 'Uniswap V2')",
-          },
-          dex_version: {
-            type: "string",
-            enum: ["v2", "v3"],
-            description: "Router interface version: 'v2' (swapExactTokensForTokens) or 'v3' (exactInputSingle). Defaults to 'v2'.",
-          },
-          scenarios: {
-            type: "array",
-            items: { type: "string" },
-            description:
-              "Scenarios to test: approve, transferFrom, swap (defaults to all)",
-          },
-        },
-        required: ["token_address", "router_address", "dex_name"],
-      },
-    },
-    {
       name: "run_fork_test",
       description:
         "Run Foundry fork tests against Ethereum mainnet. Verifies on-chain behavior with real state.",
@@ -252,8 +216,65 @@ export function getToolDefinitions(): ToolDefinition[] {
             type: "number",
             description: "Output verbosity 1-5 (default: 3)",
           },
+          env_vars: {
+            type: "object",
+            description: "Environment variables to pass to forge (e.g. { AGENDA_ID: '1' })",
+            additionalProperties: { type: "string" },
+          },
         },
         required: ["test_pattern"],
+      },
+    },
+    {
+      name: "encode_calldata",
+      description:
+        "Encode a function call into calldata for a Tokamak Network contract. Returns the target address and hex calldata for use in DAO proposals.",
+      input_schema: {
+        type: "object" as const,
+        properties: {
+          contract_name: {
+            type: "string",
+            description: "Contract name (e.g. SeigManager, DepositManager)",
+          },
+          function_name: {
+            type: "string",
+            description: "Function name to encode (e.g. setSeigPerBlock, setMinimumAmount)",
+          },
+          args: {
+            type: "array",
+            items: { type: "string" },
+            description: "Function arguments as strings",
+          },
+        },
+        required: ["contract_name", "function_name"],
+      },
+    },
+    {
+      name: "analyze_agenda",
+      description:
+        "Analyze a DAO agenda or proposal. Decodes calldata, simulates execution, runs fork tests, and provides risk assessment.",
+      input_schema: {
+        type: "object" as const,
+        properties: {
+          agenda_id: {
+            type: "string",
+            description: "On-chain agenda ID number",
+          },
+          targets: {
+            type: "array",
+            items: { type: "string" },
+            description: "Array of target contract addresses",
+          },
+          function_bytecodes: {
+            type: "array",
+            items: { type: "string" },
+            description: "Array of hex-encoded calldata for each target",
+          },
+          atomic_execute: {
+            type: "boolean",
+            description: "Whether all calls should execute atomically",
+          },
+        },
       },
     },
   ];
@@ -272,8 +293,10 @@ interface ToolArgsMap {
   query_on_chain: { contract_name: string; function_name: string; args?: string[] };
   decode_calldata: { calldata: string; target_address?: string };
   simulate_transaction: { to: string; calldata: string; from?: string; value?: string; block_number?: number };
-  verify_token_compatibility: { token_address: string; router_address: string; dex_name: string; dex_version?: string; scenarios?: string[] };
-  run_fork_test: { test_pattern: string; contract_pattern?: string; verbosity?: number };
+
+  run_fork_test: { test_pattern: string; contract_pattern?: string; verbosity?: number; env_vars?: Record<string, string> };
+  encode_calldata: { contract_name: string; function_name: string; args?: string[] };
+  analyze_agenda: { agenda_id?: string; targets?: string[]; function_bytecodes?: string[]; atomic_execute?: boolean };
 }
 
 /**
@@ -298,10 +321,13 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       return handleDecodeCalldata(args as ToolArgsMap["decode_calldata"]);
     case "simulate_transaction":
       return handleSimulateTransaction(args as ToolArgsMap["simulate_transaction"]);
-    case "verify_token_compatibility":
-      return handleVerifyTokenCompatibility(args as ToolArgsMap["verify_token_compatibility"]);
+
     case "run_fork_test":
       return handleRunForkTest(args as ToolArgsMap["run_fork_test"]);
+    case "encode_calldata":
+      return handleEncodeCalldata(args as ToolArgsMap["encode_calldata"]);
+    case "analyze_agenda":
+      return handleAnalyzeAgenda(args as ToolArgsMap["analyze_agenda"]);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

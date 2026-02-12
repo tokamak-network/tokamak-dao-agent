@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import type { Message, MessagePart } from "./types";
+import type { TabMode } from "../../contexts/TabContext";
 
-export function useChat(selectedModel?: string) {
+export function useChat(selectedModel?: string, mode?: TabMode) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -23,10 +24,11 @@ export function useChat(selectedModel?: string) {
     inputRef.current?.focus();
   };
 
-  const handleSubmit = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleSubmit = async (overrideMessage?: string) => {
+    const raw = overrideMessage ?? input;
+    if (!raw.trim() || isLoading) return;
 
-    const userMessage = input.trim();
+    const userMessage = raw.trim();
     setInput("");
     if (inputRef.current) inputRef.current.style.height = "auto";
 
@@ -52,6 +54,7 @@ export function useChat(selectedModel?: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: apiMessages,
+          ...(mode ? { mode } : {}),
           ...(selectedModel ? { model: selectedModel } : {}),
         }),
       });

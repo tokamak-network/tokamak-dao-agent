@@ -1,35 +1,42 @@
 import { useState, useEffect } from "react";
-import { useChat } from "./chat/useChat";
 import { AsciiSpinner } from "./chat/AsciiSpinner";
 import { TerminalHeader } from "./chat/TerminalHeader";
-import { ChatBubble } from "./chat/ChatBubble";
-import { ChatLoader } from "./chat/ChatLoader";
-import { ChatInput } from "./chat/ChatInput";
+import { TabProvider, useTabContext } from "../contexts/TabContext";
+import { TabBar } from "./TabBar";
+import { ChatInterface } from "./ChatInterface";
+import { MakeProposalTab } from "./MakeProposalTab";
+import { AnalyzeProposalTab } from "./AnalyzeProposalTab";
+import { AgentsTab } from "./AgentsTab";
+import { AgentProvider } from "../contexts/AgentContext";
 
 export default function Chat() {
+  return (
+    <TabProvider>
+      <AgentProvider>
+        <ChatApp />
+      </AgentProvider>
+    </TabProvider>
+  );
+}
+
+const CHAT_SUGGESTIONS = [
+  { label: "SeigManager Info", text: "Show me SeigManager contract info" },
+  { label: "DAO Proposals", text: "Analyze recent DAO proposals" },
+  { label: "Contract Source", text: "Show me TON token contract source code" },
+  { label: "On-chain State", text: "Read the current storage state of DepositManager" },
+];
+
+function ChatApp() {
+  const { activeTab } = useTabContext();
   const [showBootSequence, setShowBootSequence] = useState(true);
   const [providerName, setProviderName] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string | undefined>();
-
-  const {
-    messages,
-    input,
-    setInput,
-    isLoading,
-    isConnected,
-    messagesEndRef,
-    inputRef,
-    handleNewChat,
-    handleSuggestion,
-    handleSubmit,
-  } = useChat(selectedModel);
 
   useEffect(() => {
     fetch("/api/health")
       .then((r) => r.json())
       .then((data) => {
         setProviderName(data.provider);
-        // Only set default model if user hasn't already picked one
         setSelectedModel((prev) => prev ?? data.model);
       })
       .catch(() => {});
@@ -39,14 +46,6 @@ export default function Chat() {
     const timer = setTimeout(() => setShowBootSequence(false), 2000);
     return () => clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  useEffect(() => {
-    if (!showBootSequence) inputRef.current?.focus();
-  }, [showBootSequence]);
 
   // Boot Sequence Screen
   if (showBootSequence) {
@@ -79,96 +78,37 @@ export default function Chat() {
     );
   }
 
-  const isStreaming =
-    isLoading &&
-    messages.length > 0 &&
-    messages[messages.length - 1]?.role === "assistant";
-
   return (
     <div className="chat-layout">
       <TerminalHeader
-        isConnected={isConnected}
-        isLoading={isLoading}
-        showAsciiArt={messages.length === 0}
-        onNewChat={messages.length > 0 ? handleNewChat : undefined}
+        isConnected={true}
+        isLoading={false}
+        showAsciiArt={false}
         model={selectedModel}
         onModelChange={setSelectedModel}
       />
 
-      {messages.length === 0 ? (
-        <div className="welcome-container">
-          <div style={{ maxWidth: "800px", width: "100%", padding: "0 24px" }}>
-            <div className="chat-welcome">
-              <div className="chat-welcome-title phosphor-glow">
-                How can I help you?
-              </div>
-              <div className="chat-welcome-subtitle">
-                Tokamak DAO Agent answers your questions
-              </div>
-              <div className="chat-welcome-suggestions">
-                <button
-                  className="chat-suggestion-btn"
-                  onClick={() => handleSuggestion("Show me SeigManager contract info")}
-                >
-                  SeigManager Info
-                </button>
-                <button
-                  className="chat-suggestion-btn"
-                  onClick={() => handleSuggestion("Analyze recent DAO proposals")}
-                >
-                  DAO Proposals
-                </button>
-                <button
-                  className="chat-suggestion-btn"
-                  onClick={() => handleSuggestion("Show me TON token contract source code")}
-                >
-                  Contract Source
-                </button>
-                <button
-                  className="chat-suggestion-btn"
-                  onClick={() =>
-                    handleSuggestion("Read the current storage state of DepositManager")
-                  }
-                >
-                  On-chain State
-                </button>
-              </div>
-            </div>
-            <ChatInput
-              value={input}
-              onChange={setInput}
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
-              inputRef={inputRef}
-            />
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="chat-messages-area">
-            <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-              <div className="chat-messages-list">
-                {messages.map((msg, i) => (
-                  <ChatBubble
-                    key={i}
-                    message={msg}
-                    isStreaming={isStreaming && i === messages.length - 1}
-                  />
-                ))}
-                {isLoading && !isStreaming && <ChatLoader />}
-                <div ref={messagesEndRef} />
-              </div>
-            </div>
-          </div>
-          <ChatInput
-            value={input}
-            onChange={setInput}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            inputRef={inputRef}
-          />
-        </>
-      )}
+      <TabBar />
+
+      <div className="tab-content" style={{ display: activeTab === "chat" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <ChatInterface
+          mode="chat"
+          selectedModel={selectedModel}
+          suggestions={CHAT_SUGGESTIONS}
+        />
+      </div>
+
+      <div className="tab-content" style={{ display: activeTab === "make_proposal" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <MakeProposalTab selectedModel={selectedModel} />
+      </div>
+
+      <div className="tab-content" style={{ display: activeTab === "analyze_proposal" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <AnalyzeProposalTab selectedModel={selectedModel} />
+      </div>
+
+      <div className="tab-content" style={{ display: activeTab === "agents" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <AgentsTab />
+      </div>
     </div>
   );
 }

@@ -46,7 +46,7 @@ export function ChatInput({
             className="chat-input-textarea"
           />
           <button
-            onClick={onSubmit}
+            onClick={() => onSubmit()}
             disabled={isLoading || !value.trim()}
             className="chat-send-btn"
             title="Send (Enter)"

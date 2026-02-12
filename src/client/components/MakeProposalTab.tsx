@@ -1,6 +1,6 @@
 import { useTabContext, type Proposal } from "../contexts/TabContext";
 import { useChat } from "./chat/useChat";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChatBubble } from "./chat/ChatBubble";
 import { ChatLoader } from "./chat/ChatLoader";
 import { ChatInput } from "./chat/ChatInput";
@@ -156,23 +156,26 @@ export function MakeProposalTab({ selectedModel }: { selectedModel?: string }) {
       <div className="chat-messages-area">
         <div style={{ maxWidth: "800px", margin: "0 auto" }}>
           <div className="chat-messages-list">
-            {messages.map((msg, i) => (
-              <div key={i}>
-                <ChatBubble
-                  message={msg}
-                  isStreaming={isStreaming && i === messages.length - 1}
-                />
-                {/* Render proposal card after the assistant message that contains it */}
-                {proposals.find((p) => p.index === i) && (
-                  <div style={{ padding: "0 0 16px" }}>
-                    <ProposalCard
-                      proposal={proposals.find((p) => p.index === i)!.proposal}
-                      onAnalyze={() => transferToAnalyze(proposals.find((p) => p.index === i)!.proposal)}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
+            {messages.map((msg, i) => {
+              const found = proposals.find((p) => p.index === i);
+              return (
+                <React.Fragment key={i}>
+                  <ChatBubble
+                    message={msg}
+                    isStreaming={isStreaming && i === messages.length - 1}
+                  />
+                  {/* Render proposal card after the assistant message that contains it */}
+                  {found && (
+                    <div style={{ padding: "0 0 16px" }}>
+                      <ProposalCard
+                        proposal={found.proposal}
+                        onAnalyze={() => transferToAnalyze(found.proposal)}
+                      />
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
             {isLoading && !isStreaming && <ChatLoader />}
             <div ref={messagesEndRef} />
           </div>

@@ -14,6 +14,9 @@ import { handleSimulateTransaction } from "./simulation.ts";
 import { handleTestTokenTransfer } from "./verification.ts";
 import { handleRunForkTest } from "./fork-test.ts";
 import { handleWebFetch } from "./web-fetch.ts";
+import { handleEncodeCalldata } from "./encode.ts";
+import { handleListDaoActions } from "./dao-actions-tool.ts";
+import { handleAnalyzeAgenda } from "./agenda-analysis.ts";
 
 /**
  * Returns Anthropic API tool definitions for all tools.
@@ -253,6 +256,72 @@ export function getToolDefinitions(): ToolDefinition[] {
       },
     },
     {
+      name: "encode_calldata",
+      description:
+        "Encode a function call into calldata for a DAO proposal. Returns target address and hex calldata.",
+      input_schema: {
+        type: "object" as const,
+        properties: {
+          contract_name: {
+            type: "string",
+            description: "Contract name (e.g. SeigManager, DepositManager)",
+          },
+          function_name: {
+            type: "string",
+            description: "Function name to encode (e.g. setDaoSeigRate, setSeigPerBlock)",
+          },
+          args: {
+            type: "array",
+            items: { type: "string" },
+            description: "Function arguments as strings (e.g. ['5000000000000000000000000000'])",
+          },
+        },
+        required: ["contract_name", "function_name"],
+      },
+    },
+    {
+      name: "list_dao_actions",
+      description:
+        "List all DAO-callable contracts and their governance functions. Use to discover what functions the DAO can call via proposals.",
+      input_schema: {
+        type: "object" as const,
+        properties: {
+          contract_name: {
+            type: "string",
+            description: "Filter by contract name (optional). If omitted, lists all contracts.",
+          },
+        },
+      },
+    },
+    {
+      name: "analyze_agenda",
+      description:
+        "Analyze a DAO agenda or proposal. Decodes calldata, simulates execution as DAOCommitteeProxy, runs fork tests, and provides risk assessment.",
+      input_schema: {
+        type: "object" as const,
+        properties: {
+          agenda_id: {
+            type: "string",
+            description: "On-chain agenda ID number (e.g. '1', '42')",
+          },
+          targets: {
+            type: "array",
+            items: { type: "string" },
+            description: "Array of target contract addresses",
+          },
+          function_bytecodes: {
+            type: "array",
+            items: { type: "string" },
+            description: "Array of hex-encoded calldata for each target",
+          },
+          atomic_execute: {
+            type: "boolean",
+            description: "Whether all calls should execute atomically (default: false)",
+          },
+        },
+      },
+    },
+    {
       name: "web_fetch",
       description:
         "Fetch data from trusted DeFi APIs. Use to look up DEX router addresses, protocol info, or token data. Allowed domains: api.llama.fi, api.etherscan.io, api.dexscreener.com, api.coingecko.com.",
@@ -285,6 +354,9 @@ interface ToolArgsMap {
   simulate_transaction: { to: string; calldata: string; from?: string; value?: string; block_number?: number };
   test_token_transfer: { token_address: string; dex?: string; router_address?: string; router_label?: string; scenarios?: string[] };
   run_fork_test: { test_pattern: string; contract_pattern?: string; verbosity?: number };
+  encode_calldata: { contract_name: string; function_name: string; args?: string[] };
+  list_dao_actions: { contract_name?: string };
+  analyze_agenda: { agenda_id?: string; targets?: string[]; function_bytecodes?: string[]; atomic_execute?: boolean };
   web_fetch: { url: string };
 }
 
@@ -314,6 +386,12 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       return handleTestTokenTransfer(args as ToolArgsMap["test_token_transfer"]);
     case "run_fork_test":
       return handleRunForkTest(args as ToolArgsMap["run_fork_test"]);
+    case "encode_calldata":
+      return handleEncodeCalldata(args as ToolArgsMap["encode_calldata"]);
+    case "list_dao_actions":
+      return handleListDaoActions(args as ToolArgsMap["list_dao_actions"]);
+    case "analyze_agenda":
+      return handleAnalyzeAgenda(args as ToolArgsMap["analyze_agenda"]);
     case "web_fetch":
       return handleWebFetch(args as ToolArgsMap["web_fetch"]);
     default:

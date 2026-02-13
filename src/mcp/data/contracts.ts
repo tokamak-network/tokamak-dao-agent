@@ -135,13 +135,29 @@ export function findRelatedContracts(contract: ContractInfo): ContractInfo[] {
 }
 
 /**
+ * Get a contract by its address.
+ */
+export function getContractByAddress(address: string): ContractInfo | undefined {
+  return getAddressMap().get(address.toLowerCase());
+}
+
+/**
  * Resolve the call-through address for a contract.
  * If the contract is an implementation, returns its proxy address.
  */
 export function resolveCallAddress(contract: ContractInfo): string {
   if (contract.type === "implementation") {
-    const proxy = getAllContracts().find(
+    // First: exact match — proxy whose implementation field points to this address
+    const exact = getAllContracts().find(
       (c) => c.implementation?.toLowerCase() === contract.address.toLowerCase()
+    );
+    if (exact) return exact.address;
+
+    // Second: name-based match — SeigManager → SeigManagerProxy
+    // Handles multi-version implementations (e.g. SeigManagerV1_2 → SeigManagerProxy)
+    const baseName = contract.name.replace(/V\d+_?\d*$/, "");
+    const proxy = getAllContracts().find(
+      (c) => c.type === "proxy" && c.name === `${baseName}Proxy`
     );
     if (proxy) return proxy.address;
   }

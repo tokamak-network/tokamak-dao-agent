@@ -6,7 +6,7 @@ import { ToolCallBlock } from "./ToolCallBlock";
 /**
  * Fix bold/italic markers adjacent to CJK characters.
  * Markdown parsers require word boundaries around emphasis markers,
- * but no boundary exists between `**` and Korean characters like `**텍스트**를`.
+ * but no boundary exists between `**` and CJK characters (e.g. `**text**followed`).
  * Inserting a zero-width space provides the needed boundary.
  */
 function fixCjkEmphasis(text: string): string {

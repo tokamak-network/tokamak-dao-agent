@@ -31,7 +31,7 @@ except:
     sys.exit(0)
 
 # 4. Find the last user message
-keywords = r"거래|스왑|가능|호환|trade|swap|uniswap|sushiswap|transferfrom|dex|거래소|교환|유니스왑|스시스왑|compatible|tradeable|tradable"
+keywords = r"trade|swap|uniswap|sushiswap|transferfrom|dex|exchange|compatible|tradeable|tradable"
 has_keywords = False
 
 for line in reversed(lines):

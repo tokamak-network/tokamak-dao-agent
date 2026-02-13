@@ -13,8 +13,8 @@ PROMPT=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin)
 # Convert to lowercase for matching
 PROMPT_LOWER=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]')
 
-# Keywords that suggest on-chain verification is needed
-KEYWORDS="거래|스왑|가능|호환|trade|swap|uniswap|sushiswap|transferfrom|dex|거래소|교환|유니스왑|스시스왑|compatible|tradeable|tradable"
+# Keywords that suggest on-chain verification is needed (includes Korean equivalents for i18n)
+KEYWORDS="trade|swap|uniswap|sushiswap|transferfrom|dex|exchange|compatible|tradeable|tradable"
 
 if echo "$PROMPT_LOWER" | grep -qiE "$KEYWORDS"; then
   # Plain text stdout is injected as additionalContext by Claude Code

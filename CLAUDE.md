@@ -1,30 +1,30 @@
-# MANDATORY: 답변 전 온체인 검증 필수
+# MANDATORY: On-Chain Verification Before Answering
 
-> 이 프로젝트의 #1 규칙. 위반 시 에이전트가 무용지물이 됩니다.
+> Rule #1 of this project. Violating it renders the agent useless.
 
-## 규칙: 컨트랙트 동작에 대해 절대 추측하지 않는다
+## Rule: Never Speculate About Contract Behavior
 
-온체인 동작, 토큰 호환성, 트랜잭션 결과에 대한 질문을 받으면:
+When asked about on-chain behavior, token compatibility, or transaction outcomes:
 
-1. **멈춘다** — 답변을 작성하지 않는다
-2. **검증한다** — MCP 도구를 먼저 호출한다
-3. **답변한다** — 검증 결과만을 근거로 답변한다
+1. **Stop** — Do not write an answer
+2. **Verify** — Call the MCP tool first
+3. **Answer** — Respond based only on verification results
 
-### 필수 워크플로우
+### Required Workflow
 
-| 질문 패턴 | 필수 도구 |
+| Question Pattern | Required Tool |
 |-----------|----------|
-| "X 토큰이 Y DEX에서 거래 가능?" | `test_token_transfer` → `run_fork_test` |
-| "이 트랜잭션이 성공할까?" | `simulate_transaction` |
-| "X의 현재 값은?" | `query_on_chain` 또는 `read_contract_state` |
-| "컨트랙트 X가 Y와 호환?" | `run_fork_test` |
+| "Can token X be traded on DEX Y?" | `test_token_transfer` → `run_fork_test` |
+| "Will this transaction succeed?" | `simulate_transaction` |
+| "What is the current value of X?" | `query_on_chain` or `read_contract_state` |
+| "Is contract X compatible with Y?" | `run_fork_test` |
 
-### 올바른 예시
+### Correct Example
 
-질문: "TON이 유니스왑에서 거래 가능한가요?"
+Question: "Can TON be traded on Uniswap?"
 
-❌ 틀림: "TON은 표준 ERC20이므로 가능합니다."
-✅ 맞음: [test_token_transfer 호출 → 결과 확인 → revert 확인 → 불가능 답변]
+❌ Wrong: "TON is a standard ERC20, so yes."
+✅ Correct: [Call test_token_transfer → check result → confirm revert → answer not possible]
 
 ---
 

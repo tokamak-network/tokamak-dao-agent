@@ -12,18 +12,38 @@ let _abiCache: Map<string, any[]> | null = null;
 
 /**
  * Load ABI for a specific contract name.
- * Searches contracts/out/{ContractName}.sol/{ContractName}.json
+ * Searches contracts/out/{ContractName}.sol/{ContractName}.json first,
+ * then searches all subdirectories for {ContractName}.json as fallback.
  */
 export function loadAbi(contractName: string): any[] | null {
+  // Direct path: contracts/out/{Name}.sol/{Name}.json
   const filePath = join(OUT_DIR, `${contractName}.sol`, `${contractName}.json`);
-  if (!existsSync(filePath)) return null;
-
-  try {
-    const json = JSON.parse(readFileSync(filePath, "utf-8"));
-    return json.abi || null;
-  } catch {
-    return null;
+  if (existsSync(filePath)) {
+    try {
+      const json = JSON.parse(readFileSync(filePath, "utf-8"));
+      return json.abi || null;
+    } catch {
+      return null;
+    }
   }
+
+  // Fallback: search all subdirectories for {ContractName}.json
+  // This finds interfaces compiled from test files (e.g. ISeigManagerFull in StorageVerify.t.sol/)
+  if (!existsSync(OUT_DIR)) return null;
+  for (const entry of readdirSync(OUT_DIR)) {
+    if (!entry.endsWith(".sol")) continue;
+    const candidate = join(OUT_DIR, entry, `${contractName}.json`);
+    if (existsSync(candidate)) {
+      try {
+        const json = JSON.parse(readFileSync(candidate, "utf-8"));
+        return json.abi || null;
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  return null;
 }
 
 /**

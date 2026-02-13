@@ -6,7 +6,7 @@ import { z } from "zod";
 import { type Address } from "viem";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
-import { getContractByName, resolveCallAddress } from "../data/contracts.ts";
+import { getContractByName, getContractByAddress, resolveCallAddress } from "../data/contracts.ts";
 import { loadAbi, getViewFunctions } from "../data/abis.ts";
 import { safeParseBigInt, formatError } from "./validation.ts";
 
@@ -65,6 +65,33 @@ export async function handleQueryOnChain(args: {
   const namesToTry = [args.contract_name, contract.name];
   const baseName = contract.name.replace(/V\d+_?\d*$/, "");
   if (baseName !== contract.name) namesToTry.push(baseName);
+
+  // For proxy contracts, also try the implementation's name (and its base name)
+  if (contract.type === "proxy" && contract.implementation) {
+    const impl = getContractByAddress(contract.implementation);
+    if (impl) {
+      namesToTry.push(impl.name);
+      const implBase = impl.name.replace(/V\d+_?\d*$/, "");
+      if (implBase !== impl.name) namesToTry.push(implBase);
+    }
+  }
+
+  // Try stripping "Proxy" suffix: SeigManagerProxy → SeigManager
+  const proxyStripped = contract.name.replace(/Proxy\d?$/, "");
+  if (proxyStripped !== contract.name) namesToTry.push(proxyStripped);
+
+  // Also try interface naming patterns (I{Name}, I{Name}Full)
+  const seen = new Set(namesToTry);
+  const interfaceNames: string[] = [];
+  for (const name of [...namesToTry]) {
+    for (const prefix of [`I${name}Full`, `I${name}`]) {
+      if (!seen.has(prefix)) {
+        interfaceNames.push(prefix);
+        seen.add(prefix);
+      }
+    }
+  }
+  namesToTry.push(...interfaceNames);
 
   let abi: any[] | null = null;
   let abiSource = "";

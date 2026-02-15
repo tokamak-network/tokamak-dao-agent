@@ -1,0 +1,36 @@
+{
+  "name": "DAOCommittee_V1",
+  "address": "0x9050Af1638f379A018737880aD946CdDA9101A25",
+  "compilerVersion": "v0.8.19+commit.7dd6d404",
+  "optimizationUsed": true,
+  "runs": 200,
+  "evmVersion": "paris",
+  "proxy": false,
+  "implementation": "",
+  "settings": {
+    "evmVersion": "paris",
+    "libraries": {},
+    "metadata": {
+      "bytecodeHash": "none",
+      "useLiteralContent": true
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "remappings": [],
+    "viaIR": true,
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "devdoc",
+          "userdoc",
+          "metadata",
+          "abi"
+        ]
+      }
+    }
+  }
+}

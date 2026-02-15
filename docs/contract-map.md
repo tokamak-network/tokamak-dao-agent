@@ -267,16 +267,22 @@ Receives portion of seigniorage from SeigManager. Exact mechanism and current st
 | Quorum | **2** (verified) |
 | Total Agendas | **16** (verified) |
 
-**Implementation Architecture (verified on-chain):**
+**Implementation Architecture (verified on-chain, sources fetched from Etherscan):**
 
-| Slot | Address | Status | Purpose |
-|------|---------|--------|---------|
-| impl(0) | `0x9050Af1638...` | **ALIVE** | Main governance logic |
-| impl(1) | `0xcb9859Dc0f...` | **ALIVE** | Secondary (likely admin/owner functions) |
-| DAOCommittee_V1 | `0xcC88dFa531...` | **NOT ALIVE** | Deprecated original |
+| Slot | Address | Contract Name | Status | Purpose |
+|------|---------|--------------|--------|---------|
+| impl(0) | `0x9050Af1638...` | **DAOCommittee_V1** (v2) | **ALIVE** (default) | Core DAO: createCandidate, castVote, executeAgenda, changeMember, claimActivityReward. Includes blacklist/cooldown. |
+| impl(1) | `0xcb9859Dc0f...` | **DAOCommitteeOwner** (v2) | **ALIVE** (selector-mapped) | Admin config: setSeigManager, setDaoVault, setQuorum, setCooldownTime, daoExecuteTransaction |
+| DAOCommittee_V1 | `0xcC88dFa531...` | DAOCommittee_V1 (v1) | **NOT ALIVE** | Deprecated original |
 
-> **Discovery:** The current implementations (0x9050Af..., 0xcb9859...) are **not listed in contracts.json**.
-> The registered DAOCommittee_V1 is deprecated. The actual running code is newer.
+**Routing:** `getSelectorImplementation2()` checks `selectorImplementation[selector]` first.
+If not found or not alive → defaults to `proxyImplementation[0]` (slot0).
+
+**Key additions in current impls vs deprecated:**
+- `blacklist` mapping — candidates can be blacklisted from `changeMember()`
+- `cooldown`/`cooldownTime` — prevents rapid member changes
+- `daoExecuteTransaction(to, data)` — generic admin call (replaces many specific setters)
+- `SafeERC20` for token operations, custom errors
 
 **DAOCommitteeProxy2** (`0xD6175F...`) has **implementation = address(0)** — completely inactive/unused.
 
@@ -517,20 +523,20 @@ Operator → Layer2Manager.registerCandidateAddOn(rollupConfig, deposit, memo)
 
 ### Unresolved Items
 
-| # | Item | Issue | Priority |
-|---|------|-------|----------|
-| 1 | **SwapProxy** (`0x30e65B3A...`) | No source code. `implementation2()` reverts. Purpose unclear. | HIGH |
-| 2 | **PowerTONSwapperProxy** (`0x970298...`) | `implementation2()` reverts. Different proxy interface? | HIGH |
-| 3 | **DAOCommittee current impls** | 0x9050Af... and 0xcb9859... not in contracts.json. Need to verify source. | HIGH |
-| 4 | **DAOCommitteeProxy2** (`0xD6175F...`) | impl=address(0). Why does this exist? Was it ever active? | MEDIUM |
-| 5 | **L1BridgeRegistryProxy_Legacy** (`0x17Fa32D...`) | Has impl 0x70aFe7... Relationship with current proxy unclear. | MEDIUM |
-| 6 | **WTON.seigManager → V0** | Points to 0x710936... (V0), not current proxy. Intentional or stale? | MEDIUM |
-| 7 | **MultiSigWallet threshold** | `required()` reverts. What does this wallet own/control? | LOW |
-| 8 | **contracts.json staleness** | SeigManager and DAOCommittee implementation fields are outdated. | LOW |
+| # | Item | Issue | Status |
+|---|------|-------|--------|
+| 1 | **SwapProxy** (`0x30e65B3A...`) | No source code. `implementation2()` reverts. Purpose unclear. | OPEN |
+| 2 | **PowerTONSwapperProxy** (`0x970298...`) | `implementation2()` reverts. Different proxy interface? | OPEN |
+| 3 | ~~DAOCommittee current impls~~ | ~~0x9050Af... and 0xcb9859... not in contracts.json~~ | **RESOLVED** — Sources fetched from Etherscan, saved to `contracts/src/DAOCommittee_Current_Slot0/` and `DAOCommittee_Current_Slot1/`. Added to contracts.json. |
+| 4 | ~~DAOCommitteeProxy2~~ (`0xD6175F...`) | ~~impl=address(0). Why does this exist?~~ | **RESOLVED** — Confirmed uninitialized. `implementation()` returns zero address. Deployed but never activated. |
+| 5 | **L1BridgeRegistryProxy_Legacy** (`0x17Fa32D...`) | Has impl 0x70aFe7... Relationship with current proxy unclear. | OPEN |
+| 6 | ~~WTON.seigManager → V0~~ | ~~Points to 0x710936... (V0), not current proxy~~ | **RESOLVED** — VERIFIED on-chain: returns `0x710936...` (SeigManagerV0). Used in transfer/mint/burn hooks for `onTransfer()`. Updatable via owner-only `setSeigManager()`. Likely intentional to avoid proxy overhead on every WTON transfer. |
+| 7 | **MultiSigWallet threshold** | `required()` reverts. What does this wallet own/control? | OPEN |
+| 8 | ~~contracts.json staleness~~ | ~~SeigManager and DAOCommittee implementation fields outdated~~ | **RESOLVED** — All proxy `implementation` fields filled. No null values remain. |
 
 ### Recommended Next Steps
 
-1. **Etherscan verification** for 0x9050Af... and 0xcb9859... to identify DAOCommittee implementations
+1. ~~Etherscan verification for 0x9050Af... and 0xcb9859...~~ **DONE**
 2. **Agenda history analysis** — scan all 16 agendas to trace every upgrade
 3. **PowerTON investigation** — try alternative proxy function signatures
 4. **SwapProxy** — check if used by Layer2Manager.swapProxy or is obsolete

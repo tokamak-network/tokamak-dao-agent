@@ -12,7 +12,7 @@
       "address": "0xc4A11aaf6ea915Ed7Ac194161d2fC9384F15bff2",
       "type": "token",
       "docId": "con-002",
-      "description": "Wrapped TON for staking with RAY precision (27 decimals). Note: seigManager() points directly to SeigManagerV0 (0x7109...), not SeigManagerProxy"
+      "description": "Wrapped TON for staking with RAY precision (27 decimals). VERIFIED: seigManager() returns 0x710936500aC59e8551331871Cbad3D33d5e0D909 (SeigManagerV0, NOT proxy). Transfer/mint/burn hooks call V0.onTransfer() directly. Updatable via owner-only setSeigManager()"
     },
     {
       "name": "StakedWTON",
@@ -90,8 +90,9 @@
       "name": "CandidateFactoryProxy",
       "address": "0x9fc7100a16407ee24a79c834a56e6eca555a5d7c",
       "type": "proxy",
+      "implementation": "0xc5eb1c5ce7196bdb49ea7500ca18a1b9f1fa3ffb",
       "docId": "con-019",
-      "description": "Upgradeable proxy for CandidateFactory"
+      "description": "Upgradeable proxy for CandidateFactory. Uses Tokamak proxy pattern (slot 0), not EIP-1967"
     },
     {
       "name": "RefactorCoinageSnapshot",
@@ -161,8 +162,9 @@
       "name": "CandidateAddOnFactoryProxy",
       "address": "0xFA8ce5caF456115E72B96E5074769b8f66AA5861",
       "type": "proxy",
+      "implementation": "0x557E24b5CbFbDA3e5aC1bD01F38EcDe865791Bc5",
       "docId": "con-029",
-      "description": "Upgradeable proxy for CandidateAddOnFactory"
+      "description": "Upgradeable proxy for CandidateAddOnFactory. Uses Tokamak proxy pattern (slot 0), not EIP-1967"
     },
     {
       "name": "Layer2ManagerV1_1",
@@ -175,8 +177,9 @@
       "name": "Layer2ManagerProxy",
       "address": "0xD6Bf6B2b7553c8064Ba763AD6989829060FdFC1D",
       "type": "proxy",
+      "implementation": "0x2EB7f500125f11544392B83B87cDEb9456f3509f",
       "docId": "con-031",
-      "description": "Upgradeable proxy for Layer2Manager"
+      "description": "Upgradeable proxy for Layer2Manager, currently pointing to Layer2ManagerV1_1"
     },
     {
       "name": "SeigManagerV1_2",
@@ -332,8 +335,9 @@
       "name": "DAOCommitteeProxy2",
       "address": "0xD6175F575F4d32392508Ee2FBbDec9a2E8B3c01a",
       "type": "proxy",
+      "implementation": "0x0000000000000000000000000000000000000000",
       "docId": "con-074",
-      "description": "Second DAOCommittee proxy contract. UNINITIALIZED: no implementation set, deployed but never activated. Uses AccessControl-based upgrade pattern"
+      "description": "Second DAOCommittee proxy contract. UNINITIALIZED: implementation() returns zero address, deployed but never activated. Uses AccessControl-based upgrade pattern"
     },
     {
       "name": "DAOCommittee_V1",
@@ -354,14 +358,16 @@
       "address": "0x9050Af1638f379A018737880aD946CdDA9101A25",
       "type": "implementation",
       "docId": "con-077",
-      "description": "Current DAOCommittee implementation at proxy slot 0 (alive)"
+      "description": "Current DAOCommittee V1 implementation at proxy slot 0 (alive, default fallback). Handles core DAO: createCandidate, castVote, executeAgenda, changeMember, claimActivityReward. Includes blacklist/cooldown. Compiled v0.8.19",
+      "sourceDir": "DAOCommittee_Current_Slot0"
     },
     {
       "name": "DAOCommittee_Current_Slot1",
       "address": "0xcb9859Dc0fBECa68eFFf2bce289150513fdF7D92",
       "type": "implementation",
       "docId": "con-078",
-      "description": "Current DAOCommittee implementation at proxy slot 1 (alive)"
+      "description": "Current DAOCommitteeOwner implementation at proxy slot 1 (alive, selector-mapped). Handles admin config: setSeigManager, setDaoVault, setQuorum, setCooldownTime, daoExecuteTransaction. Compiled v0.8.19",
+      "sourceDir": "DAOCommittee_Current_Slot1"
     }
   ],
   "multiSig": [

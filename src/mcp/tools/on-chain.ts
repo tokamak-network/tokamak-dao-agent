@@ -80,11 +80,11 @@ export async function handleQueryOnChain(args: {
   const proxyStripped = contract.name.replace(/Proxy\d?$/, "");
   if (proxyStripped !== contract.name) namesToTry.push(proxyStripped);
 
-  // Also try interface naming patterns (I{Name}, I{Name}Full)
+  // Also try interface naming patterns (I{Name}Complete, I{Name}Full, I{Name})
   const seen = new Set(namesToTry);
   const interfaceNames: string[] = [];
   for (const name of [...namesToTry]) {
-    for (const prefix of [`I${name}Full`, `I${name}`]) {
+    for (const prefix of [`I${name}Complete`, `I${name}Full`, `I${name}`]) {
       if (!seen.has(prefix)) {
         interfaceNames.push(prefix);
         seen.add(prefix);

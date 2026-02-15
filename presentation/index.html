@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tokamak DAO Agent — Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+  <style>
+    :root {
+      --cream: #f5f0e8;
+      --dark: #1a1a1a;
+      --mid: #6b6b6b;
+      --light-border: #d5d0c8;
+      --accent: #1a1a1a;
+      --tag-bg: #e8e3db;
+      --red: #c0392b;
+      --blue: #2563eb;
+      --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+
+    body {
+      background: var(--dark);
+    }
+
+    .reveal {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .reveal .slides > section {
+      background: var(--cream);
+      border-radius: 16px;
+      padding: 48px 56px;
+      box-sizing: border-box;
+      text-align: left;
+      color: var(--dark);
+      width: 1180px;
+      height: 660px;
+      overflow: hidden;
+    }
+
+    .reveal .slide-number {
+      display: none;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 40px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--mid);
+    }
+
+    /* ── Typography ── */
+    .reveal h2 {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--dark);
+      text-transform: none;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin: 0 0 36px 0;
+      text-align: left;
+    }
+
+    .reveal h2 span {
+      font-weight: 400;
+      color: var(--mid);
+    }
+
+    /* ── Shared card ── */
+    .s-card {
+      background: #fff;
+      border: 1px solid var(--light-border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      text-align: left;
+    }
+
+    .s-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--mid);
+      margin-bottom: 8px;
+    }
+
+    .s-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .s-body {
+      font-size: 15px;
+      color: var(--mid);
+      line-height: 1.6;
+    }
+
+    .s-tag {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--tag-bg);
+      color: var(--dark);
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+
+    .s-mono {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--blue);
+    }
+
+    .s-code {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(0,0,0,0.04);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--dark);
+      line-height: 1.55;
+      margin-top: 10px;
+    }
+
+    .arrow-sep {
+      color: var(--light-border);
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      align-self: center;
+    }
+
+    /* ── Slide 1: Problem Statement ── */
+    .problem-slide .steps {
+      display: flex;
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    .problem-slide .step { flex: 1; }
+
+    .problem-slide .step--alert {
+      border-color: var(--red);
+    }
+
+    .problem-slide .step--alert .s-label { color: var(--red); }
+    .problem-slide .step--alert .s-title { color: var(--red); }
+    .problem-slide .highlight { color: var(--red); font-weight: 700; }
+
+    /* ── Slide 2: Solution ── */
+    .solution-slide .cards {
+      display: flex;
+      gap: 24px;
+    }
+
+    .solution-slide .card { flex: 1; }
+
+    .solution-slide .card--primary {
+      border: 2px solid var(--dark);
+    }
+
+    /* ── Slide 3: Architecture ── */
+    .arch-slide .diagram {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .arch-slide .arch-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .arch-slide .arch-col-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--mid);
+      margin-bottom: 4px;
+    }
+
+    .arch-slide .arch-box {
+      background: #fff;
+      border: 1px solid var(--light-border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      text-align: center;
+      width: 170px;
+    }
+
+    .arch-slide .arch-box-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 3px;
+    }
+
+    .arch-slide .arch-box-desc {
+      font-size: 11px;
+      color: var(--mid);
+      line-height: 1.45;
+    }
+
+    .arch-slide .arch-box--tools {
+      border: 2px solid var(--dark);
+      width: 280px;
+      padding: 14px 16px;
+    }
+
+    .arch-slide .arch-box--tools .arch-box-title {
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+
+    .arch-slide .tools-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px 14px;
+      text-align: left;
+    }
+
+    .arch-slide .tools-list span {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      color: var(--mid);
+      padding: 2px 0;
+    }
+
+    .arch-slide .arch-arrow {
+      display: flex;
+      align-items: center;
+      align-self: center;
+      padding: 0 10px;
+      color: var(--light-border);
+      font-size: 20px;
+    }
+
+    /* ── Slide 4: Knowledge Layer ── */
+    .knowledge-slide .layers {
+      display: flex;
+      gap: 16px;
+    }
+
+    .knowledge-slide .layer {
+      flex: 1;
+    }
+
+    .knowledge-slide .takeaway {
+      margin-top: 32px;
+      font-size: 16px;
+      color: var(--mid);
+      line-height: 1.6;
+    }
+
+    .knowledge-slide .takeaway em {
+      color: var(--dark);
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    /* ── Slide 5: Tool Flow ── */
+    .flow-slide .pipeline {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .flow-slide .stage {
+      flex: 1;
+    }
+
+    .flow-slide .stage--highlight {
+      border: 2px solid var(--dark);
+    }
+
+    .flow-slide .example {
+      margin-top: 28px;
+      font-size: 15px;
+      color: var(--mid);
+      line-height: 1.6;
+    }
+
+    .flow-slide .example strong { color: var(--dark); }
+    .flow-slide .example code {
+      font-family: var(--mono);
+      background: var(--tag-bg);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    /* ── Slide 6: Roadmap ── */
+    .roadmap-slide .roadmap-flow {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .roadmap-slide .rm-phase {
+      flex: 1;
+      position: relative;
+    }
+
+    .roadmap-slide .rm-phase--current,
+    .roadmap-slide .rm-phase--future {
+      border: 1px solid var(--light-border);
+    }
+
+    .roadmap-slide .rm-agents {
+      display: flex;
+      gap: 4px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .roadmap-slide .rm-agent-chip {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--tag-bg);
+      color: var(--dark);
+      white-space: nowrap;
+    }
+
+    .roadmap-slide .rm-agent-chip--holder { border-left: 3px solid #2563eb; }
+    .roadmap-slide .rm-agent-chip--operator { border-left: 3px solid #059669; }
+    .roadmap-slide .rm-agent-chip--validator { border-left: 3px solid #d97706; }
+    .roadmap-slide .rm-agent-chip--foundation { border-left: 3px solid #7c3aed; }
+
+    .roadmap-slide .rm-detail {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--mid);
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+
+    .roadmap-slide .takeaway {
+      margin-top: 24px;
+      font-size: 15px;
+      color: var(--mid);
+      line-height: 1.6;
+    }
+
+    .roadmap-slide .takeaway em {
+      color: var(--dark);
+      font-style: normal;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: Problem Statement -->
+      <section class="problem-slide">
+        <div class="topbar">
+          <span>Tokamak DAO Agent</span>
+        </div>
+        <h2>Problem<br><span>Statement</span></h2>
+
+        <div class="steps">
+          <div class="s-card step">
+            <div class="s-label">1-1. Decentralization</div>
+            <div class="s-title">The Core Value</div>
+            <div class="s-body">Decentralization is the core value of blockchain.</div>
+          </div>
+
+          <div class="arrow-sep">→</div>
+
+          <div class="s-card step">
+            <div class="s-label">1-2. Role of DAOs</div>
+            <div class="s-title">Governance Mechanism</div>
+            <div class="s-body">DAOs are the key governance mechanism that makes decentralization a reality.</div>
+          </div>
+
+          <div class="arrow-sep">→</div>
+
+          <div class="s-card step step--alert">
+            <div class="s-label">1-3. Barriers</div>
+            <div class="s-title">Low Participation</div>
+            <div class="s-body">
+              Participating in a DAO requires deep knowledge of blockchain and the Tokamak Network ecosystem.<br><br>
+              This results in <span class="highlight">low community participation</span>.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 2: Solution -->
+      <section class="solution-slide">
+        <div class="topbar">
+          <span>Tokamak DAO Agent</span>
+        </div>
+        <h2>Solution</h2>
+
+        <div class="cards">
+          <div class="s-card card">
+            <div class="s-label">2-1. Chat</div>
+            <div class="s-title">Ecosystem Understanding</div>
+            <div class="s-body">We provide a Chat interface that allows anyone to easily understand the Tokamak Network ecosystem.</div>
+          </div>
+
+          <div class="s-card card card--primary">
+            <div class="s-label">2-2. Agent</div>
+            <div class="s-title">DAO Participation</div>
+            <div class="s-body">The Agent directly participates in the DAO, analyzing proposals and providing objective opinions.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3: Architecture Overview -->
+      <section class="arch-slide">
+        <div class="topbar">
+          <span>Tokamak DAO Agent</span>
+        </div>
+        <h2>Architecture<br><span>Overview</span></h2>
+
+        <div class="diagram">
+          <div class="arch-col">
+            <div class="arch-col-label">Interface</div>
+            <div class="arch-box">
+              <div class="arch-box-title">Web Chat UI</div>
+              <div class="arch-box-desc">Browser-based<br>Chat / Propose / Analyze</div>
+            </div>
+            <div class="arch-box">
+              <div class="arch-box-title">Claude Code</div>
+              <div class="arch-box-desc">Terminal CLI<br>MCP (stdio)</div>
+            </div>
+          </div>
+
+          <div class="arch-arrow">→</div>
+
+          <div class="arch-col">
+            <div class="arch-col-label">AI</div>
+            <div class="arch-box">
+              <div class="arch-box-title">LLM</div>
+              <div class="arch-box-desc">Understands question,<br>selects tools</div>
+            </div>
+          </div>
+
+          <div class="arch-arrow">→</div>
+
+          <div class="arch-col">
+            <div class="arch-col-label">Execution</div>
+            <div class="arch-box arch-box--tools">
+              <div class="arch-box-title">13 Shared Tools</div>
+              <div class="tools-list">
+                <span>get_contract_info</span>
+                <span>simulate_transaction</span>
+                <span>read_contract_source</span>
+                <span>test_token_transfer</span>
+                <span>search_contract_code</span>
+                <span>run_fork_test</span>
+                <span>read_storage_slot</span>
+                <span>encode_calldata</span>
+                <span>read_contract_state</span>
+                <span>decode_calldata</span>
+                <span>query_on_chain</span>
+                <span>analyze_agenda</span>
+                <span>web_fetch</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="arch-arrow">→</div>
+
+          <div class="arch-col">
+            <div class="arch-col-label">Data</div>
+            <div class="arch-box">
+              <div class="arch-box-title">Knowledge Layer</div>
+              <div class="arch-box-desc">Contracts, ABIs,<br>storage layouts, source</div>
+            </div>
+            <div class="arch-box">
+              <div class="arch-box-title">Ethereum Mainnet</div>
+              <div class="arch-box-desc">RPC calls,<br>Foundry fork tests</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: Knowledge Layer -->
+      <section class="knowledge-slide">
+        <div class="topbar">
+          <span>Tokamak DAO Agent</span>
+        </div>
+        <h2>Knowledge<br><span>Layer</span></h2>
+
+        <div class="layers">
+          <div class="s-card layer">
+            <div class="s-label">Registry</div>
+            <div class="s-title">Contract Registry</div>
+            <div class="s-mono">contracts.json</div>
+            <div class="s-body">Contract names, addresses, proxy relationships, and types</div>
+            <div class="s-tag">44 contracts</div>
+          </div>
+
+          <div class="s-card layer">
+            <div class="s-label">ABI</div>
+            <div class="s-title">Compiled ABIs</div>
+            <div class="s-mono">contracts/out/</div>
+            <div class="s-body">Function signatures, events, and errors for calldata decoding</div>
+            <div class="s-tag">Foundry compiled</div>
+          </div>
+
+          <div class="s-card layer">
+            <div class="s-label">Storage</div>
+            <div class="s-title">Storage Layouts</div>
+            <div class="s-mono">storage/layouts/</div>
+            <div class="s-body">Variable name to slot number + type mapping for state decoding</div>
+            <div class="s-tag">40 layout files</div>
+          </div>
+
+          <div class="s-card layer">
+            <div class="s-label">Source</div>
+            <div class="s-title">Solidity Source</div>
+            <div class="s-mono">contracts/src/</div>
+            <div class="s-body">Verified source code for reading and cross-referencing logic</div>
+            <div class="s-tag">746 .sol files</div>
+          </div>
+        </div>
+
+        <div class="takeaway">
+          Tools load this <em>local knowledge</em> to know what to query and how to interpret on-chain data.
+        </div>
+      </section>
+
+      <!-- Slide 5: Tool Execution Flow -->
+      <section class="flow-slide">
+        <div class="topbar">
+          <span>Tokamak DAO Agent</span>
+        </div>
+        <h2>How a Tool<br><span>Works</span></h2>
+
+        <div class="pipeline">
+          <div class="s-card stage">
+            <div class="s-label">Step 1</div>
+            <div class="s-title">User Question</div>
+            <div class="s-body">Natural language question comes in</div>
+            <div class="s-code">"What is the current<br>seigniorage rate?"</div>
+          </div>
+
+          <div class="arrow-sep">→</div>
+
+          <div class="s-card stage">
+            <div class="s-label">Step 2</div>
+            <div class="s-title">LLM Selects Tool</div>
+            <div class="s-body">AI picks the right tool and parameters</div>
+            <div class="s-code">query_on_chain(<br>&nbsp;&nbsp;SeigManager,<br>&nbsp;&nbsp;relativeSeigRate<br>)</div>
+          </div>
+
+          <div class="arrow-sep">→</div>
+
+          <div class="s-card stage">
+            <div class="s-label">Step 3</div>
+            <div class="s-title">Load Knowledge</div>
+            <div class="s-body">Resolve address from registry, load ABI</div>
+            <div class="s-code">contracts.json → addr<br>out/ → ABI + selector</div>
+          </div>
+
+          <div class="arrow-sep">→</div>
+
+          <div class="s-card stage">
+            <div class="s-label">Step 4</div>
+            <div class="s-title">On-Chain Call</div>
+            <div class="s-body">Execute against Ethereum mainnet via RPC</div>
+            <div class="s-code">eth_call → 0x3b1e...<br>→ 4000000...000</div>
+          </div>
+
+          <div class="arrow-sep">→</div>
+
+          <div class="s-card stage stage--highlight">
+            <div class="s-label">Step 5</div>
+            <div class="s-title">Verified Answer</div>
+            <div class="s-body">LLM formats result for the user</div>
+            <div class="s-code">"The rate is<br>4 * 10^27"</div>
+          </div>
+        </div>
+
+        <div class="example">
+          <strong>Key:</strong> Without local knowledge (Step 3), the tool wouldn't know <code>SeigManager = 0x3b1e...</code> or how to encode the call.
+        </div>
+      </section>
+
+      <!-- Slide 6: Roadmap — Multi-Agent Governance -->
+      <section class="roadmap-slide">
+        <div class="topbar">
+          <span>Tokamak DAO Agent</span>
+        </div>
+        <h2>Roadmap<br><span>Multi-Agent Governance</span></h2>
+
+        <div class="roadmap-flow">
+          <div class="s-card rm-phase rm-phase--current">
+            <div class="s-label">Phase 1</div>
+            <div class="s-title">Deploy Agents</div>
+            <div class="s-body">Create stakeholder agents with unique identity, personality, and governance priorities</div>
+            <div class="rm-agents">
+              <span class="rm-agent-chip rm-agent-chip--holder">TON Holder</span>
+              <span class="rm-agent-chip rm-agent-chip--operator">L2 Operator</span>
+              <span class="rm-agent-chip rm-agent-chip--validator">Validator</span>
+              <span class="rm-agent-chip rm-agent-chip--foundation">Foundation</span>
+            </div>
+            <div class="rm-detail">4 types &times; 4 personalities<br>&times; configurable priorities</div>
+          </div>
+
+          <div class="arrow-sep">&#x2192;</div>
+
+          <div class="s-card rm-phase rm-phase--future">
+
+            <div class="s-label">Phase 2</div>
+            <div class="s-title">Propose Agendas</div>
+            <div class="s-body">Each agent proposes new agendas from its stakeholder perspective using on-chain tools</div>
+            <div class="rm-detail">encode_calldata &#x2192; proposal-data<br>Automated target + calldata<br>generation per role</div>
+          </div>
+
+          <div class="arrow-sep">&#x2192;</div>
+
+          <div class="s-card rm-phase rm-phase--future">
+
+            <div class="s-label">Phase 3</div>
+            <div class="s-title">Analyze &amp; Debate</div>
+            <div class="s-body">Agents analyze each other's proposals, simulate on-chain, and debate trade-offs</div>
+            <div class="rm-detail">analyze_agenda &#x2192; risk report<br>simulate_transaction &#x2192; verify<br>Multi-perspective discussion</div>
+          </div>
+
+          <div class="arrow-sep">&#x2192;</div>
+
+          <div class="s-card rm-phase rm-phase--future">
+
+            <div class="s-label">Phase 4</div>
+            <div class="s-title">Consensus &amp; Vote</div>
+            <div class="s-body">Agents reach consensus through structured deliberation and cast informed votes</div>
+            <div class="rm-detail">APPROVE / REJECT / REVIEW<br>per stakeholder perspective<br>Weighted by priorities</div>
+          </div>
+        </div>
+
+        <div class="takeaway">
+          <em>From single-tool queries to autonomous multi-agent governance</em> &#x2014;
+          each stakeholder's interests are represented by an AI agent that can propose, analyze, debate, and vote on DAO agendas.
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: false,
+      transition: 'slide',
+      backgroundTransition: 'fade',
+      center: false,
+      width: 1280,
+      height: 720,
+      maxScale: 1.0,
+      margin: 0.04,
+    });
+  </script>
+</body>
+</html>

@@ -5,8 +5,8 @@ export type PersonalityTrait = "progressive" | "conservative" | "aggressive" | "
 export type StakeholderType =
   | "ton_holder"
   | "layer2_operator"
-  | "dao_committee"
-  | "community_member";
+  | "validator"
+  | "foundation";
 
 export interface GovernancePriority {
   id: string;

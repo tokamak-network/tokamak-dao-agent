@@ -7,10 +7,10 @@ interface Props {
 }
 
 const STAKEHOLDER_TYPES: { type: StakeholderType; icon: string; label: string; desc: string }[] = [
-  { type: "ton_holder", icon: "\u{1FA99}", label: "TON Holder", desc: "Token holder focused on value appreciation and staking rewards" },
-  { type: "layer2_operator", icon: "\u26D3", label: "Layer2 Operator", desc: "Runs infrastructure and cares about network stability" },
-  { type: "dao_committee", icon: "\u{1F3DB}", label: "DAO Committee", desc: "Governance participant ensuring protocol integrity" },
-  { type: "community_member", icon: "\u{1F465}", label: "Community Member", desc: "Active contributor focused on ecosystem health" },
+  { type: "ton_holder", icon: "\u{1FA99}", label: "TON Holder", desc: "Stakes TON for governance, earns seigniorage rewards" },
+  { type: "layer2_operator", icon: "\u26D3", label: "Layer2 Operator", desc: "Runs L2 sequencer, earns tx fees and seigniorage" },
+  { type: "validator", icon: "\u{1F6E1}", label: "Validator", desc: "Verifies L2 state transitions, submits fraud proofs via RAT" },
+  { type: "foundation", icon: "\u{1F3DB}", label: "Foundation", desc: "Sets protocol parameters, manages DAO treasury" },
 ];
 
 const PERSONALITIES: { trait: PersonalityTrait; icon: string; label: string; desc: string }[] = [

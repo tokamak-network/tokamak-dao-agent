@@ -2,7 +2,7 @@ import { useTabContext, type TabMode } from "../contexts/TabContext";
 
 const TABS: { mode: TabMode; label: string }[] = [
   { mode: "chat", label: "Chat" },
-  { mode: "make_proposal", label: "Make Proposal" },
+  { mode: "make_proposal", label: "Generate Calldata" },
   { mode: "analyze_proposal", label: "Analyze Proposal" },
   { mode: "agents", label: "Agents" },
 ];

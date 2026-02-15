@@ -1,7 +1,7 @@
 /**
  * encode_calldata tool - Encode function calls into calldata
  *
- * Used by the Make Proposal tab to generate targets + calldata
+ * Used by the Generate Calldata tab to generate targets + calldata
  * from contract name, function name, and arguments.
  */
 
@@ -123,9 +123,9 @@ export async function handleEncodeCalldata(args: {
     // Build readable summary
     const argsSummary = fnAbi.inputs?.length > 0
       ? fnAbi.inputs.map((input: any, i: number) => {
-          const val = args.args?.[i] ?? "";
-          return `  ${input.name} (${input.type}): ${val}`;
-        }).join("\n")
+        const val = args.args?.[i] ?? "";
+        return `  ${input.name} (${input.type}): ${val}`;
+      }).join("\n")
       : "  (no arguments)";
 
     const contractName = daoAction?.name ?? contract?.name ?? args.contract_name;

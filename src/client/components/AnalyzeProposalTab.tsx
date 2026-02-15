@@ -23,7 +23,7 @@ export function AnalyzeProposalTab({ selectedModel }: { selectedModel?: string }
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Handle pending proposal from Make Proposal tab
+  // Handle pending proposal from Generate Calldata tab
   useEffect(() => {
     if (pendingProposal && messages.length === 0 && !isLoading) {
       const msg = `Please analyze this proposal:\n\nTargets: ${pendingProposal.targets.join(", ")}\nCalldata: ${pendingProposal.functionBytecodes.join(", ")}\nAtomic: ${pendingProposal.atomicExecute}\nDescription: ${pendingProposal.description}`;

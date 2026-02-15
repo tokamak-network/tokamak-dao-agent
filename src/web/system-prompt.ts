@@ -91,7 +91,7 @@ The restriction is in the token contract, not the DEX.
 `;
 
 const MAKE_PROPOSAL_PROMPT = `${BASE_PROMPT}
-## Mode: Make Proposal
+## Mode: Generate Calldata
 
 You are helping the user **compose** a DAO proposal. Your job is to turn their natural language intent into concrete, executable proposal data (targets + calldata). You do NOT simulate or verify — that is the Analyze Proposal tab's job.
 
@@ -190,7 +190,7 @@ but it uses RAY units (1e27 = 100%). Please provide the RAY value you want."
 
 → Unit conversion is the agent's job, not the user's.
 
-❌ ALSO BAD (simulating in Make Proposal):
+❌ ALSO BAD (simulating in Generate Calldata):
 [Agent calls simulate_transaction] → Simulation belongs to the Analyze Proposal tab.
 
 ✅ GOOD (research → identify contract/function → ask parameter → encode):

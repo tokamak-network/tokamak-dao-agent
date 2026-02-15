@@ -5,8 +5,8 @@ import { AgentCreator } from "./AgentCreator";
 const STAKEHOLDER_LABELS: Record<string, string> = {
   ton_holder: "TON Holder",
   layer2_operator: "Layer2 Operator",
-  dao_committee: "DAO Committee",
-  community_member: "Community",
+  validator: "Validator",
+  foundation: "Foundation",
 };
 
 const PERSONALITY_LABELS: Record<string, string> = {

@@ -35,8 +35,8 @@ export function detectProvider(model: string): ModelConfig {
   if (/^claude/i.test(model)) return { provider: "anthropic", model };
   if (/^(gpt|o1|o3|o4|chatgpt)/i.test(model)) return { provider: "openai", model };
 
-  // Default to anthropic for backward compatibility
-  return { provider: "anthropic", model };
+  // Default to openai (LiteLLM-compatible) for non-Claude models
+  return { provider: "openai", model };
 }
 
 /** Cache of instantiated providers (one per provider name). */

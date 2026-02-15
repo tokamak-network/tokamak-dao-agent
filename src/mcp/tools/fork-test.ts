@@ -15,19 +15,44 @@ const CONTRACTS_DIR = join(PROJECT_ROOT, "contracts");
 
 /**
  * Validate test pattern to prevent command injection.
- * Only alphanumeric, underscores, and wildcards (*) are allowed.
+ * Only alphanumeric, underscores, wildcards (*), and dots (.) are allowed.
  */
 function isValidPattern(pattern: string): boolean {
-  return /^[a-zA-Z0-9_*]+$/.test(pattern);
+  return /^[a-zA-Z0-9_.*]+$/.test(pattern);
+}
+
+/**
+ * Convert glob-style wildcards to regex for forge --match-test.
+ * Forge uses regex, but AI agents naturally produce glob patterns.
+ * Converts lone `*` to `.*` while preserving existing `.*`.
+ */
+function normalizeTestPattern(pattern: string): { normalized: string; wasConverted: boolean } {
+  const normalized = pattern.replace(/(?<!\.)(\*)/g, ".*");
+  return { normalized, wasConverted: normalized !== pattern };
 }
 
 /**
  * Run a Foundry fork test and return the output.
  */
+/**
+ * Validate env var key: must be uppercase letters, digits, underscores.
+ */
+function isValidEnvKey(key: string): boolean {
+  return /^[A-Z_][A-Z0-9_]*$/.test(key);
+}
+
+/**
+ * Validate env var value: alphanumeric, underscores, hyphens, dots, and hex addresses.
+ */
+function isValidEnvValue(value: string): boolean {
+  return /^[a-zA-Z0-9_\-\.x]+$/.test(value);
+}
+
 async function runForgeTest(args: {
   test_pattern: string;
   contract_pattern?: string;
   verbosity?: number;
+  env_vars?: Record<string, string>;
 }): Promise<string> {
   const rpcUrl = process.env.ALCHEMY_RPC_URL;
   if (!rpcUrl) {
@@ -42,6 +67,21 @@ async function runForgeTest(args: {
     return `Error: Invalid contract_pattern "${args.contract_pattern}". Only alphanumeric characters, underscores, and * are allowed.`;
   }
 
+  // Validate env_vars if provided
+  if (args.env_vars) {
+    for (const [key, value] of Object.entries(args.env_vars)) {
+      if (!isValidEnvKey(key)) {
+        return `Error: Invalid env var key "${key}". Must match /^[A-Z_][A-Z0-9_]*$/.`;
+      }
+      if (!isValidEnvValue(value)) {
+        return `Error: Invalid env var value for "${key}". Only alphanumeric, underscores, hyphens, dots, and 'x' allowed.`;
+      }
+    }
+  }
+
+  // Convert glob-style patterns to regex for forge --match-test
+  const { normalized: testPattern, wasConverted } = normalizeTestPattern(args.test_pattern);
+
   const verbosity = Math.min(Math.max(args.verbosity ?? 3, 1), 5);
   const verbosityFlag = "-" + "v".repeat(verbosity);
 
@@ -49,7 +89,7 @@ async function runForgeTest(args: {
   const forgeArgs = [
     "test",
     "--match-test",
-    args.test_pattern,
+    testPattern,
     "--fork-url",
     rpcUrl,
     verbosityFlag,
@@ -65,6 +105,7 @@ async function runForgeTest(args: {
       env: {
         ...process.env,
         FOUNDRY_PROFILE: "fork",
+        ...(args.env_vars || {}),
       },
       stdout: "pipe",
       stderr: "pipe",
@@ -82,7 +123,7 @@ async function runForgeTest(args: {
     const stdout = await new Response(proc.stdout).text();
     const stderr = await new Response(proc.stderr).text();
 
-    return formatResult(args.test_pattern, exitCode as number, stdout, stderr);
+    return formatResult(args.test_pattern, testPattern, wasConverted, exitCode as number, stdout, stderr);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return `## Fork Test Error\n\n**Pattern**: \`${args.test_pattern}\`\n**Error**: ${message}`;
@@ -93,7 +134,9 @@ async function runForgeTest(args: {
  * Format forge test output as readable markdown.
  */
 function formatResult(
-  pattern: string,
+  originalPattern: string,
+  normalizedPattern: string,
+  wasConverted: boolean,
   exitCode: number,
   stdout: string,
   stderr: string,
@@ -102,9 +145,10 @@ function formatResult(
 
   lines.push(`## Fork Test Results`);
   lines.push("");
-  lines.push(`**Pattern**: \`${pattern}\``);
-  lines.push(`**Exit code**: ${exitCode} (${exitCode === 0 ? "ALL PASSED" : "FAILURE"})`);
-  lines.push("");
+  lines.push(`**Pattern**: \`${originalPattern}\``);
+  if (wasConverted) {
+    lines.push(`**Normalized**: \`${normalizedPattern}\` (glob wildcards converted to regex)`);
+  }
 
   // Extract test results summary
   const output = stdout || stderr;
@@ -114,12 +158,37 @@ function formatResult(
   const resultLines = testLines.filter(
     (l) => l.includes("[PASS]") || l.includes("[FAIL]"),
   );
-  if (resultLines.length > 0) {
+
+  const testCount = resultLines.length;
+
+  if (testCount === 0) {
+    // Zero tests matched — this is NOT "ALL PASSED", it's a no-op
+    lines.push(`**Exit code**: ${exitCode}`);
+    lines.push(`**WARNING: NO TESTS MATCHED pattern \`${normalizedPattern}\`**`);
+    lines.push("");
+    lines.push("No test functions matched this pattern. Possible causes:");
+    lines.push("- Test function name doesn't exist in the test suite");
+    lines.push("- Pattern is too restrictive");
+    lines.push("");
+    lines.push("**This result provides NO evidence. Do not draw conclusions from it.**");
+  } else {
+    lines.push(`**Exit code**: ${exitCode} (${exitCode === 0 ? "ALL PASSED" : "FAILURE"})`);
+    lines.push(`**Tests run**: ${testCount}`);
+    lines.push("");
+
     lines.push("### Test Results");
     lines.push("");
     for (const rl of resultLines) {
-      const icon = rl.includes("[PASS]") ? "PASS" : "FAIL";
-      lines.push(`- **${icon}**: ${rl.trim()}`);
+      const isPassing = rl.includes("[PASS]");
+      const isNegativeTest = /Reverts|Fails|ShouldRevert|ShouldFail/i.test(rl);
+
+      if (isPassing && isNegativeTest) {
+        lines.push(`- **PASS**: ${rl.trim()}`);
+        lines.push(`  > Note: This is a negative test — PASS means the operation REVERTS (i.e., it does NOT work)`);
+      } else {
+        const icon = isPassing ? "PASS" : "FAIL";
+        lines.push(`- **${icon}**: ${rl.trim()}`);
+      }
     }
     lines.push("");
   }
@@ -169,6 +238,7 @@ export async function handleRunForkTest(args: {
   test_pattern: string;
   contract_pattern?: string;
   verbosity?: number;
+  env_vars?: Record<string, string>;
 }): Promise<string> {
   return runForgeTest(args);
 }
@@ -180,7 +250,7 @@ export function registerForkTestTool(server: McpServer) {
     {
       test_pattern: z
         .string()
-        .describe("Test function name pattern (e.g. 'test_TON_UniswapV2'). Only alphanumeric, underscores, and * allowed."),
+        .describe("Test function name pattern (e.g. 'test_TON_UniswapV2'). Supports regex (forge --match-test). Glob wildcards (*) are auto-converted to regex (.*)"),
       contract_pattern: z
         .string()
         .optional()
@@ -191,10 +261,14 @@ export function registerForkTestTool(server: McpServer) {
         .max(5)
         .optional()
         .describe("Output verbosity level 1-5 (default: 3)"),
+      env_vars: z
+        .record(z.string(), z.string())
+        .optional()
+        .describe("Environment variables to pass to forge (e.g. { AGENDA_ID: '1' })"),
     },
-    async ({ test_pattern, contract_pattern, verbosity }) => {
+    async ({ test_pattern, contract_pattern, verbosity, env_vars }) => {
       try {
-        const text = await runForgeTest({ test_pattern, contract_pattern, verbosity });
+        const text = await runForgeTest({ test_pattern, contract_pattern, verbosity, env_vars });
         return { content: [{ type: "text" as const, text }] };
       } catch (err) {
         return {

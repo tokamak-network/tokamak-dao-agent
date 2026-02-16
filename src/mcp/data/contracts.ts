@@ -163,3 +163,12 @@ export function resolveCallAddress(contract: ContractInfo): string {
   }
   return contract.address;
 }
+
+/**
+ * Enrich an address with its known contract name (if any).
+ * Always preserves the raw address; appends name in parentheses.
+ */
+export function enrichAddress(address: string): string {
+  const found = getAddressMap().get(address.toLowerCase());
+  return found ? `${address} (${found.name})` : address;
+}

@@ -8,7 +8,7 @@ import { join } from "path";
 import { pad, type Address, type Hex } from "viem";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
-import { getContractByName, getAllContracts, resolveCallAddress } from "../data/contracts.ts";
+import { getContractByName, getContractByAddress, getAllContracts, resolveCallAddress, enrichAddress } from "../data/contracts.ts";
 import type { StorageLayout, StorageType } from "../../../scripts/storage/types.ts";
 import {
   getMappingSlot,
@@ -52,6 +52,10 @@ function decodeSimpleValue(hex: Hex, typeInfo: StorageType, offset: number = 0):
     const val = decodeValue(hex, typeInfo, offset);
     if (val === null) return "null";
     if (typeof val === "bigint") return val.toString();
+    const label = typeInfo.label || "";
+    if (label === "address" || label.startsWith("contract ")) {
+      return enrichAddress(String(val));
+    }
     return String(val);
   } catch {
     return hex;
@@ -99,7 +103,7 @@ export async function handleReadStorageSlot(args: {
         decoded = BigInt(rawValue).toString();
         break;
       case "address":
-        decoded = decodeAddress(rawValue);
+        decoded = enrichAddress(decodeAddress(rawValue));
         break;
       case "bool":
         decoded = BigInt(rawValue) !== 0n ? "true" : "false";
@@ -109,6 +113,16 @@ export async function handleReadStorageSlot(args: {
         break;
     }
     lines.push(`**Decoded (${args.decode_as})**: ${decoded}`);
+  }
+
+  // Warn if reading from an implementation contract (state lives at proxy)
+  const known = getContractByAddress(args.address);
+  if (known?.type === "implementation") {
+    const proxyAddr = resolveCallAddress(known);
+    if (proxyAddr.toLowerCase() !== known.address.toLowerCase()) {
+      const proxyName = getContractByAddress(proxyAddr)?.name ?? proxyAddr;
+      lines.push(`\n> Warning: This is an implementation contract (${known.name}). State lives at the proxy ${proxyName} (${proxyAddr}). Consider using that address instead.`);
+    }
   }
 
   return lines.join("\n");
@@ -132,9 +146,11 @@ export async function handleReadContractState(args: {
     return `No storage layout found for "${args.contract_name}".\n\nAvailable layouts: ${available.join(", ")}`;
   }
 
-  const readAddress = layout.isProxy
+  // Implementation contracts store no state — always read from proxy
+  const resolvedAddress = (contract.type === "implementation" || layout.isProxy)
     ? resolveCallAddress(contract)
     : contract.address;
+  const wasRedirected = resolvedAddress.toLowerCase() !== contract.address.toLowerCase();
 
   const storageSlots = layout.layout.storage;
   const filteredSlots = args.variables
@@ -143,9 +159,13 @@ export async function handleReadContractState(args: {
 
   const lines: string[] = [
     `## ${args.contract_name} Storage State`,
-    `**Address**: ${readAddress}`,
-    "",
+    `**Address**: ${resolvedAddress}`,
   ];
+  if (wasRedirected) {
+    const proxyName = getContractByAddress(resolvedAddress)?.name ?? resolvedAddress;
+    lines.push(`> Note: Reading from ${proxyName} (${resolvedAddress}) — ${args.contract_name} is an implementation contract`);
+  }
+  lines.push("");
 
   for (const slot of filteredSlots) {
     const typeInfo = layout.layout.types[slot.type];
@@ -163,7 +183,7 @@ export async function handleReadContractState(args: {
 
     try {
       const slotHex = pad(`0x${BigInt(slot.slot).toString(16)}` as Hex, { size: 32 });
-      const rawValue = await readSlotDirect(readAddress as Address, slotHex);
+      const rawValue = await readSlotDirect(resolvedAddress as Address, slotHex);
       const decoded = decodeSimpleValue(rawValue, typeInfo, slot.offset);
       lines.push(`- **${slot.label}** (slot ${slot.slot}): ${decoded} [${typeInfo.label || slot.type}]`);
     } catch (err) {

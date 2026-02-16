@@ -6,7 +6,7 @@ import { z } from "zod";
 import { type Address } from "viem";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
-import { getContractByName, getContractByAddress, resolveCallAddress } from "../data/contracts.ts";
+import { getContractByName, getContractByAddress, resolveCallAddress, enrichAddress } from "../data/contracts.ts";
 import { loadAbi, getViewFunctions } from "../data/abis.ts";
 import { safeParseBigInt, formatError } from "./validation.ts";
 
@@ -47,7 +47,11 @@ function formatResult(value: any): string {
       .map(([k, v]) => `${k}: ${formatResult(v)}`);
     return entries.length > 0 ? `{ ${entries.join(", ")} }` : String(value);
   }
-  return String(value);
+  const str = String(value);
+  if (/^0x[0-9a-fA-F]{40}$/.test(str)) {
+    return enrichAddress(str);
+  }
+  return str;
 }
 
 export async function handleQueryOnChain(args: {

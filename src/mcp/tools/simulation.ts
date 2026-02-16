@@ -13,7 +13,7 @@ import {
 } from "viem";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
-import { getContractName } from "../data/contracts.ts";
+import { getContractName, getContractByAddress, resolveCallAddress, enrichAddress } from "../data/contracts.ts";
 import { loadAllAbis } from "../data/abis.ts";
 import { validateAddress, validateHex, safeParseBigInt, validateBlockNumber, extractRevertReason } from "./validation.ts";
 
@@ -102,12 +102,22 @@ export async function handleSimulateTransaction(args: {
     `| Field | Value |`,
     `|-------|-------|`,
     `| To | ${getContractName(args.to)} (${args.to}) |`,
-    `| From | ${sender} |`,
+    `| From | ${enrichAddress(sender)} |`,
     `| Value | ${ethValue > 0n ? `${formatEther(ethValue)} ETH` : "0"} |`,
     `| Calldata | ${data.slice(0, 10)}... (${(data.length - 2) / 2} bytes) |`,
     args.block_number ? `| Block | ${args.block_number} |` : `| Block | latest |`,
     "",
   ];
+
+  const known = getContractByAddress(args.to);
+  if (known?.type === "implementation") {
+    const proxyAddr = resolveCallAddress(known);
+    if (proxyAddr.toLowerCase() !== known.address.toLowerCase()) {
+      const proxyName = getContractByAddress(proxyAddr)?.name ?? proxyAddr;
+      lines.push(`> **Warning**: This is an implementation contract (${known.name}). State lives at proxy ${proxyName} (${proxyAddr}). Consider using the proxy address.`);
+      lines.push("");
+    }
+  }
 
   try {
     const gasEstimate = await publicClient.estimateGas({

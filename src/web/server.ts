@@ -31,11 +31,15 @@ app.use("/api/*", cors());
 const MODEL_RAW = process.env.CHAT_MODEL || DEFAULT_CHAT_MODEL;
 const defaultConfig = detectProvider(MODEL_RAW);
 
+const startedAt = Date.now();
+
 app.get("/api/health", (c) =>
   c.json({
     status: "ok",
     provider: defaultConfig.provider,
     model: defaultConfig.model,
+    tools: getToolDefinitions().length,
+    uptime: Math.floor((Date.now() - startedAt) / 1000),
   }),
 );
 

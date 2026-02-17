@@ -19,8 +19,12 @@ export const CHAT_MAX_TOKENS = 16_384;
 export const DEFAULT_CHAT_MODEL = "gpt-5.2";
 
 // Forum summary
-export const SUMMARY_MODEL = process.env.SUMMARY_MODEL || "gpt-4o-mini";
+export const SUMMARY_MODEL = process.env.SUMMARY_MODEL || "gemini-3-flash";
 export const SUMMARY_MAX_TOKENS = 2048;
+
+// Forum agent opinions
+export const OPINION_MODEL = process.env.OPINION_MODEL || "gemini-3-flash";
+export const OPINION_MAX_TOKENS = 1024;
 
 // Mode-specific model overrides (used when no per-request model is specified)
 export const MODE_MODELS: Record<string, string> = {

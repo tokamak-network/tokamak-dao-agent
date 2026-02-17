@@ -18,6 +18,7 @@ import {
   validateWebhookInput,
 } from "./forum-validation.ts";
 import { generateSummary } from "./forum-summary.ts";
+import { generateAgentOpinions } from "./forum-agents.ts";
 import { getDb } from "../db/index.ts";
 
 export const forumRouter = new Hono();
@@ -41,6 +42,9 @@ forumRouter.post("/agenda", async (c) => {
 
   // Fire-and-forget webhook notifications
   notifySubscribers("new_agenda", agenda);
+
+  // Fire-and-forget AI opinion generation
+  generateAgentOpinions(agenda);
 
   return c.json(agenda, 201);
 });

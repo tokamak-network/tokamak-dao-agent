@@ -36,7 +36,6 @@ COPY contracts/foundry.toml contracts/foundry.toml
 
 # On-chain data (contract registry, storage layouts)
 COPY scripts/mainnet/contracts.json scripts/mainnet/contracts.json
-COPY scripts/mainnet/agendas.json scripts/mainnet/agendas.json
 COPY scripts/storage/ scripts/storage/
 
 # Built client from stage 1

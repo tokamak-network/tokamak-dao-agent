@@ -12,6 +12,7 @@ import "./interfaces/ICandidateFactoryComplete.sol";
 import "./interfaces/ISeigManagerComplete.sol";
 import "./interfaces/IDepositManagerComplete.sol";
 import "./interfaces/IDAOAgendaManagerComplete.sol";
+import "./interfaces/IProxyActionComplete.sol";
 
 contract CompileInterfaces {
     // Reference each interface type to ensure compilation
@@ -23,4 +24,5 @@ contract CompileInterfaces {
     ISeigManagerComplete public seigManager;
     IDepositManagerComplete public depositManager;
     IDAOAgendaManagerComplete public agendaManager;
+    IProxyActionComplete public proxyAction;
 }

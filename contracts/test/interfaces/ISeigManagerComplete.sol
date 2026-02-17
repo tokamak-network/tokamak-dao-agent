@@ -112,6 +112,9 @@ interface ISeigManagerComplete {
         uint256 layer2Seigs
     );
 
+    // -- Setters (onlyOwner) --
+    function setL1BridgeRegistry(address l1BridgeRegistry_) external;
+
     // -- V1_3 Storage --
     function l1BridgeRegistry() external view returns (address);
     function layer2Manager() external view returns (address);

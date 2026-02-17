@@ -18,6 +18,10 @@ primary_region = 'nrt'
     interval = '30s'
     timeout = '5s'
 
+[mounts]
+  source = "forum_data"
+  destination = "/data"
+
 [[vm]]
   memory = '512mb'
   cpu_kind = 'shared'

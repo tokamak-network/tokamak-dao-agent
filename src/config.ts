@@ -18,6 +18,10 @@ export const CHAT_MAX_TOKENS = 16_384;
 // Supports provider prefix: "openai:gpt-4o", "anthropic:claude-sonnet-4-5-20250929"
 export const DEFAULT_CHAT_MODEL = "gpt-5.2";
 
+// Forum summary
+export const SUMMARY_MODEL = process.env.SUMMARY_MODEL || "gpt-4o-mini";
+export const SUMMARY_MAX_TOKENS = 2048;
+
 // Mode-specific model overrides (used when no per-request model is specified)
 export const MODE_MODELS: Record<string, string> = {
   chat: "gpt-5.2",

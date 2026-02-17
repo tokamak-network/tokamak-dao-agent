@@ -23,10 +23,13 @@ import {
   DEFAULT_CHAT_MODEL,
   MODE_MODELS,
 } from "../config.ts";
+import { forumRouter } from "./forum.ts";
 
 const app = new Hono();
 
 app.use("/api/*", cors());
+app.use("/forum/*", cors());
+app.route("/forum", forumRouter);
 
 const MODEL_RAW = process.env.CHAT_MODEL || DEFAULT_CHAT_MODEL;
 const defaultConfig = detectProvider(MODEL_RAW);

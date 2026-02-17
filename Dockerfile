@@ -38,6 +38,9 @@ COPY contracts/foundry.toml contracts/foundry.toml
 COPY scripts/mainnet/contracts.json scripts/mainnet/contracts.json
 COPY scripts/storage/ scripts/storage/
 
+# SQLite data directory (mounted as volume in fly.toml)
+RUN mkdir -p /data
+
 # Built client from stage 1
 COPY --from=build /app/dist/ dist/
 

@@ -8,6 +8,8 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { stream } from "hono/streaming";
+import { serveStatic } from "hono/bun";
+import { resolve } from "path";
 import { detectProvider, getOrCreateProvider } from "./providers/index.ts";
 import type { ChatMessage, ContentBlock, ChatProvider } from "./providers/types.ts";
 import { getToolDefinitions, executeTool } from "../mcp/tools/handlers.ts";
@@ -312,12 +314,35 @@ app.post("/api/chat", async (c) => {
   });
 });
 
+// ── Static file serving (production) ──────────────────────────────────
+
+const DIST_DIR = resolve(import.meta.dir, "../../dist");
+const INDEX_HTML_PATH = resolve(DIST_DIR, "index.html");
+
+app.use("/assets/*", serveStatic({ root: "./dist" }));
+
+app.get("/", (c) => c.redirect("/app"));
+
+const serveSpa = async (c: any) => {
+  const file = Bun.file(INDEX_HTML_PATH);
+  if (await file.exists()) {
+    return c.html(await file.text());
+  }
+  return c.text("App not built. Run: bun run build", 404);
+};
+
+app.get("/app", serveSpa);
+app.get("/app/*", serveSpa);
+
+// ── Server startup ───────────────────────────────────────────────────
+
 const port = Number(process.env.PORT) || 3333;
 
 console.log(`Tokamak DAO Agent web server starting on port ${port}...`);
 console.log(
   `Default provider: ${defaultConfig.provider}, Model: ${defaultConfig.model}`,
 );
+console.log(`Serving static files from ${DIST_DIR}`);
 
 export default {
   port,

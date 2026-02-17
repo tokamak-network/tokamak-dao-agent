@@ -34,7 +34,8 @@ contract AgendaSimulation is Test {
         (
             address[] memory targets,
             bytes[] memory bytecodes,
-            bool atomicExecute
+            bool atomicExecute,
+            /* executeStartFrom */
         ) = agendaManager.getExecutionInfo(agendaId);
 
         require(targets.length > 0, "No targets in agenda");
@@ -119,30 +120,29 @@ contract AgendaSimulation is Test {
 
 // Minimal interfaces
 interface IDAOAgendaManager {
+    struct Agenda {
+        uint256 createdTimestamp;
+        uint256 noticeEndTimestamp;
+        uint256 votingPeriodInSeconds;
+        uint256 votingStartedTimestamp;
+        uint256 votingEndTimestamp;
+        uint256 executableLimitTimestamp;
+        uint256 executedTimestamp;
+        uint256 countingYes;
+        uint256 countingNo;
+        uint256 countingAbstain;
+        uint256 status;
+        uint256 result;
+        address[] voters;
+        bool executed;
+    }
+
     function getExecutionInfo(uint256 agendaID)
         external
         view
-        returns (address[] memory targets, bytes[] memory functionBytecodes, bool atomicExecute);
+        returns (address[] memory targets, bytes[] memory functionBytecodes, bool atomicExecute, uint256 executeStartFrom);
 
-    function agendas(uint256 agendaID)
-        external
-        view
-        returns (
-            uint256 id,
-            address creator,
-            bool executed,
-            uint256 createdTimestamp,
-            uint256 noticeEndTimestamp,
-            uint256 votingPeriodEndTimestamp,
-            uint256 executableLimitTimestamp,
-            uint256 executedTimestamp,
-            uint256 countingYes,
-            uint256 countingNo,
-            uint256 countingAbstain,
-            uint8 status,
-            uint8 result
-        );
-
+    function agendas(uint256 _index) external view returns (Agenda memory);
     function numAgendas() external view returns (uint256);
 }
 

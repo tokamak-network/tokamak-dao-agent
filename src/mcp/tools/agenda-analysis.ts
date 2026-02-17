@@ -10,7 +10,7 @@ import { decodeFunctionData, type Address, type Hex } from "viem";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { publicClient } from "../client.ts";
 import { getContractName } from "../data/contracts.ts";
-import { loadAllAbis } from "../data/abis.ts";
+import { loadAbi, loadAllAbis } from "../data/abis.ts";
 import { DAO_ACTIONS } from "../data/dao-actions.ts";
 import { handleRunForkTest } from "./fork-test.ts";
 import { formatError } from "./validation.ts";
@@ -18,46 +18,24 @@ import { formatError } from "./validation.ts";
 const DAO_COMMITTEE_PROXY = "0xDD9f0cCc044B0781289Ee318e5971b0139602C26" as Address;
 const DAO_AGENDA_MANAGER = "0xcD4421d082752f363E1687544a09d5112cD4f484" as Address;
 
-// Minimal ABI for DAOAgendaManager
+// Load compiled ABI (correct struct layout for agendas) and supplement with
+// getExecutionInfo which exists on-chain but not in the compiled interface.
+const _compiledAbi = loadAbi("IDAOAgendaManagerComplete");
 const AGENDA_MANAGER_ABI = [
-  {
-    name: "agendas",
-    type: "function",
-    stateMutability: "view",
-    inputs: [{ name: "agendaID", type: "uint256" }],
-    outputs: [
-      { name: "id", type: "uint256" },
-      { name: "creator", type: "address" },
-      { name: "executed", type: "bool" },
-      { name: "createdTimestamp", type: "uint256" },
-      { name: "noticeEndTimestamp", type: "uint256" },
-      { name: "votingPeriodEndTimestamp", type: "uint256" },
-      { name: "executableLimitTimestamp", type: "uint256" },
-      { name: "executedTimestamp", type: "uint256" },
-      { name: "countingYes", type: "uint256" },
-      { name: "countingNo", type: "uint256" },
-      { name: "countingAbstain", type: "uint256" },
-      { name: "status", type: "uint8" },
-      { name: "result", type: "uint8" },
-    ],
-  },
+  ...(_compiledAbi || []),
+  // getExecutionInfo exists on-chain (DAOAgendaManager.sol:368) but the
+  // compiled interface only has executionInfos (struct getter). Add it manually.
   {
     name: "getExecutionInfo",
     type: "function",
     stateMutability: "view",
-    inputs: [{ name: "agendaID", type: "uint256" }],
+    inputs: [{ name: "_agendaID", type: "uint256" }],
     outputs: [
-      { name: "targets", type: "address[]" },
-      { name: "functionBytecodes", type: "bytes[]" },
+      { name: "target", type: "address[]" },
+      { name: "functionBytecode", type: "bytes[]" },
       { name: "atomicExecute", type: "bool" },
+      { name: "executeStartFrom", type: "uint256" },
     ],
-  },
-  {
-    name: "numAgendas",
-    type: "function",
-    stateMutability: "view",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256" }],
   },
 ] as const;
 
@@ -182,18 +160,21 @@ export async function handleAnalyzeAgenda(args: {
         args: [agendaId],
       });
 
+      // Compiled ABI returns a single tuple struct with named fields
+      const info = agendaInfo as any;
+
       lines.push(`# Agenda #${args.agenda_id} Analysis`);
       lines.push("");
       lines.push("## Metadata");
       lines.push("");
       lines.push(`| Field | Value |`);
       lines.push(`|-------|-------|`);
-      lines.push(`| Creator | ${agendaInfo[1]} |`);
-      lines.push(`| Status | ${AGENDA_STATUS[Number(agendaInfo[11])] || "UNKNOWN"} |`);
-      lines.push(`| Result | ${AGENDA_RESULT[Number(agendaInfo[12])] || "UNKNOWN"} |`);
-      lines.push(`| Executed | ${agendaInfo[2]} |`);
-      lines.push(`| Votes (Yes/No/Abstain) | ${agendaInfo[8].toString()} / ${agendaInfo[9].toString()} / ${agendaInfo[10].toString()} |`);
-      lines.push(`| Created | ${new Date(Number(agendaInfo[3]) * 1000).toISOString()} |`);
+      lines.push(`| Status | ${AGENDA_STATUS[Number(info.status)] || "UNKNOWN"} |`);
+      lines.push(`| Result | ${AGENDA_RESULT[Number(info.result)] || "UNKNOWN"} |`);
+      lines.push(`| Executed | ${info.executed} |`);
+      lines.push(`| Votes (Yes/No/Abstain) | ${info.countingYes.toString()} / ${info.countingNo.toString()} / ${info.countingAbstain.toString()} |`);
+      lines.push(`| Created | ${new Date(Number(info.createdTimestamp) * 1000).toISOString()} |`);
+      lines.push(`| Voting Period | ${Number(info.votingPeriodInSeconds)}s |`);
       lines.push(`| Atomic Execute | ${atomicExecute} |`);
       lines.push("");
     } catch (err) {

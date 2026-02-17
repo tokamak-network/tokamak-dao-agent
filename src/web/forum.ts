@@ -14,11 +14,13 @@ import type { CreateAgendaInput, ListAgendaOptions } from "../db/agendas.ts";
 import { createOpinion, getOpinionsForAgenda } from "../db/opinions.ts";
 import {
   validateAgendaInput,
+  validateAgentInput,
   validateOpinionInput,
   validateWebhookInput,
 } from "./forum-validation.ts";
 import { generateSummary } from "./forum-summary.ts";
 import { generateAgentOpinions } from "./forum-agents.ts";
+import { listAgents, createAgent, deleteAgent } from "../db/agents.ts";
 import { getDb } from "../db/index.ts";
 
 export const forumRouter = new Hono();
@@ -139,6 +141,42 @@ forumRouter.get("/agenda/:id/summary", async (c) => {
       500,
     );
   }
+});
+
+// ── Agent endpoints ───────────────────────────────────────────────────
+
+forumRouter.get("/agent", (c) => {
+  const agents = listAgents();
+  return c.json({ agents, count: agents.length });
+});
+
+forumRouter.post("/agent", async (c) => {
+  const body = await c.req.json();
+  const error = validateAgentInput(body);
+  if (error) return c.json({ error }, 400);
+
+  try {
+    const agent = createAgent({
+      id: body.id,
+      name: body.name,
+      stakeholderType: body.stakeholderType,
+      personality: body.personality,
+      priorities: body.priorities,
+    });
+    return c.json(agent, 201);
+  } catch (err: any) {
+    if (err.message?.includes("UNIQUE") || err.message?.includes("PRIMARY")) {
+      return c.json({ error: "Agent with this ID already exists" }, 409);
+    }
+    throw err;
+  }
+});
+
+forumRouter.delete("/agent/:id", (c) => {
+  const id = c.req.param("id");
+  const deleted = deleteAgent(id);
+  if (!deleted) return c.json({ error: "Agent not found" }, 404);
+  return c.json({ status: "deleted", id });
 });
 
 // ── Webhook endpoints ─────────────────────────────────────────────────

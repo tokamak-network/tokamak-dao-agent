@@ -45,8 +45,18 @@ function AgentCard({ agent, onDelete }: { agent: Agent; onDelete: () => void }) 
 }
 
 export function AgentsTab() {
-  const { agents, deleteAgent } = useAgentContext();
+  const { agents, loading, deleteAgent } = useAgentContext();
   const [creating, setCreating] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="welcome-container">
+        <div className="chat-welcome">
+          <div className="chat-welcome-subtitle">Loading agents...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (creating) {
     return (

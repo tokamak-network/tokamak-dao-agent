@@ -42,3 +42,6 @@ contracts/foundry.lock
 
 # Script output (regenerable)
 scripts/storage/output/
+
+# SQLite database (local data)
+data/

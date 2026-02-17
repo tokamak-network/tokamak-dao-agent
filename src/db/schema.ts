@@ -48,4 +48,13 @@ CREATE TABLE IF NOT EXISTS webhook_subscribers (
   active INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS agents (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  stakeholder_type TEXT NOT NULL,
+  personality TEXT NOT NULL,
+  priorities_json TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `;

@@ -17,11 +17,11 @@ export interface Proposal {
 }
 
 const TAB_TO_PATH: Record<TabMode, string> = {
-  chat: "/app/chat",
-  make_proposal: "/app/calldata",
-  analyze_proposal: "/app/proposal",
-  agents: "/app/agents",
-  forum: "/app/forum",
+  chat: "/chat",
+  make_proposal: "/calldata",
+  analyze_proposal: "/proposal",
+  agents: "/agents",
+  forum: "/forum",
 };
 
 const PATH_TO_TAB: Record<string, TabMode> = Object.fromEntries(
@@ -58,9 +58,9 @@ export function TabProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Normalize bare /app to /app/chat (preserve sub-routes like /app/forum/4)
+    // Normalize bare / to /chat (preserve sub-routes like /forum/4)
     const path = window.location.pathname;
-    if (path === "/app" || path === "/app/") {
+    if (path === "/" || path === "") {
       history.replaceState(null, "", TAB_TO_PATH[activeTab]);
     }
 

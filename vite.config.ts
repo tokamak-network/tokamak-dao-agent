@@ -13,10 +13,6 @@ export default defineConfig({
         target: "http://localhost:3333",
         changeOrigin: true,
       },
-      "/forum": {
-        target: "http://localhost:3333",
-        changeOrigin: true,
-      },
     },
   },
 });

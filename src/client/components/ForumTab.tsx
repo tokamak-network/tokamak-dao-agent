@@ -75,7 +75,7 @@ function useTranslation(originalText: string) {
 
     setLoading(true);
     try {
-      const res = await fetch("/forum/translate", {
+      const res = await fetch("/api/forum/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: originalText }),
@@ -125,7 +125,7 @@ function TranslateButton({
 // ── Main Component ───────────────────────────────────────────────────
 
 function agendaIdFromPath(): number | null {
-  const match = window.location.pathname.match(/^\/app\/forum\/(\d+)$/);
+  const match = window.location.pathname.match(/^\/forum\/(\d+)$/);
   return match ? Number(match[1]) : null;
 }
 
@@ -134,12 +134,12 @@ export function ForumTab() {
 
   const selectAgenda = useCallback((id: number) => {
     setSelectedAgendaId(id);
-    history.pushState(null, "", `/app/forum/${id}`);
+    history.pushState(null, "", `/forum/${id}`);
   }, []);
 
   const goBack = useCallback(() => {
     setSelectedAgendaId(null);
-    history.pushState(null, "", "/app/forum");
+    history.pushState(null, "", "/forum");
   }, []);
 
   useEffect(() => {
@@ -169,7 +169,7 @@ function AgendaListView({ onSelect }: { onSelect: (id: number) => void }) {
 
   const fetchAgendas = useCallback(async () => {
     try {
-      const res = await fetch("/forum/agenda");
+      const res = await fetch("/api/forum/agenda");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setAgendas(data.agendas);
@@ -267,7 +267,7 @@ function AgendaDetailView({
 
     async function load() {
       try {
-        const res = await fetch(`/forum/agenda/${agendaId}`);
+        const res = await fetch(`/api/forum/agenda/${agendaId}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (!cancelled) setDetail(data);
@@ -288,7 +288,7 @@ function AgendaDetailView({
     async function loadSummary() {
       setSummaryLoading(true);
       try {
-        const res = await fetch(`/forum/agenda/${agendaId}/summary`);
+        const res = await fetch(`/api/forum/agenda/${agendaId}/summary`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (!cancelled) setSummary(data.summaryText ?? data.summary ?? null);

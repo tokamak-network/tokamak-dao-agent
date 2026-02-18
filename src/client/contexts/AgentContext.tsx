@@ -57,7 +57,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
 
     async function init() {
       try {
-        const res = await fetch("/forum/agent");
+        const res = await fetch("/api/forum/agent");
         if (!res.ok) throw new Error("Failed to fetch agents");
         const data = await res.json();
 
@@ -74,7 +74,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
               if (Array.isArray(localAgents) && localAgents.length > 0) {
                 const migrated: Agent[] = [];
                 for (const agent of localAgents) {
-                  const postRes = await fetch("/forum/agent", {
+                  const postRes = await fetch("/api/forum/agent", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -136,7 +136,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     setAgents((prev) => [...prev, optimistic]);
 
     try {
-      const res = await fetch("/forum/agent", {
+      const res = await fetch("/api/forum/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -161,7 +161,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     });
 
     try {
-      const res = await fetch(`/forum/agent/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/forum/agent/${id}`, { method: "DELETE" });
       if (!res.ok) {
         // Rollback on failure
         if (removed) setAgents((prev) => [...prev, removed!]);

@@ -5,16 +5,16 @@
  * analyzes them using MCP tools, and submits persona-based opinions.
  *
  * Data flow:
- *   POST /forum/agenda (agenda created)
+ *   POST /api/forum/agenda (agenda created)
  *     → webhook notification → this plugin's /webhook/new-agenda
  *     → MCP tool calls for on-chain analysis
  *     → LLM generates persona-based opinion
- *     → POST /forum/agenda/:id/opinion
+ *     → POST /api/forum/agenda/:id/opinion
  */
 
 import type { Plugin, IAgentRuntime, Route } from "@elizaos/core";
 
-const FORUM_BASE_URL = process.env.FORUM_BASE_URL || "http://localhost:3333/forum";
+const FORUM_BASE_URL = process.env.FORUM_BASE_URL || "http://localhost:3333/api/forum";
 
 /**
  * Analyze an agenda using the agent's MCP tools and submit an opinion.

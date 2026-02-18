@@ -31,8 +31,7 @@ import { registerAllTools } from "../mcp/tools/index.ts";
 const app = new Hono();
 
 app.use("/api/*", cors());
-app.use("/forum/*", cors());
-app.route("/forum", forumRouter);
+app.route("/api/forum", forumRouter);
 
 // ── MCP Streamable HTTP endpoint ─────────────────────────────────────
 
@@ -359,7 +358,7 @@ const INDEX_HTML_PATH = resolve(DIST_DIR, "index.html");
 
 app.use("/assets/*", serveStatic({ root: "./dist" }));
 
-app.get("/", (c) => c.redirect("/app"));
+app.get("/", (c) => c.redirect("/chat"));
 
 const serveSpa = async (c: any) => {
   const file = Bun.file(INDEX_HTML_PATH);
@@ -369,8 +368,11 @@ const serveSpa = async (c: any) => {
   return c.text("App not built. Run: bun run build", 404);
 };
 
-app.get("/app", serveSpa);
-app.get("/app/*", serveSpa);
+// SPA routes — serve index.html for each client-side tab
+for (const route of ["/chat", "/calldata", "/proposal", "/agents", "/forum"]) {
+  app.get(route, serveSpa);
+  app.get(`${route}/*`, serveSpa);
+}
 
 // ── Server startup ───────────────────────────────────────────────────
 

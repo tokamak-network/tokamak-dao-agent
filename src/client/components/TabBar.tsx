@@ -9,7 +9,7 @@ const TABS: { mode: TabMode; label: string }[] = [
 ];
 
 export function TabBar() {
-  const { activeTab, setActiveTab } = useTabContext();
+  const { activeTab, navigate } = useTabContext();
 
   return (
     <div className="tab-bar">
@@ -17,7 +17,7 @@ export function TabBar() {
         <button
           key={tab.mode}
           className={`tab-button${activeTab === tab.mode ? " active" : ""}`}
-          onClick={() => setActiveTab(tab.mode)}
+          onClick={() => navigate(tab.mode)}
         >
           {tab.label}
         </button>

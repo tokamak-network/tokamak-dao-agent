@@ -57,19 +57,40 @@ const VERDICT_COLORS: Record<string, string> = {
 
 // ── Main Component ───────────────────────────────────────────────────
 
+function agendaIdFromPath(): number | null {
+  const match = window.location.pathname.match(/^\/app\/forum\/(\d+)$/);
+  return match ? Number(match[1]) : null;
+}
+
 export function ForumTab() {
-  const [selectedAgendaId, setSelectedAgendaId] = useState<number | null>(null);
+  const [selectedAgendaId, setSelectedAgendaId] = useState<number | null>(agendaIdFromPath);
+
+  const selectAgenda = useCallback((id: number) => {
+    setSelectedAgendaId(id);
+    history.pushState(null, "", `/app/forum/${id}`);
+  }, []);
+
+  const goBack = useCallback(() => {
+    setSelectedAgendaId(null);
+    history.pushState(null, "", "/app/forum");
+  }, []);
+
+  useEffect(() => {
+    const onPopState = () => setSelectedAgendaId(agendaIdFromPath());
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   if (selectedAgendaId !== null) {
     return (
       <AgendaDetailView
         agendaId={selectedAgendaId}
-        onBack={() => setSelectedAgendaId(null)}
+        onBack={goBack}
       />
     );
   }
 
-  return <AgendaListView onSelect={setSelectedAgendaId} />;
+  return <AgendaListView onSelect={selectAgenda} />;
 }
 
 // ── List View ────────────────────────────────────────────────────────

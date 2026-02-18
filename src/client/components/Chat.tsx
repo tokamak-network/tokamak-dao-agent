@@ -29,7 +29,7 @@ const CHAT_SUGGESTIONS = [
 
 function ChatApp() {
   const { activeTab } = useTabContext();
-  const [showBootSequence, setShowBootSequence] = useState(true);
+  const [showBootSequence, setShowBootSequence] = useState(() => activeTab === "chat");
   const [providerName, setProviderName] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string | undefined>();
 

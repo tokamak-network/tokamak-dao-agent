@@ -1,0 +1,12 @@
+{
+  "name": "tokamak-elizaos-agents",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@elizaos/plugin-anthropic": "^1.5.12",
+    "@fleek-platform/eliza-plugin-mcp": "^0.0.8"
+  },
+  "devDependencies": {
+    "@elizaos/cli": "^1.7.2"
+  }
+}

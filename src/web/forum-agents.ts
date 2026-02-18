@@ -84,7 +84,7 @@ function dbAgentToConfig(agent: DbAgent): AgentConfig {
   };
 }
 
-function getActiveAgents(): AgentConfig[] {
+export function getActiveAgents(): AgentConfig[] {
   const dbAgents = listAgents();
   if (dbAgents.length > 0) {
     return dbAgents.map(dbAgentToConfig);
@@ -208,4 +208,25 @@ export async function generateAgentOpinions(agenda: ForumAgenda): Promise<void> 
   }
 
   console.log(`[forum-agents] agenda #${agenda.id}: ${succeeded}/${agents.length} opinions generated`);
+}
+
+/**
+ * Generate a single agent's opinion for the given agenda.
+ * Returns true if the opinion was generated, false if agent not found.
+ */
+export async function generateSingleAgentOpinion(
+  agenda: ForumAgenda,
+  agentName: string,
+): Promise<boolean> {
+  const agents = getActiveAgents();
+  const agent = agents.find((a) => a.agentName === agentName);
+  if (!agent) {
+    // Try fallback agents explicitly
+    const fallback = FALLBACK_AGENTS.find((a) => a.agentName === agentName);
+    if (!fallback) return false;
+    await runAgent(fallback, agenda);
+    return true;
+  }
+  await runAgent(agent, agenda);
+  return true;
 }

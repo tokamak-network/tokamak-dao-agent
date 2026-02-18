@@ -8,10 +8,15 @@ import {
   createAgenda,
   getAgenda,
   listAgendas,
+  updateAgenda,
   updateAgendaStatus,
 } from "../db/agendas.ts";
 import type { CreateAgendaInput, ListAgendaOptions } from "../db/agendas.ts";
 import { createOpinion, getOpinionsForAgenda } from "../db/opinions.ts";
+import {
+  getValidationsForAgenda,
+  clearValidationsForAgenda,
+} from "../db/validations.ts";
 import {
   validateAgendaInput,
   validateAgentInput,
@@ -19,7 +24,8 @@ import {
   validateWebhookInput,
 } from "./forum-validation.ts";
 import { generateSummary } from "./forum-summary.ts";
-import { generateAgentOpinions } from "./forum-agents.ts";
+import { generateAgentOpinions, generateSingleAgentOpinion } from "./forum-agents.ts";
+import { runValidationWorkflow } from "./forum-validators.ts";
 import { translateText } from "./forum-translate.ts";
 import { listAgents, createAgent, deleteAgent } from "../db/agents.ts";
 import { getDb } from "../db/index.ts";
@@ -43,13 +49,15 @@ forumRouter.post("/agenda", async (c) => {
 
   const agenda = createAgenda(input);
 
-  // Fire-and-forget webhook notifications
-  notifySubscribers("new_agenda", agenda);
+  // Immediately move to pending_review and start validation
+  const updated = updateAgendaStatus(agenda.id, "pending_review")!;
 
-  // Fire-and-forget AI opinion generation
-  generateAgentOpinions(agenda);
+  // Fire-and-forget validation workflow
+  runValidationWorkflow(updated).catch((err) =>
+    console.error("[forum] validation workflow error:", err),
+  );
 
-  return c.json(agenda, 201);
+  return c.json(updated, 201);
 });
 
 forumRouter.get("/agenda", (c) => {
@@ -73,6 +81,116 @@ forumRouter.get("/agenda/:id", (c) => {
 
   const opinions = getOpinionsForAgenda(id);
   return c.json({ ...agenda, opinions });
+});
+
+// ── Validation endpoints ──────────────────────────────────────────────
+
+forumRouter.get("/agenda/:id/validations", (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  const validations = getValidationsForAgenda(id);
+  const allPass =
+    validations.length === 3 && validations.every((v) => v.status === "pass");
+
+  return c.json({ validations, allPass });
+});
+
+forumRouter.patch("/agenda/:id", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  if (agenda.status !== "draft" && agenda.status !== "rejected") {
+    return c.json(
+      { error: "Can only edit agendas in draft or rejected status" },
+      400,
+    );
+  }
+
+  const body = await c.req.json();
+  const fields: { title?: string; content?: string; deadline?: string } = {};
+
+  if (body.title !== undefined) {
+    if (typeof body.title !== "string" || body.title.length < 1 || body.title.length > 200) {
+      return c.json({ error: "title must be 1-200 characters" }, 400);
+    }
+    fields.title = body.title;
+  }
+  if (body.content !== undefined) {
+    if (typeof body.content !== "string" || body.content.length < 1 || body.content.length > 10000) {
+      return c.json({ error: "content must be 1-10000 characters" }, 400);
+    }
+    fields.content = body.content;
+  }
+  if (body.deadline !== undefined) {
+    if (typeof body.deadline !== "string" || isNaN(new Date(body.deadline).getTime())) {
+      return c.json({ error: "deadline must be a valid ISO 8601 date" }, 400);
+    }
+    fields.deadline = body.deadline;
+  }
+
+  // Update fields, reset status, clear old validations
+  updateAgenda(id, fields);
+  clearValidationsForAgenda(id);
+  const updated = updateAgendaStatus(id, "pending_review")!;
+
+  // Fire-and-forget re-validation
+  runValidationWorkflow(updated).catch((err) =>
+    console.error("[forum] re-validation workflow error:", err),
+  );
+
+  return c.json(updated);
+});
+
+// ── Opinion request endpoint ──────────────────────────────────────────
+
+forumRouter.post("/agenda/:id/opinion/request", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  if (agenda.status !== "open") {
+    return c.json({ error: "Agenda must be open to request opinions" }, 400);
+  }
+
+  const body = await c.req.json();
+  const agentName = body?.agentName;
+  if (typeof agentName !== "string" || !agentName) {
+    return c.json({ error: "agentName is required" }, 400);
+  }
+
+  // Check if opinion already exists
+  const existingOpinions = getOpinionsForAgenda(id);
+  if (existingOpinions.some((o) => o.agentName === agentName)) {
+    return c.json({ error: "Opinion already exists for this agent" }, 409);
+  }
+
+  // Synchronous — wait for LLM result so frontend gets immediate feedback
+  try {
+    const found = await generateSingleAgentOpinion(agenda, agentName);
+    if (!found) {
+      return c.json({ error: `Agent "${agentName}" not found` }, 404);
+    }
+
+    // Fetch the newly created opinion
+    const opinions = getOpinionsForAgenda(id);
+    const newOpinion = opinions.find((o) => o.agentName === agentName);
+    return c.json({ status: "completed", opinion: newOpinion }, 201);
+  } catch (err) {
+    console.error(`[forum] opinion generation error for ${agentName}:`, err);
+    return c.json(
+      { error: `Failed to generate opinion: ${err instanceof Error ? err.message : String(err)}` },
+      500,
+    );
+  }
 });
 
 // ── Opinion endpoints ─────────────────────────────────────────────────

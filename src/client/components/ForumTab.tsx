@@ -55,6 +55,73 @@ const VERDICT_COLORS: Record<string, string> = {
   ABSTAIN: "var(--term-text-muted)",
 };
 
+// ── Translation Hook ─────────────────────────────────────────────────
+
+function useTranslation(originalText: string) {
+  const [translated, setTranslated] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showTranslated, setShowTranslated] = useState(false);
+
+  const toggle = useCallback(async () => {
+    if (showTranslated) {
+      setShowTranslated(false);
+      return;
+    }
+
+    if (translated) {
+      setShowTranslated(true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/forum/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: originalText }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setTranslated(data.translated);
+      setShowTranslated(true);
+    } catch (err) {
+      console.error("[translate] failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [originalText, translated, showTranslated]);
+
+  const displayText = showTranslated && translated ? translated : originalText;
+
+  return { displayText, loading, showTranslated, toggle };
+}
+
+// ── Translate Button ─────────────────────────────────────────────────
+
+function TranslateButton({
+  loading,
+  showTranslated,
+  onClick,
+}: {
+  loading: boolean;
+  showTranslated: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className="forum-translate-btn"
+      onClick={onClick}
+      disabled={loading}
+    >
+      {loading
+        ? "Translating..."
+        : showTranslated
+          ? "Show Original"
+          : "Translate"}
+    </button>
+  );
+}
+
 // ── Main Component ───────────────────────────────────────────────────
 
 function agendaIdFromPath(): number | null {
@@ -273,7 +340,7 @@ function AgendaDetailView({
             <span>On-chain ID: #{detail.onChainAgendaId}</span>
           )}
         </div>
-        <div className="forum-detail-content">{detail.content}</div>
+        <TranslatableContent text={detail.content} />
       </div>
 
       {/* Opinions */}
@@ -298,7 +365,7 @@ function AgendaDetailView({
         {summaryLoading ? (
           <div className="forum-loading">Generating summary...</div>
         ) : summary ? (
-          <ReactMarkdown>{summary}</ReactMarkdown>
+          <TranslatableMarkdown text={summary} />
         ) : (
           <div className="forum-empty-opinions">
             No summary available yet.
@@ -309,13 +376,41 @@ function AgendaDetailView({
   );
 }
 
+// ── Translatable Content Wrappers ────────────────────────────────────
+
+function TranslatableContent({ text }: { text: string }) {
+  const { displayText, loading, showTranslated, toggle } = useTranslation(text);
+
+  return (
+    <>
+      <div className="forum-detail-content">{displayText}</div>
+      <TranslateButton loading={loading} showTranslated={showTranslated} onClick={toggle} />
+    </>
+  );
+}
+
+function TranslatableMarkdown({ text }: { text: string }) {
+  const { displayText, loading, showTranslated, toggle } = useTranslation(text);
+
+  return (
+    <>
+      <ReactMarkdown>{displayText}</ReactMarkdown>
+      <TranslateButton loading={loading} showTranslated={showTranslated} onClick={toggle} />
+    </>
+  );
+}
+
 // ── Opinion Card ─────────────────────────────────────────────────────
 
 function OpinionCard({ opinion }: { opinion: Opinion }) {
   const verdictColor = VERDICT_COLORS[opinion.verdict] ?? "var(--term-text-muted)";
   const priorities: string[] = opinion.prioritiesJson
-    ? JSON.parse(opinion.prioritiesJson)
+    ? JSON.parse(opinion.prioritiesJson).map((p: any) =>
+        typeof p === "string" ? p : p.label ?? p.id ?? String(p),
+      )
     : [];
+
+  const { displayText, loading, showTranslated, toggle } = useTranslation(opinion.reasoning);
 
   return (
     <div
@@ -341,7 +436,8 @@ function OpinionCard({ opinion }: { opinion: Opinion }) {
         <ConfidenceBar level={opinion.confidence} />
       </div>
 
-      <div className="forum-opinion-reasoning">{opinion.reasoning}</div>
+      <div className="forum-opinion-reasoning">{displayText}</div>
+      <TranslateButton loading={loading} showTranslated={showTranslated} onClick={toggle} />
 
       {priorities.length > 0 && (
         <div className="forum-opinion-priorities">

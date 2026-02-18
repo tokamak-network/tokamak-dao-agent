@@ -58,8 +58,9 @@ export function TabProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Normalize bare /app to /app/chat
-    if (!PATH_TO_TAB[window.location.pathname]) {
+    // Normalize bare /app to /app/chat (preserve sub-routes like /app/forum/4)
+    const path = window.location.pathname;
+    if (path === "/app" || path === "/app/") {
       history.replaceState(null, "", TAB_TO_PATH[activeTab]);
     }
 

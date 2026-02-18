@@ -179,6 +179,26 @@ forumRouter.delete("/agent/:id", (c) => {
   return c.json({ status: "deleted", id });
 });
 
+// ── Agent polling endpoint ────────────────────────────────────────────
+
+forumRouter.get("/agent/:agentName/pending-agendas", (c) => {
+  const agentName = c.req.param("agentName");
+  const db = getDb();
+  const rows = db
+    .query(
+      `SELECT a.* FROM agendas a
+       WHERE a.status = 'open'
+         AND a.deadline > datetime('now')
+         AND a.id NOT IN (
+           SELECT o.agenda_id FROM opinions o WHERE o.agent_name = ?
+         )
+       ORDER BY a.created_at DESC`,
+    )
+    .all(agentName);
+
+  return c.json({ agendas: rows, count: rows.length });
+});
+
 // ── Webhook endpoints ─────────────────────────────────────────────────
 
 forumRouter.post("/webhook/subscribe", async (c) => {

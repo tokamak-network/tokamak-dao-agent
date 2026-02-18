@@ -107,6 +107,7 @@ Analyze the governance agenda below and respond with ONLY valid JSON:
 }
 
 Focus on impacts relevant to your stakeholder perspective.
+Write the reasoning field in English.
 Do not include any text outside the JSON object.`;
 }
 

@@ -20,6 +20,7 @@ import {
 } from "./forum-validation.ts";
 import { generateSummary } from "./forum-summary.ts";
 import { generateAgentOpinions } from "./forum-agents.ts";
+import { translateText } from "./forum-translate.ts";
 import { listAgents, createAgent, deleteAgent } from "../db/agents.ts";
 import { getDb } from "../db/index.ts";
 
@@ -197,6 +198,32 @@ forumRouter.get("/agent/:agentName/pending-agendas", (c) => {
     .all(agentName);
 
   return c.json({ agendas: rows, count: rows.length });
+});
+
+// ── Translation endpoint ──────────────────────────────────────────────
+
+forumRouter.post("/translate", async (c) => {
+  const body = await c.req.json();
+  const text = body?.text;
+
+  if (!text || typeof text !== "string") {
+    return c.json({ error: "text is required" }, 400);
+  }
+
+  if (text.length > 10_000) {
+    return c.json({ error: "text exceeds 10,000 character limit" }, 400);
+  }
+
+  try {
+    const translated = await translateText(text);
+    return c.json({ translated });
+  } catch (err) {
+    console.error("[forum] translation error:", err);
+    return c.json(
+      { error: "Failed to translate", detail: String(err) },
+      500,
+    );
+  }
 });
 
 // ── Webhook endpoints ─────────────────────────────────────────────────

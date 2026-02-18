@@ -2071,6 +2071,36 @@ body {
   color: var(--term-text-muted);
 }
 
+/* Translate button */
+.forum-translate-btn {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 10px;
+  background: transparent;
+  border: 1px solid var(--term-border);
+  border-radius: 6px;
+  color: var(--term-text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.forum-translate-btn:hover {
+  color: var(--term-text-primary);
+  border-color: var(--term-text-dim);
+}
+
+.forum-translate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.forum-translate-btn:disabled:hover {
+  color: var(--term-text-muted);
+  border-color: var(--term-border);
+}
+
 /* Empty opinions */
 .forum-empty-opinions {
   max-width: 900px;

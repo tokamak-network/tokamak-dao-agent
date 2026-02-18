@@ -26,6 +26,10 @@ export const SUMMARY_MAX_TOKENS = 2048;
 export const OPINION_MODEL = process.env.OPINION_MODEL || "gemini-3-flash";
 export const OPINION_MAX_TOKENS = 1024;
 
+// Forum translation
+export const TRANSLATE_MODEL = process.env.TRANSLATE_MODEL || "gemini-3-flash";
+export const TRANSLATE_MAX_TOKENS = 4096;
+
 // Mode-specific model overrides (used when no per-request model is specified)
 export const MODE_MODELS: Record<string, string> = {
   chat: "gpt-5.2",

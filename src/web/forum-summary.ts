@@ -20,7 +20,8 @@ Structure your summary as:
 5. Risk Factors
 6. Overall Recommendation
 
-Be concise and data-driven. Use the exact opinion data provided.`;
+Be concise and data-driven. Use the exact opinion data provided.
+Write the summary in English.`;
 
 function buildUserPrompt(agenda: ForumAgenda, opinions: ForumOpinion[]): string {
   const opinionDetails = opinions

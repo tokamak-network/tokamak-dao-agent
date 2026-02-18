@@ -55,13 +55,18 @@ export class OpenAIProvider implements ChatProvider {
       },
     }));
 
-    const stream = await this.client.chat.completions.create({
+    const createParams: any = {
       model: params.model,
       max_tokens: params.maxTokens,
       messages: openaiMessages,
-      tools: openaiTools,
       stream: true,
-    });
+    };
+    // Only include tools if there are any — some providers reject/hang on empty tools array
+    if (openaiTools.length > 0) {
+      createParams.tools = openaiTools;
+    }
+
+    const stream = await this.client.chat.completions.create(createParams);
 
     // Track in-flight tool calls by index (OpenAI streams them by index).
     const toolCalls = new Map<number, { id: string; name: string }>();

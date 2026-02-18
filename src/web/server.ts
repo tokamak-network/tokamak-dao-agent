@@ -24,12 +24,43 @@ import {
   MODE_MODELS,
 } from "../config.ts";
 import { forumRouter } from "./forum.ts";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { registerAllTools } from "../mcp/tools/index.ts";
 
 const app = new Hono();
 
 app.use("/api/*", cors());
 app.use("/forum/*", cors());
 app.route("/forum", forumRouter);
+
+// ── MCP Streamable HTTP endpoint ─────────────────────────────────────
+
+app.use("/mcp", cors({
+  origin: "*",
+  allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
+  allowHeaders: ["Content-Type", "mcp-session-id", "Last-Event-ID", "mcp-protocol-version", "Authorization"],
+  exposeHeaders: ["mcp-session-id", "mcp-protocol-version"],
+}));
+
+app.use("/mcp", async (c, next) => {
+  const apiKey = process.env.MCP_API_KEY;
+  if (!apiKey) return next();
+  const auth = c.req.header("Authorization");
+  if (auth !== `Bearer ${apiKey}`) {
+    return c.json({ jsonrpc: "2.0", error: { code: -32001, message: "Unauthorized" } }, 401);
+  }
+  return next();
+});
+
+// Stateless: each request creates a fresh server+transport (no session tracking needed)
+app.all("/mcp", async (c) => {
+  const server = new McpServer({ name: "tokamak-dao", version: "1.0.0" });
+  registerAllTools(server);
+  const transport = new WebStandardStreamableHTTPServerTransport({ enableJsonResponse: true });
+  await server.connect(transport);
+  return transport.handleRequest(c.req.raw);
+});
 
 const MODEL_RAW = process.env.CHAT_MODEL || DEFAULT_CHAT_MODEL;
 const defaultConfig = detectProvider(MODEL_RAW);

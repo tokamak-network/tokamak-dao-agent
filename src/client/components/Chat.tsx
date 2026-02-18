@@ -7,6 +7,7 @@ import { ChatInterface } from "./ChatInterface";
 import { MakeProposalTab } from "./MakeProposalTab";
 import { AnalyzeProposalTab } from "./AnalyzeProposalTab";
 import { AgentsTab } from "./AgentsTab";
+import { ForumTab } from "./ForumTab";
 import { AgentProvider } from "../contexts/AgentContext";
 
 export default function Chat() {
@@ -108,6 +109,10 @@ function ChatApp() {
 
       <div className="tab-content" style={{ display: activeTab === "agents" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
         <AgentsTab />
+      </div>
+
+      <div className="tab-content" style={{ display: activeTab === "forum" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <ForumTab />
       </div>
     </div>
   );

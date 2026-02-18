@@ -5,6 +5,7 @@ const TABS: { mode: TabMode; label: string }[] = [
   { mode: "make_proposal", label: "Generate Calldata" },
   { mode: "analyze_proposal", label: "Analyze Proposal" },
   { mode: "agents", label: "Agents" },
+  { mode: "forum", label: "Forum" },
 ];
 
 export function TabBar() {

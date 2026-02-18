@@ -45,3 +45,6 @@ scripts/storage/output/
 
 # SQLite database (local data)
 data/
+elizaos/node_modules/
+elizaos/.eliza/
+elizaos/bun.lock

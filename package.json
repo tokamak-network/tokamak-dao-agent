@@ -6,6 +6,7 @@
     "verify": "bun run scripts/verify-contracts.ts",
     "typecheck": "bun x tsc --noEmit",
     "mcp": "bun run src/mcp/server.ts",
+    "mcp:sse": "bun run src/mcp/server-sse.ts",
     "start": "bun run src/web/server.ts",
     "dev:web": "bun run --hot src/web/server.ts",
     "dev:client": "vite",
@@ -27,13 +28,15 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@elizaos/plugin-anthropic": "^1.5.12",
+    "@fleek-platform/eliza-plugin-mcp": "^0.0.8",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "hono": "^4.7.0",
+    "openai": "^4.73.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.0",
     "remark-gfm": "^4.0.1",
-    "openai": "^4.73.0",
     "viem": "^2.21.0"
   }
 }

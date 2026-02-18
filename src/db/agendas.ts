@@ -11,7 +11,7 @@ export interface ForumAgenda {
   onChainAgendaId: number | null;
   creator: string;
   deadline: string;
-  status: "open" | "closed" | "archived";
+  status: "draft" | "pending_review" | "rejected" | "open" | "closed" | "archived";
   createdAt: string;
   updatedAt: string;
   opinionCount?: number;
@@ -125,11 +125,41 @@ export function listAgendas(opts: ListAgendaOptions = {}): ForumAgenda[] {
 
 export function updateAgendaStatus(
   id: number,
-  status: "open" | "closed" | "archived",
+  status: "draft" | "pending_review" | "rejected" | "open" | "closed" | "archived",
 ): ForumAgenda | null {
   const db = getDb();
   db.prepare(
     `UPDATE agendas SET status = ?, updated_at = datetime('now') WHERE id = ?`,
   ).run(status, id);
+  return getAgenda(id);
+}
+
+export function updateAgenda(
+  id: number,
+  fields: { title?: string; content?: string; deadline?: string },
+): ForumAgenda | null {
+  const db = getDb();
+  const sets: string[] = [];
+  const params: any[] = [];
+
+  if (fields.title !== undefined) {
+    sets.push("title = ?");
+    params.push(fields.title);
+  }
+  if (fields.content !== undefined) {
+    sets.push("content = ?");
+    params.push(fields.content);
+  }
+  if (fields.deadline !== undefined) {
+    sets.push("deadline = ?");
+    params.push(fields.deadline);
+  }
+
+  if (sets.length === 0) return getAgenda(id);
+
+  sets.push("updated_at = datetime('now')");
+  params.push(id);
+
+  db.prepare(`UPDATE agendas SET ${sets.join(", ")} WHERE id = ?`).run(...params);
   return getAgenda(id);
 }

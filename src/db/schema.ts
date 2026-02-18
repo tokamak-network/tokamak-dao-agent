@@ -57,4 +57,16 @@ CREATE TABLE IF NOT EXISTS agents (
   priorities_json TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS validations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agenda_id INTEGER NOT NULL REFERENCES agendas(id) ON DELETE CASCADE,
+  validator_type TEXT NOT NULL,
+  status TEXT NOT NULL,
+  score INTEGER,
+  feedback TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_validations_agenda_type
+  ON validations(agenda_id, validator_type);
 `;

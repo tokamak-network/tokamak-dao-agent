@@ -26,6 +26,10 @@ export const SUMMARY_MAX_TOKENS = 2048;
 export const OPINION_MODEL = process.env.OPINION_MODEL || "gemini-3-flash";
 export const OPINION_MAX_TOKENS = 1024;
 
+// Forum validation
+export const VALIDATION_MODEL = process.env.VALIDATION_MODEL || "gemini-3-flash";
+export const VALIDATION_MAX_TOKENS = 1024;
+
 // Forum translation
 export const TRANSLATE_MODEL = process.env.TRANSLATE_MODEL || "gemini-3-flash";
 export const TRANSLATE_MAX_TOKENS = 4096;

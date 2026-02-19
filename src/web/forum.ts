@@ -29,6 +29,19 @@ import { runValidationWorkflow } from "./forum-validators.ts";
 import { translateText } from "./forum-translate.ts";
 import { listAgents, createAgent, deleteAgent } from "../db/agents.ts";
 import { getDb } from "../db/index.ts";
+import { runQocEvaluation, runSingleCriterionEvaluation } from "./qoc-agents.ts";
+import { getCriterionEvaluationsForAgenda, getQocResult } from "../db/qoc.ts";
+import { runDeliberation, getDeliberationRounds } from "./forum-deliberation.ts";
+import {
+  recordPrediction,
+  resolvePrediction,
+  getAgentCredibilityHistory,
+  getCredibilitySummaries,
+  getCredibilityForAgenda,
+} from "./agent-credibility.ts";
+import { WEIGHT_PROFILES } from "./qoc-weights.ts";
+import { determineVerdict } from "./qoc-aggregation.ts";
+import { syncOnChainAgendas } from "./agenda-sync.ts";
 
 export const forumRouter = new Hono();
 
@@ -318,6 +331,173 @@ forumRouter.get("/agent/:agentName/pending-agendas", (c) => {
   return c.json({ agendas: rows, count: rows.length });
 });
 
+// ── QOC evaluation endpoints ─────────────────────────────────────────
+
+forumRouter.post("/agenda/:id/qoc/evaluate", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  if (agenda.status !== "open") {
+    return c.json({ error: "Agenda must be open for QOC evaluation" }, 400);
+  }
+
+  try {
+    const result = await runQocEvaluation(agenda);
+    return c.json(result, 201);
+  } catch (err) {
+    console.error("[forum] QOC evaluation error:", err);
+    return c.json(
+      { error: `QOC evaluation failed: ${err instanceof Error ? err.message : String(err)}` },
+      500,
+    );
+  }
+});
+
+forumRouter.post("/agenda/:id/qoc/evaluate/:criterionId", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const criterionId = decodeURIComponent(c.req.param("criterionId"));
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  if (agenda.status !== "open") {
+    return c.json({ error: "Agenda must be open for QOC evaluation" }, 400);
+  }
+
+  try {
+    const evaluation = await runSingleCriterionEvaluation(agenda, criterionId);
+    if (!evaluation) {
+      return c.json({ error: `Criterion "${criterionId}" not found` }, 404);
+    }
+    return c.json(evaluation, 201);
+  } catch (err) {
+    console.error(`[forum] QOC single evaluation error for ${criterionId}:`, err);
+    return c.json(
+      { error: `QOC evaluation failed: ${err instanceof Error ? err.message : String(err)}` },
+      500,
+    );
+  }
+});
+
+forumRouter.get("/agenda/:id/qoc/evaluations", (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  const evaluations = getCriterionEvaluationsForAgenda(id);
+  return c.json({ evaluations, count: evaluations.length });
+});
+
+forumRouter.get("/agenda/:id/qoc/result", (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  const result = getQocResult(id);
+  if (!result) {
+    return c.json({ error: "No QOC result found. Run evaluation first." }, 404);
+  }
+  return c.json(result);
+});
+
+// ── Deliberation endpoints ───────────────────────────────────────────
+
+forumRouter.post("/agenda/:id/deliberate", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  if (agenda.status !== "open") {
+    return c.json({ error: "Agenda must be open for deliberation" }, 400);
+  }
+
+  try {
+    const { phases, result } = await runDeliberation(agenda);
+
+    // Auto-record lens-based predictions for credibility tracking
+    for (const lens of result.lensResults) {
+      recordPrediction({
+        agentName: lens.lensName,
+        agendaId: agenda.id,
+        predictedVerdict: lens.verdict,
+        predictedScore: lens.weightedScore,
+      });
+    }
+
+    return c.json({ phases, result }, 201);
+  } catch (err) {
+    console.error("[forum] deliberation error:", err);
+    return c.json(
+      { error: `Deliberation failed: ${err instanceof Error ? err.message : String(err)}` },
+      500,
+    );
+  }
+});
+
+forumRouter.get("/agenda/:id/deliberation", (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  const phases = getDeliberationRounds(id);
+  const result = getQocResult(id);
+  return c.json({ phases, result, phaseCount: phases.length });
+});
+
+// ── Credibility endpoints ───────────────────────────────────────────
+
+forumRouter.get("/credibility", (c) => {
+  const summaries = getCredibilitySummaries();
+  return c.json({ agents: summaries });
+});
+
+forumRouter.get("/credibility/:agentName", (c) => {
+  const agentName = decodeURIComponent(c.req.param("agentName"));
+  const history = getAgentCredibilityHistory(agentName);
+  return c.json({ agentName, history, count: history.length });
+});
+
+forumRouter.get("/agenda/:id/credibility", (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const records = getCredibilityForAgenda(id);
+  return c.json({ records, count: records.length });
+});
+
+forumRouter.post("/agenda/:id/credibility/resolve", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const body = await c.req.json();
+  const outcome = body?.outcome;
+  if (typeof outcome !== "string" || !outcome) {
+    return c.json({ error: "outcome is required (EXECUTED, REJECTED, EXPIRED)" }, 400);
+  }
+
+  // Resolve predictions for all lens names (Agent Alpha, Beta, etc.)
+  const results: any[] = [];
+  for (const profile of WEIGHT_PROFILES) {
+    const resolved = resolvePrediction(profile.agentName, id, outcome);
+    if (resolved) results.push(resolved);
+  }
+
+  return c.json({ resolved: results, count: results.length });
+});
+
 // ── Translation endpoint ──────────────────────────────────────────────
 
 forumRouter.post("/translate", async (c) => {
@@ -339,6 +519,21 @@ forumRouter.post("/translate", async (c) => {
     console.error("[forum] translation error:", err);
     return c.json(
       { error: "Failed to translate", detail: String(err) },
+      500,
+    );
+  }
+});
+
+// ── On-chain sync endpoint ───────────────────────────────────────────
+
+forumRouter.post("/sync", async (c) => {
+  try {
+    const result = await syncOnChainAgendas();
+    return c.json(result);
+  } catch (err) {
+    console.error("[forum] sync error:", err);
+    return c.json(
+      { error: `Sync failed: ${err instanceof Error ? err.message : String(err)}` },
       500,
     );
   }

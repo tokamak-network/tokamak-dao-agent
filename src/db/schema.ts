@@ -69,4 +69,55 @@ CREATE TABLE IF NOT EXISTS validations (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_validations_agenda_type
   ON validations(agenda_id, validator_type);
+
+CREATE TABLE IF NOT EXISTS qoc_criterion_evaluations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agenda_id INTEGER NOT NULL REFERENCES agendas(id) ON DELETE CASCADE,
+  criterion_id TEXT NOT NULL,
+  score INTEGER NOT NULL,
+  evidence TEXT NOT NULL,
+  reasoning TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(agenda_id, criterion_id)
+);
+
+CREATE TABLE IF NOT EXISTS qoc_results (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agenda_id INTEGER NOT NULL REFERENCES agendas(id) ON DELETE CASCADE,
+  criterion_scores_json TEXT NOT NULL,
+  lens_results_json TEXT NOT NULL,
+  final_score REAL NOT NULL,
+  verdict TEXT NOT NULL,
+  hard_veto INTEGER NOT NULL DEFAULT 0,
+  avg_tech_safety REAL NOT NULL,
+  contributing_criteria INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(agenda_id)
+);
+
+CREATE TABLE IF NOT EXISTS deliberation_rounds (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agenda_id INTEGER NOT NULL REFERENCES agendas(id) ON DELETE CASCADE,
+  phase INTEGER NOT NULL CHECK(phase BETWEEN 1 AND 2),
+  criterion_id TEXT,
+  agent_name TEXT NOT NULL,
+  score INTEGER,
+  evidence TEXT,
+  reasoning TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(agenda_id, phase, agent_name)
+);
+
+CREATE TABLE IF NOT EXISTS agent_credibility (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agent_name TEXT NOT NULL,
+  agenda_id INTEGER NOT NULL REFERENCES agendas(id) ON DELETE CASCADE,
+  predicted_verdict TEXT NOT NULL,
+  predicted_score REAL NOT NULL,
+  actual_outcome TEXT,
+  score_delta INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  resolved_at TEXT,
+  UNIQUE(agent_name, agenda_id)
+);
 `;

@@ -16,6 +16,7 @@ import { handleRunForkTest } from "./fork-test.ts";
 import { handleWebFetch } from "./web-fetch.ts";
 import { handleEncodeCalldata } from "./encode.ts";
 import { handleListDaoActions } from "./dao-actions-tool.ts";
+import { handleCheckUpgradePath } from "./upgrade-path.ts";
 import { handleAnalyzeAgenda } from "./agenda-analysis.ts";
 
 /**
@@ -294,6 +295,23 @@ export function getToolDefinitions(): ToolDefinition[] {
       },
     },
     {
+      name: "check_upgrade_path",
+      description:
+        "Check if a Tokamak proxy contract can be upgraded by the DAO. " +
+        "Verifies on-chain admin roles, current implementation, and upgrade function availability.",
+      input_schema: {
+        type: "object" as const,
+        properties: {
+          contract: {
+            type: "string",
+            description:
+              "Contract name or address (0x...). Accepts proxy name, implementation name, or raw address.",
+          },
+        },
+        required: ["contract"],
+      },
+    },
+    {
       name: "analyze_agenda",
       description:
         "Analyze a DAO agenda or proposal. Decodes calldata, simulates execution as DAOCommitteeProxy, runs fork tests, and provides risk assessment.",
@@ -356,6 +374,7 @@ interface ToolArgsMap {
   run_fork_test: { test_pattern: string; contract_pattern?: string; verbosity?: number };
   encode_calldata: { contract_name: string; function_name: string; args?: string[] };
   list_dao_actions: { contract_name?: string };
+  check_upgrade_path: { contract: string };
   analyze_agenda: { agenda_id?: string; targets?: string[]; function_bytecodes?: string[]; atomic_execute?: boolean };
   web_fetch: { url: string };
 }
@@ -390,6 +409,8 @@ export async function executeTool(name: string, args: Record<string, any>): Prom
       return handleEncodeCalldata(args as ToolArgsMap["encode_calldata"]);
     case "list_dao_actions":
       return handleListDaoActions(args as ToolArgsMap["list_dao_actions"]);
+    case "check_upgrade_path":
+      return handleCheckUpgradePath(args as ToolArgsMap["check_upgrade_path"]);
     case "analyze_agenda":
       return handleAnalyzeAgenda(args as ToolArgsMap["analyze_agenda"]);
     case "web_fetch":

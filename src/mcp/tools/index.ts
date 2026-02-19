@@ -14,6 +14,7 @@ import { registerForkTestTool } from "./fork-test.ts";
 import { registerWebFetchTool } from "./web-fetch.ts";
 import { registerEncodeTool } from "./encode.ts";
 import { registerListDaoActionsTool } from "./dao-actions-tool.ts";
+import { registerCheckUpgradePathTool } from "./upgrade-path.ts";
 import { registerAnalysisTool } from "./agenda-analysis.ts";
 
 export function registerAllTools(server: McpServer) {
@@ -38,6 +39,7 @@ export function registerAllTools(server: McpServer) {
   // Phase 6: Proposal building
   registerEncodeTool(server);
   registerListDaoActionsTool(server);
+  registerCheckUpgradePathTool(server);
 
   // Phase 7: Proposal analysis
   registerAnalysisTool(server);

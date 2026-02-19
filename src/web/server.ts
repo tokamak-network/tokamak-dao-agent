@@ -24,6 +24,8 @@ import {
   MODE_MODELS,
 } from "../config.ts";
 import { forumRouter } from "./forum.ts";
+import { elizaosRouter } from "./elizaos.ts";
+import { startAgendaSync } from "./agenda-sync.ts";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { registerAllTools } from "../mcp/tools/index.ts";
@@ -32,6 +34,7 @@ const app = new Hono();
 
 app.use("/api/*", cors());
 app.route("/api/forum", forumRouter);
+app.route("/api/elizaos", elizaosRouter);
 
 // ── MCP Streamable HTTP endpoint ─────────────────────────────────────
 
@@ -158,14 +161,18 @@ app.post("/api/chat", async (c) => {
       }));
 
       // In make_proposal mode, after initial research (assistant already responded),
-      // restrict tools to encode_calldata only to prevent unnecessary research loops.
+      // restrict tools to encode_calldata + check_upgrade_path to prevent unnecessary research loops.
       let activeTools = tools;
       if (body.mode === "make_proposal") {
         const assistantMsgCount = body.messages.filter(
           (m) => m.role === "assistant",
         ).length;
         if (assistantMsgCount >= 1) {
-          activeTools = tools.filter((t) => t.name === "encode_calldata");
+          activeTools = tools.filter(
+            (t) =>
+              t.name === "encode_calldata" ||
+              t.name === "check_upgrade_path",
+          );
         }
       }
 
@@ -383,6 +390,13 @@ console.log(
   `Default provider: ${defaultConfig.provider}, Model: ${defaultConfig.model}`,
 );
 console.log(`Serving static files from ${DIST_DIR}`);
+
+// Start on-chain agenda sync (polls DAOAgendaManager periodically)
+if (process.env.ALCHEMY_RPC_URL) {
+  startAgendaSync();
+} else {
+  console.log("ALCHEMY_RPC_URL not set — on-chain agenda sync disabled");
+}
 
 export default {
   port,

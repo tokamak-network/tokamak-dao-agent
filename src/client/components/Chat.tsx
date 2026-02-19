@@ -9,14 +9,24 @@ import { AnalyzeProposalTab } from "./AnalyzeProposalTab";
 import { AgentsTab } from "./AgentsTab";
 import { ForumTab } from "./ForumTab";
 import { AgentProvider } from "../contexts/AgentContext";
+import { ElizaOSProvider } from "../contexts/ElizaOSContext";
 
 export default function Chat() {
   return (
     <TabProvider>
       <AgentProvider>
-        <ChatApp />
+        <ElizaOSWrapper />
       </AgentProvider>
     </TabProvider>
+  );
+}
+
+function ElizaOSWrapper() {
+  const { activeTab } = useTabContext();
+  return (
+    <ElizaOSProvider active={activeTab === "agents"}>
+      <ChatApp />
+    </ElizaOSProvider>
   );
 }
 

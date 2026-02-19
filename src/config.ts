@@ -34,6 +34,13 @@ export const VALIDATION_MAX_TOKENS = 1024;
 export const TRANSLATE_MODEL = process.env.TRANSLATE_MODEL || "gemini-3-flash";
 export const TRANSLATE_MAX_TOKENS = 4096;
 
+// QOC evaluation
+export const QOC_MODEL = process.env.QOC_MODEL || "gpt-5.2";
+export const QOC_MAX_TOKENS = 2048;
+
+// ElizaOS
+export const ELIZAOS_BASE_URL = process.env.ELIZAOS_URL || "http://localhost:3000";
+
 // Mode-specific model overrides (used when no per-request model is specified)
 export const MODE_MODELS: Record<string, string> = {
   chat: "gpt-5.2",

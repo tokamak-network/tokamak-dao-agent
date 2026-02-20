@@ -24,7 +24,7 @@ export default function Chat() {
 function ElizaOSWrapper() {
   const { activeTab } = useTabContext();
   return (
-    <ElizaOSProvider active={activeTab === "agents"}>
+    <ElizaOSProvider active={true}>
       <ChatApp />
     </ElizaOSProvider>
   );

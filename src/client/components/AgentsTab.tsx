@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useAgentContext, type Agent } from "../contexts/AgentContext";
 import { useElizaOS, type ElizaAgent } from "../contexts/ElizaOSContext";
 import { AgentCreator } from "./AgentCreator";
+import { AgentChatPanel } from "./AgentChatPanel";
+import { GroupChatPicker } from "./GroupChatPicker";
+import type { ChatTarget } from "./chat/types";
 
 /* ── Constants (mirrored from qoc-weights.ts for client) ──────────── */
 
@@ -200,6 +203,7 @@ function UnifiedAgentCard({
   onStart,
   onStop,
   onDelete,
+  onChat,
   walletAddress,
 }: {
   data: MergedAgent;
@@ -209,6 +213,7 @@ function UnifiedAgentCard({
   onStart: (id: string) => void;
   onStop: (id: string) => void;
   onDelete?: () => void;
+  onChat?: () => void;
   walletAddress?: string | null;
 }) {
   const { profile, eliza } = data;
@@ -333,7 +338,13 @@ function UnifiedAgentCard({
       {/* Zone 4: Footer — only for core agents with ElizaOS */}
       {!isCustom && (
         <div className="agent-dash-footer">
-          <span />
+          <button
+            className="agent-dash-chat-btn"
+            disabled={!isActive || !onChat}
+            onClick={(e) => { e.stopPropagation(); onChat?.(); }}
+          >
+            Chat
+          </button>
           <button
             className={`agent-dash-toggle ${isActive ? "stop" : "start"}`}
             disabled={!elizaAvailable || isUnavailable}
@@ -416,6 +427,8 @@ export function AgentsTab() {
   const [creating, setCreating] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [wallets, setWallets] = useState<Record<string, string | null>>({});
+  const [chatTarget, setChatTarget] = useState<ChatTarget | null>(null);
+  const [showGroupPicker, setShowGroupPicker] = useState(false);
 
   useEffect(() => {
     fetch("/api/agents/wallets")
@@ -433,6 +446,30 @@ export function AgentsTab() {
   }));
 
   const allAgents = [...coreMerged, ...customMerged];
+
+  // Build color map for group chat: agentId → accentColor
+  const agentColors: Record<string, string> = {};
+  for (const m of coreMerged) {
+    if (m.eliza) agentColors[m.eliza.id] = m.profile.accentColor;
+  }
+
+  const openDmChat = (m: MergedAgent) => {
+    if (!m.eliza) return;
+    setChatTarget({
+      type: "dm",
+      agentId: m.eliza.id,
+      agentName: m.profile.name,
+      accentColor: m.profile.accentColor,
+    });
+  };
+
+  const openGroupChat = (agentIds: string[], _name: string) => {
+    setShowGroupPicker(false);
+    setChatTarget({
+      type: "group",
+      agentIds,
+    });
+  };
 
   if (stakeholderLoading && elizaLoading) {
     return (
@@ -455,6 +492,105 @@ export function AgentsTab() {
     );
   }
 
+  // Build the agent cards (used in both normal and split view)
+  const renderAgentCards = (compact?: boolean) => (
+    <div className={compact ? "agent-dash-grid compact" : "agent-dash-grid"}>
+      {allAgents.map((m) => {
+        const customAgent = stakeholderAgents.find(
+          (a) => `custom-${a.id}` === m.profile.id,
+        );
+        return (
+          <UnifiedAgentCard
+            key={m.profile.id}
+            data={m}
+            expanded={!compact && expandedId === m.profile.id}
+            onToggleExpand={() => {
+              if (compact) {
+                // In compact mode, clicking opens DM chat
+                openDmChat(m);
+              } else {
+                setExpandedId(
+                  expandedId === m.profile.id ? null : m.profile.id,
+                );
+              }
+            }}
+            elizaAvailable={available}
+            onStart={startAgent}
+            onStop={stopAgent}
+            onChat={m.eliza?.status === "active" ? () => openDmChat(m) : undefined}
+            onDelete={
+              customAgent
+                ? () => deleteAgent(customAgent.id)
+                : undefined
+            }
+            walletAddress={compact ? null : wallets[m.profile.id] ?? null}
+          />
+        );
+      })}
+    </div>
+  );
+
+  // Split-view when chat is active
+  if (chatTarget) {
+    return (
+      <div className="agent-tab-split">
+        <div className="agent-tab-sidebar">
+          <div className="agent-sidebar-header">
+            <span className="agent-sidebar-title">Agents</span>
+            <button
+              className="terminal-btn"
+              onClick={() => setShowGroupPicker(true)}
+              disabled={!available}
+              style={{ fontSize: 11, padding: "4px 8px" }}
+            >
+              Group
+            </button>
+          </div>
+          <div className="agent-sidebar-list">
+            {allAgents.map((m) => {
+              const isActive = m.eliza?.status === "active";
+              const isCurrent =
+                chatTarget.type === "dm" && chatTarget.agentId === m.eliza?.id;
+              return (
+                <button
+                  key={m.profile.id}
+                  className={`agent-sidebar-item ${isCurrent ? "active" : ""}`}
+                  disabled={!isActive}
+                  onClick={() => openDmChat(m)}
+                >
+                  <span
+                    className="status-dot"
+                    style={{
+                      background: isActive
+                        ? m.profile.accentColor
+                        : "var(--term-text-dim)",
+                      boxShadow: isActive
+                        ? `0 0 6px ${m.profile.accentColor}`
+                        : "none",
+                    }}
+                  />
+                  <span className="agent-sidebar-name">{m.profile.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <AgentChatPanel
+          target={chatTarget}
+          agentColors={agentColors}
+          onClose={() => setChatTarget(null)}
+        />
+        {showGroupPicker && (
+          <GroupChatPicker
+            agents={elizaAgents}
+            onStart={openGroupChat}
+            onCancel={() => setShowGroupPicker(false)}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="agent-list-container">
       <div className="agent-section">
@@ -474,45 +610,33 @@ export function AgentsTab() {
               </span>
             )}
           </div>
-          <button
-            className="terminal-btn"
-            onClick={() => setCreating(true)}
-          >
-            + Create Agent
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              className="terminal-btn"
+              onClick={() => setShowGroupPicker(true)}
+              disabled={!available}
+            >
+              Group Chat
+            </button>
+            <button
+              className="terminal-btn"
+              onClick={() => setCreating(true)}
+            >
+              + Create Agent
+            </button>
+          </div>
         </div>
 
-        <div className="agent-dash-grid">
-          {allAgents.map((m) => {
-            const customAgent = stakeholderAgents.find(
-              (a) => `custom-${a.id}` === m.profile.id,
-            );
-            return (
-              <UnifiedAgentCard
-                key={m.profile.id}
-                data={m}
-                expanded={expandedId === m.profile.id}
-                onToggleExpand={() =>
-                  setExpandedId(
-                    expandedId === m.profile.id
-                      ? null
-                      : m.profile.id,
-                  )
-                }
-                elizaAvailable={available}
-                onStart={startAgent}
-                onStop={stopAgent}
-                onDelete={
-                  customAgent
-                    ? () => deleteAgent(customAgent.id)
-                    : undefined
-                }
-                walletAddress={wallets[m.profile.id] ?? null}
-              />
-            );
-          })}
-        </div>
+        {renderAgentCards()}
       </div>
+
+      {showGroupPicker && (
+        <GroupChatPicker
+          agents={elizaAgents}
+          onStart={openGroupChat}
+          onCancel={() => setShowGroupPicker(false)}
+        />
+      )}
     </div>
   );
 }

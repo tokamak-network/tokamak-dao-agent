@@ -18,3 +18,23 @@ export interface Message {
   parts: MessagePart[]; // structured parts for display
   timestamp: Date;
 }
+
+/* ── ElizaOS Chat types ─────────────────────────────────────────── */
+
+export interface ElizaMessage {
+  id: string;
+  content: string;
+  senderId: string;
+  senderName: string;
+  channelId: string;
+  createdAt: string;
+}
+
+export interface ChatTarget {
+  type: "dm" | "group";
+  agentId?: string;       // DM only
+  agentIds?: string[];    // Group only
+  agentName?: string;     // DM agent display name
+  channelId?: string;     // resolved after setup
+  accentColor?: string;
+}

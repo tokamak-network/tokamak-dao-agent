@@ -8,8 +8,6 @@ import { ELIZAOS_BASE_URL } from "../config.ts";
 import {
   WEB_USER_ENTITY_ID,
   WEB_USER_NAME,
-  joinChannel,
-  sendSocketMessage,
 } from "./elizaos-socket.ts";
 
 export const elizaosRouter = new Hono();
@@ -131,8 +129,9 @@ elizaosRouter.get("/dm-channel", async (c) => {
   const agentId = c.req.query("agentId");
   if (!agentId) return c.json({ error: "agentId is required" }, 400);
   try {
+    // ElizaOS v1.7.2 expects targetUserId + currentUserId
     const res = await proxyGet(
-      `/api/messaging/dm-channel?entityId=${WEB_USER_ENTITY_ID}&agentId=${agentId}`,
+      `/api/messaging/dm-channel?targetUserId=${agentId}&currentUserId=${WEB_USER_ENTITY_ID}`,
     );
     if (!res.ok) return c.json({ error: `ElizaOS returned ${res.status}` }, 502);
     const data = await res.json();
@@ -149,10 +148,16 @@ elizaosRouter.post("/group-channel", async (c) => {
     if (!body.name || !body.agentIds?.length) {
       return c.json({ error: "name and agentIds are required" }, 400);
     }
+    // Get message server ID for channel creation
+    const msRes = await proxyGet("/api/messaging/message-server/current");
+    const msData = await msRes.json();
+    const msId = msData?.data?.messageServerId ?? "00000000-0000-0000-0000-000000000000";
+
     const res = await proxyPostWithBody("/api/messaging/channels", {
       name: body.name,
       type: "GROUP",
-      participantEntityIds: [WEB_USER_ENTITY_ID, ...body.agentIds],
+      message_server_id: msId,
+      participantCentralUserIds: [WEB_USER_ENTITY_ID, ...body.agentIds],
     });
     if (!res.ok) return c.json({ error: `ElizaOS returned ${res.status}` }, 502);
     const data = await res.json();
@@ -162,7 +167,8 @@ elizaosRouter.post("/group-channel", async (c) => {
   }
 });
 
-// Send message to a channel (via Socket.IO)
+// Send message to a channel (via ElizaOS REST API with http transport)
+// Uses http transport to get synchronous agent response instead of message bus.
 elizaosRouter.post("/channels/:id/send", async (c) => {
   const channelId = c.req.param("id");
   try {
@@ -170,17 +176,55 @@ elizaosRouter.post("/channels/:id/send", async (c) => {
     if (!body.content?.trim()) return c.json({ error: "content is required" }, 400);
     if (!body.messageServerId) return c.json({ error: "messageServerId is required" }, 400);
 
-    // Ensure we've joined the channel first
+    // Build metadata for DM routing
     const metadata: Record<string, string> = {};
-    if (body.targetAgentId) metadata.targetUserId = body.targetAgentId;
-    joinChannel(channelId, body.messageServerId, metadata);
+    if (body.targetAgentId) {
+      metadata.targetUserId = body.targetAgentId;
+      metadata.isDm = "true";
+    }
 
-    // Send message
-    sendSocketMessage(channelId, body.messageServerId, body.content, metadata);
+    // Send via ElizaOS REST API with http transport for synchronous response
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 60_000); // 60s for LLM response
+    try {
+      const res = await fetch(`${ELIZAOS_BASE_URL}/api/messaging/channels/${channelId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channelId,
+          message_server_id: body.messageServerId,
+          author_id: WEB_USER_ENTITY_ID,
+          content: body.content,
+          transport: "http",
+          metadata,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
 
-    return c.json({ success: true });
-  } catch {
-    return c.json({ error: "Failed to send message" }, 500);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        return c.json({ error: errData.error ?? `ElizaOS returned ${res.status}` }, 502);
+      }
+
+      const data = await res.json();
+      // Extract agent response from http transport result
+      const agentResponse = data.agentResponse;
+      return c.json({
+        success: true,
+        userMessage: data.userMessage,
+        agentResponse: agentResponse ? {
+          text: agentResponse.text ?? "",
+          thought: agentResponse.thought,
+          actions: agentResponse.actions,
+        } : null,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (e: any) {
+    console.error("[elizaos] send error:", e?.message ?? e);
+    return c.json({ error: e?.message ?? "Failed to send message" }, 500);
   }
 });
 

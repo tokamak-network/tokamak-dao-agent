@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { ElizaMessage, ChatTarget } from "./types";
 
-const POLL_INTERVAL = 2000;
-
 interface UseElizaChatResult {
   messages: ElizaMessage[];
   sendMessage: (content: string) => Promise<void>;
@@ -20,17 +18,8 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
   const channelIdRef = useRef<string | null>(null);
   const messageServerIdRef = useRef<string | null>(null);
   const entityIdRef = useRef<string | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Clean up polling
-  const stopPolling = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }, []);
-
-  // Fetch messages for current channel
+  // Fetch messages for current channel (used for initial load)
   const fetchMessages = useCallback(async (chId: string) => {
     try {
       const res = await fetch(`/api/elizaos/channels/${chId}/messages`);
@@ -38,8 +27,8 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
       const msgs: ElizaMessage[] = (data.messages ?? []).map((m: any) => ({
         id: m.id ?? m.messageId ?? crypto.randomUUID(),
         content: m.content?.text ?? m.content ?? m.body ?? "",
-        senderId: m.senderId ?? m.entityId ?? "",
-        senderName: m.senderName ?? m.authorName ?? "Unknown",
+        senderId: m.authorId ?? m.senderId ?? m.entityId ?? "",
+        senderName: m.senderName ?? m.metadata?.user_display_name ?? m.authorName ?? "Unknown",
         channelId: m.channelId ?? chId,
         createdAt: m.createdAt ?? new Date().toISOString(),
       }));
@@ -47,14 +36,13 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
       msgs.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
       setMessages(msgs);
     } catch {
-      // Silent fail — polling will retry
+      // Silent fail
     }
   }, []);
 
   // Initialize channel when target changes
   useEffect(() => {
     if (!target) {
-      stopPolling();
       channelIdRef.current = null;
       setMessages([]);
       setError(null);
@@ -67,7 +55,6 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
       setIsConnecting(true);
       setError(null);
       setMessages([]);
-      stopPolling();
 
       try {
         // 1. Get entity
@@ -79,7 +66,7 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
         // 2. Get message server
         const msRes = await fetch("/api/elizaos/message-server");
         const msData = await msRes.json();
-        const msId = msData?.data?.id ?? msData?.id ?? msData?.messageServerId;
+        const msId = msData?.data?.messageServerId ?? msData?.data?.id ?? msData?.messageServerId ?? msData?.id;
         if (!msId) throw new Error("Failed to get message server");
         messageServerIdRef.current = msId;
 
@@ -110,9 +97,6 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
 
         // 4. Fetch initial messages
         await fetchMessages(channelId);
-
-        // 5. Start polling
-        pollRef.current = setInterval(() => fetchMessages(channelId!), POLL_INTERVAL);
       } catch (e: any) {
         if (!cancelled) setError(e.message ?? "Connection failed");
       } finally {
@@ -124,23 +108,30 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
 
     return () => {
       cancelled = true;
-      stopPolling();
     };
-  }, [target, fetchMessages, stopPolling]);
+  }, [target, fetchMessages]);
 
   const sendMessage = useCallback(async (content: string) => {
     const chId = channelIdRef.current;
     const msId = messageServerIdRef.current;
+    const entityId = entityIdRef.current;
     if (!chId || !msId || !content.trim()) return;
 
+    // Optimistically add user message
+    const userMsg: ElizaMessage = {
+      id: crypto.randomUUID(),
+      content,
+      senderId: entityId ?? "",
+      senderName: "You",
+      channelId: chId,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
-    try {
-      const metadata: Record<string, string> = {};
-      if (target?.type === "dm" && target.agentId) {
-        metadata.targetAgentId = target.agentId;
-      }
+    setError(null);
 
-      await fetch(`/api/elizaos/channels/${chId}/send`, {
+    try {
+      const res = await fetch(`/api/elizaos/channels/${chId}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -152,14 +143,28 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
         }),
       });
 
-      // Immediately poll for new messages
-      await fetchMessages(chId);
+      const data = await res.json();
+
+      if (data.agentResponse?.text) {
+        // Add agent response message
+        const agentMsg: ElizaMessage = {
+          id: data.agentResponse.responseId ?? crypto.randomUUID(),
+          content: data.agentResponse.text,
+          senderId: target?.agentId ?? "agent",
+          senderName: target?.agentName ?? "Agent",
+          channelId: chId,
+          createdAt: new Date().toISOString(),
+        };
+        setMessages((prev) => [...prev, agentMsg]);
+      } else if (data.error) {
+        setError(data.error);
+      }
     } catch {
       setError("Failed to send message");
     } finally {
       setIsLoading(false);
     }
-  }, [target, fetchMessages]);
+  }, [target]);
 
   return { messages, sendMessage, isLoading, isConnecting, error };
 }

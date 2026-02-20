@@ -54,7 +54,7 @@ export function joinChannel(
   joinedChannels.add(channelId);
 }
 
-/** Send a message via Socket.IO event "2". */
+/** Send a message via Socket.IO event "2" (SEND_MESSAGE). */
 export function sendSocketMessage(
   channelId: string,
   messageServerId: string,
@@ -62,12 +62,13 @@ export function sendSocketMessage(
   metadata?: Record<string, string>,
 ): void {
   const s = getSocket();
+  // ElizaOS expects `message` field (not `content`)
   s.emit("2", {
     channelId,
     senderId: WEB_USER_ENTITY_ID,
     senderName: WEB_USER_NAME,
     messageServerId,
-    content,
+    message: content,
     metadata: metadata ?? {},
   });
 }

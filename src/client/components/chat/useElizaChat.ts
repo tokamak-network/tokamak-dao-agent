@@ -19,27 +19,6 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
   const messageServerIdRef = useRef<string | null>(null);
   const entityIdRef = useRef<string | null>(null);
 
-  // Fetch messages for current channel (used for initial load)
-  const fetchMessages = useCallback(async (chId: string) => {
-    try {
-      const res = await fetch(`/api/elizaos/channels/${chId}/messages`);
-      const data = await res.json();
-      const msgs: ElizaMessage[] = (data.messages ?? []).map((m: any) => ({
-        id: m.id ?? m.messageId ?? crypto.randomUUID(),
-        content: m.content?.text ?? m.content ?? m.body ?? "",
-        senderId: m.authorId ?? m.senderId ?? m.entityId ?? "",
-        senderName: m.senderName ?? m.metadata?.user_display_name ?? m.authorName ?? "Unknown",
-        channelId: m.channelId ?? chId,
-        createdAt: m.createdAt ?? new Date().toISOString(),
-      }));
-      // Sort by createdAt ascending
-      msgs.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      setMessages(msgs);
-    } catch {
-      // Silent fail
-    }
-  }, []);
-
   // Initialize channel when target changes
   useEffect(() => {
     if (!target) {
@@ -94,9 +73,6 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
 
         if (!channelId) throw new Error("Failed to create channel");
         channelIdRef.current = channelId;
-
-        // 4. Fetch initial messages
-        await fetchMessages(channelId);
       } catch (e: any) {
         if (!cancelled) setError(e.message ?? "Connection failed");
       } finally {
@@ -109,7 +85,7 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
     return () => {
       cancelled = true;
     };
-  }, [target, fetchMessages]);
+  }, [target]);
 
   const sendMessage = useCallback(async (content: string) => {
     const chId = channelIdRef.current;

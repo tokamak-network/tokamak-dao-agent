@@ -26,6 +26,12 @@ import {
 import { forumRouter } from "./forum.ts";
 import { elizaosRouter } from "./elizaos.ts";
 import { startAgendaSync } from "./agenda-sync.ts";
+import {
+  initAgentWallets,
+  getAgentAddresses,
+  signAgentMessage,
+  hasWallet,
+} from "./agent-wallets.ts";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { registerAllTools } from "../mcp/tools/index.ts";
@@ -35,6 +41,29 @@ const app = new Hono();
 app.use("/api/*", cors());
 app.route("/api/forum", forumRouter);
 app.route("/api/elizaos", elizaosRouter);
+
+// ── Agent wallet endpoints ───────────────────────────────────────────
+
+app.get("/api/agents/wallets", (c) => c.json(getAgentAddresses()));
+
+app.post("/api/agents/sign", async (c) => {
+  const { agentId, message } = await c.req.json<{
+    agentId: string;
+    message: string;
+  }>();
+  if (!agentId || !message) {
+    return c.json({ error: "agentId and message are required" }, 400);
+  }
+  if (!hasWallet(agentId)) {
+    return c.json({ error: `No wallet configured for agent "${agentId}"` }, 404);
+  }
+  try {
+    const signature = await signAgentMessage(agentId, message);
+    return c.json({ agentId, signature });
+  } catch (err) {
+    return c.json({ error: formatError(err) }, 500);
+  }
+});
 
 // ── MCP Streamable HTTP endpoint ─────────────────────────────────────
 
@@ -390,6 +419,9 @@ console.log(
   `Default provider: ${defaultConfig.provider}, Model: ${defaultConfig.model}`,
 );
 console.log(`Serving static files from ${DIST_DIR}`);
+
+// Load agent wallets from .env
+initAgentWallets();
 
 // Start on-chain agenda sync (polls DAOAgendaManager periodically)
 if (process.env.ALCHEMY_RPC_URL) {

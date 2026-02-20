@@ -14,7 +14,8 @@
     "fetch-agendas": "bun run scripts/fetch-agendas.ts",
     "storage:fetch-sources": "bun run scripts/storage/fetch-sources.ts",
     "storage:extract-layouts": "bun run scripts/storage/extract-layouts.ts",
-    "storage:collect-state": "bun run scripts/storage/collect-state.ts"
+    "storage:collect-state": "bun run scripts/storage/collect-state.ts",
+    "generate-wallets": "bun run scripts/generate-agent-wallets.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

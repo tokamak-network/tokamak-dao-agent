@@ -200,6 +200,7 @@ function UnifiedAgentCard({
   onStart,
   onStop,
   onDelete,
+  walletAddress,
 }: {
   data: MergedAgent;
   expanded: boolean;
@@ -208,6 +209,7 @@ function UnifiedAgentCard({
   onStart: (id: string) => void;
   onStop: (id: string) => void;
   onDelete?: () => void;
+  walletAddress?: string | null;
 }) {
   const { profile, eliza } = data;
   const [history, setHistory] = useState<CredibilityRecord[]>([]);
@@ -284,6 +286,20 @@ function UnifiedAgentCard({
           )}
         </div>
       </div>
+
+      {/* Wallet address */}
+      {walletAddress && (
+        <div
+          className="agent-dash-wallet"
+          title={walletAddress}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(walletAddress);
+          }}
+        >
+          {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+        </div>
+      )}
 
       {/* Zone 2: Description */}
       {profile.description && (
@@ -399,6 +415,14 @@ export function AgentsTab() {
   } = useElizaOS();
   const [creating, setCreating] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [wallets, setWallets] = useState<Record<string, string | null>>({});
+
+  useEffect(() => {
+    fetch("/api/agents/wallets")
+      .then((r) => r.json())
+      .then((data) => setWallets(data))
+      .catch(() => {});
+  }, []);
 
   const coreMerged = useAgentDashboard(elizaAgents);
 
@@ -483,6 +507,7 @@ export function AgentsTab() {
                     ? () => deleteAgent(customAgent.id)
                     : undefined
                 }
+                walletAddress={wallets[m.profile.id] ?? null}
               />
             );
           })}

@@ -6,7 +6,7 @@ import { ChatLoader } from "./chat/ChatLoader";
 import { ChatInput } from "./chat/ChatInput";
 
 export function AnalyzeProposalTab({ selectedModel }: { selectedModel?: string }) {
-  const { pendingProposal, clearPendingProposal } = useTabContext();
+  const { pendingProposal, clearPendingProposal, pendingChatMessage, clearPendingChatMessage } = useTabContext();
   const [agendaId, setAgendaId] = useState("");
 
   const {
@@ -32,6 +32,14 @@ export function AnalyzeProposalTab({ selectedModel }: { selectedModel?: string }
     }
   }, [pendingProposal]);
 
+  // Handle pending message from demo scenario navigation
+  useEffect(() => {
+    if (pendingChatMessage && messages.length === 0 && !isLoading) {
+      clearPendingChatMessage();
+      handleSubmit(pendingChatMessage);
+    }
+  }, [pendingChatMessage]);
+
   const handleAnalyzeAgenda = useCallback(() => {
     const id = agendaId.trim();
     if (!id || isNaN(Number(id))) return;
@@ -53,7 +61,7 @@ export function AnalyzeProposalTab({ selectedModel }: { selectedModel?: string }
               Analyze a Proposal
             </div>
             <div className="chat-welcome-subtitle">
-              Enter an agenda ID or paste proposal data for analysis
+              Decode calldata, simulate execution, and assess risk — before voting
             </div>
 
             {/* Agenda ID input card */}
@@ -77,6 +85,20 @@ export function AnalyzeProposalTab({ selectedModel }: { selectedModel?: string }
                 >
                   Analyze
                 </button>
+              </div>
+              <div className="agenda-quick-ids">
+                {["42", "41", "40", "39"].map((id) => (
+                  <button
+                    key={id}
+                    className="agenda-quick-id-btn"
+                    onClick={() => {
+                      setAgendaId("");
+                      handleSubmit(`Analyze on-chain agenda #${id}`);
+                    }}
+                  >
+                    #{id}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

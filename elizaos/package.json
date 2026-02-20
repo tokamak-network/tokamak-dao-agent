@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@elizaos/plugin-anthropic": "^1.5.12",
+    "@elizaos/plugin-mcp": "^1.8.2",
     "@fleek-platform/eliza-plugin-mcp": "^0.0.8"
   },
   "devDependencies": {

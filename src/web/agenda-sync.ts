@@ -1,7 +1,7 @@
 /**
  * On-chain agenda synchronization.
  *
- * Polls DAOAgendaManager.numAgendas() to detect new on-chain agendas,
+ * Polls DAOAgendaManager.totalAgendas() to detect new on-chain agendas,
  * fetches their details, decodes calldata, creates forum entries,
  * and triggers QOC evaluation for newly discovered agendas.
  */
@@ -174,15 +174,15 @@ export async function syncOnChainAgendas(): Promise<{
 
   let total: number;
   try {
-    const numAgendas = await publicClient.readContract({
+    const totalAgendas = await publicClient.readContract({
       address: DAO_AGENDA_MANAGER,
       abi: AGENDA_MANAGER_ABI,
-      functionName: "numAgendas",
+      functionName: "totalAgendas",
       args: [],
     });
-    total = Number(numAgendas);
+    total = Number(totalAgendas);
   } catch (err) {
-    console.error("[agenda-sync] failed to fetch numAgendas:", err);
+    console.error("[agenda-sync] failed to fetch totalAgendas:", err);
     return { total: 0, newlyImported: 0, errors: 1 };
   }
 

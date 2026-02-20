@@ -3,6 +3,9 @@ primary_region = 'nrt'
 
 [build]
 
+[env]
+  ELIZAOS_URL = "https://tokamak-dao-agent-elizaos.fly.dev"
+
 [http_service]
   internal_port = 3333
   force_https = true
@@ -10,11 +13,26 @@ primary_region = 'nrt'
   auto_start_machines = true
   min_machines_running = 0
 
+# MCP SSE server (internal only, for ElizaOS)
+[[services]]
+  internal_port = 3001
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 3001
+
 [checks]
   [checks.health]
     type = 'http'
     port = 3333
     path = '/api/health'
+    interval = '30s'
+    timeout = '5s'
+
+  [checks.mcp_sse]
+    type = 'http'
+    port = 3001
+    path = '/health'
     interval = '30s'
     timeout = '5s'
 

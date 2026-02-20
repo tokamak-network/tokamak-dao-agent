@@ -1,0 +1,33 @@
+app = 'tokamak-dao-agent-elizaos'
+primary_region = 'nrt'
+
+[build]
+
+[env]
+  # MCP SSE server on the main app's internal network
+  ELIZAOS_MCP_URL = "http://tokamak-dao-agent.internal:3001/sse"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'suspend'
+  auto_start_machines = true
+  min_machines_running = 0
+
+[checks]
+  [checks.health]
+    type = 'http'
+    port = 3000
+    path = '/healthz'
+    interval = '30s'
+    timeout = '10s'
+    grace_period = '120s'
+
+[mounts]
+  source = "elizaos_data"
+  destination = "/app/.eliza"
+
+[[vm]]
+  memory = '1024mb'
+  cpu_kind = 'shared'
+  cpus = 1

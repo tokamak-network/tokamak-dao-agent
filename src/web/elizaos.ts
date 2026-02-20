@@ -8,7 +8,7 @@ import { ELIZAOS_BASE_URL } from "../config.ts";
 
 export const elizaosRouter = new Hono();
 
-const TIMEOUT_MS = 5_000;
+const TIMEOUT_MS = 15_000;
 
 async function proxyGet(path: string): Promise<Response> {
   const controller = new AbortController();

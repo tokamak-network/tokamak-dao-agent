@@ -44,6 +44,10 @@ RUN mkdir -p /data
 # Built client from stage 1
 COPY --from=build /app/dist/ dist/
 
-EXPOSE 3333
+# Entrypoint script (runs MCP SSE + web server)
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
 
-CMD ["bun", "run", "src/web/server.ts"]
+EXPOSE 3333 3001
+
+CMD ["./entrypoint.sh"]

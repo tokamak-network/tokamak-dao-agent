@@ -12,7 +12,9 @@ export interface ElizaAgent {
   id: string;
   name: string;
   characterName?: string;
-  bio?: string;
+  bio: string[];
+  knowledge: string[];
+  style: string[];
   status: "active" | "inactive";
 }
 
@@ -50,7 +52,28 @@ export function ElizaOSProvider({
         setAgents([]);
       } else {
         setAvailable(true);
-        setAgents(data.agents ?? []);
+        const raw = data.agents ?? [];
+        const parsed: ElizaAgent[] = raw.map((a: any) => {
+          const ch = a.character ?? {};
+          const rawBio = ch.bio ?? a.bio;
+          const bio = Array.isArray(rawBio)
+            ? rawBio
+            : typeof rawBio === "string"
+              ? [rawBio]
+              : [];
+          const knowledge = Array.isArray(ch.knowledge) ? ch.knowledge : [];
+          const style = Array.isArray(ch.style?.all) ? ch.style.all : [];
+          return {
+            id: a.id,
+            name: a.name ?? ch.name ?? "Unnamed",
+            characterName: a.characterName ?? ch.name,
+            bio,
+            knowledge,
+            style,
+            status: a.status ?? "inactive",
+          };
+        });
+        setAgents(parsed);
       }
     } catch {
       setAvailable(false);

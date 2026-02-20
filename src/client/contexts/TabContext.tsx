@@ -44,6 +44,9 @@ interface TabContextValue {
   pendingProposal: Proposal | null;
   transferToAnalyze: (proposal: Proposal) => void;
   clearPendingProposal: () => void;
+  pendingChatMessage: string | null;
+  navigateWithMessage: (tab: TabMode, message: string) => void;
+  clearPendingChatMessage: () => void;
 }
 
 const TabContext = createContext<TabContextValue | null>(null);
@@ -51,6 +54,7 @@ const TabContext = createContext<TabContextValue | null>(null);
 export function TabProvider({ children }: { children: ReactNode }) {
   const [activeTab, setActiveTab] = useState<TabMode>(tabFromPath);
   const [pendingProposal, setPendingProposal] = useState<Proposal | null>(null);
+  const [pendingChatMessage, setPendingChatMessage] = useState<string | null>(null);
 
   const navigate = useCallback((tab: TabMode) => {
     setActiveTab(tab);
@@ -78,8 +82,17 @@ export function TabProvider({ children }: { children: ReactNode }) {
     setPendingProposal(null);
   }, []);
 
+  const navigateWithMessage = useCallback((tab: TabMode, message: string) => {
+    setPendingChatMessage(message);
+    navigate(tab);
+  }, [navigate]);
+
+  const clearPendingChatMessage = useCallback(() => {
+    setPendingChatMessage(null);
+  }, []);
+
   return (
-    <TabContext.Provider value={{ activeTab, navigate, pendingProposal, transferToAnalyze, clearPendingProposal }}>
+    <TabContext.Provider value={{ activeTab, navigate, pendingProposal, transferToAnalyze, clearPendingProposal, pendingChatMessage, navigateWithMessage, clearPendingChatMessage }}>
       {children}
     </TabContext.Provider>
   );

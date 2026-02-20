@@ -6,9 +6,9 @@ import { ChatLoader } from "./chat/ChatLoader";
 import { ChatInput } from "./chat/ChatInput";
 
 const SUGGESTIONS = [
-  { label: "DAO Seig Change", text: "I want to change the DAO seigniorage rate" },
-  { label: "Parameter Update", text: "Update a contract parameter" },
-  { label: "Fund Transfer", text: "Transfer funds from the DAO vault" },
+  { label: "Increase DAO Seig Rate", text: "I want to increase the DAO seigniorage rate by 5%" },
+  { label: "Change Quorum", text: "I want to change the DAO committee quorum" },
+  { label: "Approve TON from Vault", text: "Approve 1000 TON from the DAO vault to a specific address" },
 ];
 
 interface ProposalCardProps {
@@ -81,7 +81,7 @@ function extractProposal(text: string): Proposal | null {
 }
 
 export function MakeProposalTab({ selectedModel }: { selectedModel?: string }) {
-  const { transferToAnalyze } = useTabContext();
+  const { transferToAnalyze, pendingChatMessage, clearPendingChatMessage } = useTabContext();
   const {
     messages,
     input,
@@ -100,6 +100,14 @@ export function MakeProposalTab({ selectedModel }: { selectedModel?: string }) {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Handle pending message from demo scenario navigation
+  useEffect(() => {
+    if (pendingChatMessage && messages.length === 0 && !isLoading) {
+      clearPendingChatMessage();
+      handleSubmit(pendingChatMessage);
+    }
+  }, [pendingChatMessage]);
 
   const isStreaming =
     isLoading &&

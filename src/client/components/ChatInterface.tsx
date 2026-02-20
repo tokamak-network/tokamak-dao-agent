@@ -4,6 +4,18 @@ import { ChatBubble } from "./chat/ChatBubble";
 import { ChatLoader } from "./chat/ChatLoader";
 import { ChatInput } from "./chat/ChatInput";
 import type { TabMode } from "../contexts/TabContext";
+import { useTabContext } from "../contexts/TabContext";
+
+export interface DemoScenario {
+  id: string;
+  number: number;
+  title: string;
+  subtitle: string;
+  audience: string;
+  duration: string;
+  targetTab: TabMode;
+  message: string;
+}
 
 interface ChatInterfaceProps {
   mode: TabMode;
@@ -11,6 +23,7 @@ interface ChatInterfaceProps {
   welcomeTitle?: string;
   welcomeSubtitle?: string;
   suggestions?: { label: string; text: string }[];
+  scenarios?: DemoScenario[];
 }
 
 export function ChatInterface({
@@ -19,7 +32,9 @@ export function ChatInterface({
   welcomeTitle = "How can I help you?",
   welcomeSubtitle = "Tokamak DAO Agent answers your questions",
   suggestions = [],
+  scenarios = [],
 }: ChatInterfaceProps) {
+  const { navigateWithMessage } = useTabContext();
   const {
     messages,
     input,
@@ -45,15 +60,48 @@ export function ChatInterface({
     messages.length > 0 &&
     messages[messages.length - 1]?.role === "assistant";
 
+  const handleScenario = (scenario: DemoScenario) => {
+    if (scenario.targetTab === mode) {
+      // Same tab — just submit the message directly
+      handleSubmit(scenario.message);
+    } else {
+      // Different tab — navigate with pending message
+      navigateWithMessage(scenario.targetTab, scenario.message);
+    }
+  };
+
   if (messages.length === 0) {
     return (
       <div className="welcome-container">
-        <div style={{ maxWidth: "800px", width: "100%", padding: "0 24px" }}>
+        <div style={{ maxWidth: "900px", width: "100%", padding: "0 24px" }}>
           <div className="chat-welcome">
             <div className="chat-welcome-title phosphor-glow">{welcomeTitle}</div>
             <div className="chat-welcome-subtitle">{welcomeSubtitle}</div>
+
+            {scenarios.length > 0 && (
+              <div className="demo-scenario-grid">
+                {scenarios.map((s) => (
+                  <button
+                    key={s.id}
+                    className="demo-scenario-card"
+                    onClick={() => handleScenario(s)}
+                  >
+                    <div className="demo-scenario-number">{s.number}</div>
+                    <div className="demo-scenario-body">
+                      <div className="demo-scenario-title">{s.title}</div>
+                      <div className="demo-scenario-subtitle">{s.subtitle}</div>
+                      <div className="demo-scenario-meta">
+                        <span>{s.audience}</span>
+                        <span>{s.duration}</span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
             {suggestions.length > 0 && (
-              <div className="chat-welcome-suggestions">
+              <div className="chat-welcome-suggestions" style={scenarios.length > 0 ? { marginTop: "16px" } : undefined}>
                 {suggestions.map((s) => (
                   <button
                     key={s.label}

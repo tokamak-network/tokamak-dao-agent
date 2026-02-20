@@ -30,11 +30,12 @@ function ElizaOSWrapper() {
   );
 }
 
+
 const CHAT_SUGGESTIONS = [
-  { label: "SeigManager Info", text: "Show me SeigManager contract info" },
-  { label: "DAO Proposals", text: "Analyze recent DAO proposals" },
-  { label: "Contract Source", text: "Show me TON token contract source code" },
-  { label: "On-chain State", text: "Read the current storage state of DepositManager" },
+  { label: "TON + Uniswap?", text: "Can TON be traded on Uniswap?" },
+  { label: "DAOCommittee Structure", text: "Explain the internal structure of DAOCommitteeProxy — its proxy pattern, routing, and current implementations" },
+  { label: "SeigManager State", text: "Show me the current on-chain state of SeigManager" },
+  { label: "WTON + DEX?", text: "Can WTON be traded on Uniswap? What about SushiSwap?" },
 ];
 
 function ChatApp() {
@@ -101,29 +102,41 @@ function ChatApp() {
 
       <TabBar />
 
-      <div className="tab-content" style={{ display: activeTab === "chat" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        <ChatInterface
-          mode="chat"
-          selectedModel={selectedModel}
-          suggestions={CHAT_SUGGESTIONS}
-        />
-      </div>
+      {activeTab === "chat" && (
+        <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+          <ChatInterface
+            mode="chat"
+            selectedModel={selectedModel}
+            welcomeTitle="Tokamak DAO Agent"
+            welcomeSubtitle="Verification-first AI for Tokamak Network governance. Pick a demo scenario or ask anything."
+            suggestions={CHAT_SUGGESTIONS}
+          />
+        </div>
+      )}
 
-      <div className="tab-content" style={{ display: activeTab === "make_proposal" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        <MakeProposalTab selectedModel={selectedModel} />
-      </div>
+      {activeTab === "make_proposal" && (
+        <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+          <MakeProposalTab selectedModel={selectedModel} />
+        </div>
+      )}
 
-      <div className="tab-content" style={{ display: activeTab === "analyze_proposal" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        <AnalyzeProposalTab selectedModel={selectedModel} />
-      </div>
+      {activeTab === "analyze_proposal" && (
+        <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+          <AnalyzeProposalTab selectedModel={selectedModel} />
+        </div>
+      )}
 
-      <div className="tab-content" style={{ display: activeTab === "agents" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        <AgentsTab />
-      </div>
+      {activeTab === "agents" && (
+        <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+          <AgentsTab />
+        </div>
+      )}
 
-      <div className="tab-content" style={{ display: activeTab === "forum" ? "flex" : "none", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        <ForumTab />
-      </div>
+      {activeTab === "forum" && (
+        <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+          <ForumTab />
+        </div>
+      )}
     </div>
   );
 }

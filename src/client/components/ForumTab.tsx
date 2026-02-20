@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -877,11 +878,14 @@ function OpinionRequestPanel({
         const res = await fetch("/api/forum/agent");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (data.agents && data.agents.length > 0) {
-          setAgents(data.agents.map((a: AgentInfo) => a.name ?? a.agentName ?? "Unknown"));
-        } else {
-          setAgents(FALLBACK_AGENT_NAMES);
-        }
+        const customNames = (data.agents ?? []).map(
+          (a: AgentInfo) => a.name ?? a.agentName ?? "Unknown",
+        );
+        // Core agents + custom agents, deduplicated
+        const all = [...FALLBACK_AGENT_NAMES, ...customNames.filter(
+          (n: string) => !FALLBACK_AGENT_NAMES.includes(n),
+        )];
+        setAgents(all);
       } catch {
         setAgents(FALLBACK_AGENT_NAMES);
       }
@@ -969,7 +973,7 @@ function TranslatableContent({ text }: { text: string }) {
 
   return (
     <>
-      <div className="forum-detail-content">{displayText}</div>
+      <div className="forum-detail-content"><ReactMarkdown remarkPlugins={[remarkGfm]}>{displayText}</ReactMarkdown></div>
       <TranslateButton loading={loading} showTranslated={showTranslated} onClick={toggle} />
     </>
   );
@@ -980,7 +984,7 @@ function TranslatableMarkdown({ text }: { text: string }) {
 
   return (
     <>
-      <ReactMarkdown>{displayText}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayText}</ReactMarkdown>
       <TranslateButton loading={loading} showTranslated={showTranslated} onClick={toggle} />
     </>
   );
@@ -1022,7 +1026,7 @@ function OpinionCard({ opinion }: { opinion: Opinion }) {
         <ConfidenceBar level={opinion.confidence} />
       </div>
 
-      <div className="forum-opinion-reasoning">{displayText}</div>
+      <div className="forum-opinion-reasoning"><ReactMarkdown remarkPlugins={[remarkGfm]}>{displayText}</ReactMarkdown></div>
       <TranslateButton loading={loading} showTranslated={showTranslated} onClick={toggle} />
 
       {priorities.length > 0 && (

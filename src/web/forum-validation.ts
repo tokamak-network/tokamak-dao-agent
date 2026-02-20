@@ -96,15 +96,15 @@ export function validateAgentInput(body: any): string | null {
   if (!PERSONALITIES.includes(personality)) {
     return `personality must be one of: ${PERSONALITIES.join(", ")}`;
   }
-  if (!Array.isArray(priorities) || priorities.length < 3 || priorities.length > 5) {
-    return "priorities must be an array of 3-5 items";
+  if (!Array.isArray(priorities) || priorities.length < 1 || priorities.length > 7) {
+    return "priorities must be an array of 1-7 items";
   }
   for (const p of priorities) {
     if (!p || typeof p !== "object") return "each priority must be an object";
     if (typeof p.id !== "string" || !p.id) return "each priority must have an id";
     if (typeof p.label !== "string" || !p.label) return "each priority must have a label";
-    if (typeof p.weight !== "number" || !Number.isInteger(p.weight) || p.weight < 1 || p.weight > 5) {
-      return "each priority weight must be an integer between 1 and 5";
+    if (typeof p.weight !== "number" || !Number.isInteger(p.weight) || p.weight < 1 || p.weight > 100) {
+      return "each priority weight must be an integer between 1 and 100";
     }
   }
 

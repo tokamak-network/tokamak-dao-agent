@@ -28,7 +28,6 @@ import {
 } from "./forum-validation.ts";
 import { generateSummary } from "./forum-summary.ts";
 import { generateAgentOpinions, generateSingleAgentOpinion } from "./forum-agents.ts";
-import { runValidationWorkflow } from "./forum-validators.ts";
 import { translateText } from "./forum-translate.ts";
 import { listAgents, createAgent, deleteAgent } from "../db/agents.ts";
 import { getDb } from "../db/index.ts";
@@ -85,13 +84,21 @@ forumRouter.post("/agenda", async (c) => {
     updateAgenda(agenda.id, { title: formatTipTitle(rawTitle) });
   }
 
-  // Immediately move to pending_review and start validation
-  const updated = updateAgendaStatus(agenda.id, "pending_review")!;
+  // Skip validation — go directly to "open" and trigger QOC + agent opinions
+  const updated = updateAgendaStatus(agenda.id, "open")!;
 
-  // Fire-and-forget validation workflow
-  runValidationWorkflow(updated).catch((err) =>
-    console.error("[forum] validation workflow error:", err),
-  );
+  // Fire-and-forget QOC evaluation + agent opinions
+  const freshAgenda = getAgenda(agenda.id);
+  if (freshAgenda) {
+    runQocEvaluation(freshAgenda).catch((err) =>
+      console.error("[forum] QOC evaluation error:", err),
+    );
+    for (const name of ["Agent Alpha", "Agent Beta", "Agent Gamma", "Agent Delta"]) {
+      generateSingleAgentOpinion(freshAgenda, name).catch((err) =>
+        console.error(`[forum] agent opinion error for ${name}:`, err),
+      );
+    }
+  }
 
   return c.json(updated, 201);
 });
@@ -253,15 +260,23 @@ forumRouter.patch("/agenda/:id", async (c) => {
     fields.deadline = body.deadline;
   }
 
-  // Update fields, reset status, clear old validations
+  // Update fields, reset status, and trigger QOC evaluation directly
   updateAgenda(id, fields);
   clearValidationsForAgenda(id);
-  const updated = updateAgendaStatus(id, "pending_review")!;
+  const updated = updateAgendaStatus(id, "open")!;
 
-  // Fire-and-forget re-validation
-  runValidationWorkflow(updated).catch((err) =>
-    console.error("[forum] re-validation workflow error:", err),
-  );
+  // Fire-and-forget QOC evaluation + agent opinions
+  const freshAgenda = getAgenda(id);
+  if (freshAgenda) {
+    runQocEvaluation(freshAgenda).catch((err) =>
+      console.error("[forum] QOC evaluation error:", err),
+    );
+    for (const name of ["Agent Alpha", "Agent Beta", "Agent Gamma", "Agent Delta"]) {
+      generateSingleAgentOpinion(freshAgenda, name).catch((err) =>
+        console.error(`[forum] agent opinion error for ${name}:`, err),
+      );
+    }
+  }
 
   return c.json(updated);
 });

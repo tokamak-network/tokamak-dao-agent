@@ -978,15 +978,7 @@ function AgendaDetailView({
         <TranslatableContent text={detail.content} />
       </div>
 
-      {/* Validation panel — show for pending_review and rejected */}
-      {(detail.status === "pending_review" || detail.status === "rejected") && (
-        <ValidationResultsPanel
-          agendaId={agendaId}
-          status={detail.status}
-          onEdit={() => setEditing(true)}
-          onStatusChange={loadDetail}
-        />
-      )}
+      {/* Validation panel removed — agenda goes directly to QOC evaluation */}
 
       {/* Agent evaluation loading screen — show while core agents analyze */}
       {detail.status === "open" && coreAgentsReady === false && (

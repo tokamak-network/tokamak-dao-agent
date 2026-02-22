@@ -8,6 +8,7 @@
     "mcp": "bun run src/mcp/server.ts",
     "mcp:sse": "bun run src/mcp/server-sse.ts",
     "start": "bun run src/web/server.ts",
+    "start:all": "bun run src/mcp/server-sse.ts & bun run src/web/server.ts & cd elizaos && bunx elizaos start --character characters/ton-holder-progressive.json --character characters/l2-operator-conservative.json --character characters/validator-defensive.json --character characters/foundation-aggressive.json",
     "dev:web": "bun run --hot src/web/server.ts",
     "dev:client": "vite",
     "build": "vite build",

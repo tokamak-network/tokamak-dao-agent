@@ -2,6 +2,8 @@ app = 'tokamak-dao-agent'
 primary_region = 'nrt'
 
 [build]
+  [build.args]
+    VITE_REOWN_PROJECT_ID = "ed9db8435ea432ec164cf02c06c0b969"
 
 [env]
   ELIZAOS_URL = "https://tokamak-dao-agent-elizaos.fly.dev"

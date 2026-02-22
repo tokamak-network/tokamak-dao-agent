@@ -2,6 +2,9 @@
 FROM oven/bun:1 AS build
 WORKDIR /app
 
+ARG VITE_REOWN_PROJECT_ID
+ENV VITE_REOWN_PROJECT_ID=$VITE_REOWN_PROJECT_ID
+
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 

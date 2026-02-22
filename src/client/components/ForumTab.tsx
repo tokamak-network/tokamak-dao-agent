@@ -864,6 +864,7 @@ function AgendaDetailView({
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<"opinions" | "comments">("comments");
+  const [coreAgentsReady, setCoreAgentsReady] = useState<boolean | null>(null);
 
   const loadDetail = useCallback(async () => {
     try {
@@ -879,6 +880,35 @@ function AgendaDetailView({
   }, [agendaId]);
 
   useEffect(() => {
+    loadDetail();
+  }, [loadDetail]);
+
+  // Initialize coreAgentsReady when detail loads
+  useEffect(() => {
+    if (!detail || detail.status !== "open") return;
+    if (coreAgentsReady !== null) return; // already initialized
+
+    const hasAll = FALLBACK_AGENT_NAMES.every((name) =>
+      detail.opinions.some((o) => o.agentName === name),
+    );
+    if (hasAll) {
+      setCoreAgentsReady(true);
+      return;
+    }
+
+    // Skip loading screen for old agendas (created >2 min ago)
+    const ageMs = Date.now() - parseUtc(detail.createdAt).getTime();
+    if (ageMs > 2 * 60 * 1000) {
+      setCoreAgentsReady(true);
+      return;
+    }
+
+    setCoreAgentsReady(false);
+  }, [detail, coreAgentsReady]);
+
+  const handleCoreAgentsComplete = useCallback(() => {
+    setCoreAgentsReady(true);
+    setActiveTab("opinions");
     loadDetail();
   }, [loadDetail]);
 
@@ -958,8 +988,16 @@ function AgendaDetailView({
         />
       )}
 
-      {/* Opinion request panel — show for open */}
-      {detail.status === "open" && (
+      {/* Agent evaluation loading screen — show while core agents analyze */}
+      {detail.status === "open" && coreAgentsReady === false && (
+        <AgentEvaluationPanel
+          agendaId={agendaId}
+          onAllComplete={handleCoreAgentsComplete}
+        />
+      )}
+
+      {/* Opinion request panel — show when core agents are done */}
+      {detail.status === "open" && coreAgentsReady === true && (
         <OpinionRequestPanel
           agendaId={agendaId}
           existingOpinions={detail.opinions}
@@ -1241,6 +1279,100 @@ function ValidationResultsPanel({
       {isPending && (
         <div className="forum-validation-waiting">
           Validation in progress...
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Agent Evaluation Panel (auto-polling loading screen) ─────────────
+
+function AgentEvaluationPanel({
+  agendaId,
+  onAllComplete,
+}: {
+  agendaId: number;
+  onAllComplete: () => void;
+}) {
+  const [opinions, setOpinions] = useState<Opinion[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    async function poll() {
+      try {
+        const res = await fetch(`/api/forum/agenda/${agendaId}/opinions`);
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        const ops: Opinion[] = data.opinions ?? [];
+        setOpinions(ops);
+
+        const coreReady = FALLBACK_AGENT_NAMES.every((name) =>
+          ops.some((o) => o.agentName === name),
+        );
+        if (coreReady) {
+          if (interval) clearInterval(interval);
+          interval = null;
+          onAllComplete();
+        }
+      } catch (err) {
+        console.error("[forum] agent eval poll error:", err);
+      }
+    }
+
+    poll();
+    interval = setInterval(poll, 3_000);
+
+    return () => {
+      cancelled = true;
+      if (interval) clearInterval(interval);
+    };
+  }, [agendaId, onAllComplete]);
+
+  const opinionMap = new Map(opinions.map((o) => [o.agentName, o]));
+
+  return (
+    <div className="forum-validation-panel">
+      <h3 className="forum-section-title">Agent Evaluation</h3>
+      <div className="forum-agent-eval-grid">
+        {FALLBACK_AGENT_NAMES.map((name) => {
+          const op = opinionMap.get(name);
+          const verdictColor = op
+            ? VERDICT_COLORS[op.verdict] ?? "var(--term-text-muted)"
+            : undefined;
+
+          return (
+            <div
+              key={name}
+              className={`forum-validation-card ${op ? "pass" : "pending"}`}
+              style={op ? { borderColor: verdictColor } : undefined}
+            >
+              <div className="forum-validation-card-header">
+                <span className="forum-validation-type">{name}</span>
+                {op ? (
+                  <span className="forum-validation-status" style={{ color: verdictColor }}>
+                    {op.verdict}
+                  </span>
+                ) : (
+                  <span className="forum-validation-status pending">...</span>
+                )}
+              </div>
+              {op ? (
+                <div className="forum-validation-feedback">
+                  Confidence: {op.confidence}/5
+                </div>
+              ) : (
+                <div className="forum-validation-feedback dim">Analyzing...</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {!FALLBACK_AGENT_NAMES.every((n) => opinionMap.has(n)) && (
+        <div className="forum-validation-waiting">
+          Agents are evaluating the proposal...
         </div>
       )}
     </div>

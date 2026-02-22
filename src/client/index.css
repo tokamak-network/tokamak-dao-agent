@@ -2703,6 +2703,23 @@ body {
 }
 
 /* ==========================================
+   Agent Evaluation Grid (4-column)
+   ========================================== */
+
+.forum-agent-eval-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+  .forum-agent-eval-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==========================================
    Opinion Request Panel Styles
    ========================================== */
 
@@ -3716,6 +3733,7 @@ body {
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
 }
 
 .wizard-input-area {
@@ -3854,7 +3872,7 @@ body {
   flex: 1;
   min-height: 200px;
   overflow-y: auto;
-  padding: 12px;
+  padding: 16px 16px 16px 24px;
   border: 1px solid var(--term-border);
   border-radius: 6px;
   background: var(--term-bg-input);

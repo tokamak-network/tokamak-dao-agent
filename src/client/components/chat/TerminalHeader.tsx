@@ -1,4 +1,5 @@
 import { ModelSelector } from "./ModelSelector";
+import { isWalletConfigured } from "../../config/wagmi.ts";
 
 export function TerminalHeader({
   isConnected,
@@ -54,8 +55,9 @@ export function TerminalHeader({
             )}
           </div>
 
-          {/* Right: model selector + status */}
+          {/* Right: wallet + model selector + status */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {isWalletConfigured && <appkit-button size="sm" />}
             {model && onModelChange ? (
               <ModelSelector current={model} onSelect={onModelChange} />
             ) : model ? (

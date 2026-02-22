@@ -5,6 +5,8 @@ import { useChat } from "./chat/useChat.ts";
 import { ChatBubble } from "./chat/ChatBubble.tsx";
 import { ChatInput } from "./chat/ChatInput.tsx";
 import type { Message } from "./chat/types.ts";
+import { useWallet } from "../contexts/WalletContext.tsx";
+import { isWalletConfigured } from "../config/wagmi.ts";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -50,6 +52,19 @@ interface AgendaDetail extends Agenda {
 interface AgentInfo {
   agentName?: string;
   name?: string;
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────
+
+/** Parse a date string as UTC (SQLite datetime('now') omits the Z suffix). */
+function parseUtc(dateStr: string): Date {
+  const s = dateStr.endsWith("Z") || dateStr.includes("+") ? dateStr : dateStr + "Z";
+  return new Date(s);
+}
+
+function truncateAddress(addr: string): string {
+  if (!addr || addr === "anonymous") return "Anonymous";
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
 // ── Constants ────────────────────────────────────────────────────────
@@ -225,9 +240,18 @@ function AgendaListView({
   onSelect: (id: number) => void;
   onCreate: () => void;
 }) {
+  const { isConnected, openModal } = useWallet();
   const [agendas, setAgendas] = useState<Agenda[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleCreate = useCallback(() => {
+    if (isWalletConfigured && !isConnected) {
+      openModal();
+      return;
+    }
+    onCreate();
+  }, [isConnected, openModal, onCreate]);
 
   const fetchAgendas = useCallback(async () => {
     try {
@@ -273,8 +297,8 @@ function AgendaListView({
           <div className="chat-welcome-subtitle">
             No agendas yet. Create one to start the governance discussion.
           </div>
-          <button className="forum-create-btn" onClick={onCreate}>
-            + New Agenda
+          <button className="forum-create-btn" onClick={handleCreate}>
+            {isWalletConfigured && !isConnected ? "Connect Wallet to Create" : "+ New Agenda"}
           </button>
         </div>
       </div>
@@ -286,8 +310,8 @@ function AgendaListView({
       <div className="forum-header">
         <div className="forum-header-row">
           <h2 className="forum-title">Forum Agendas</h2>
-          <button className="forum-create-btn" onClick={onCreate}>
-            + New Agenda
+          <button className="forum-create-btn" onClick={handleCreate}>
+            {isWalletConfigured && !isConnected ? "Connect Wallet to Create" : "+ New Agenda"}
           </button>
         </div>
       </div>
@@ -313,13 +337,16 @@ function AgendaListView({
                 </span>
                 <span className="forum-thread-title">{agenda.title}</span>
               </div>
+              {agenda.creator && agenda.creator !== "anonymous" && (
+                <span className="forum-thread-creator">{truncateAddress(agenda.creator)}</span>
+              )}
             </div>
             <div className="forum-thread-stats">
               <span className="forum-thread-stat-opinions">
                 {agenda.opinionCount ?? 0}
               </span>
               <span className="forum-thread-stat-activity">
-                {new Date(agenda.createdAt).toLocaleDateString()}
+                {parseUtc(agenda.createdAt).toLocaleDateString()}
               </span>
             </div>
           </button>
@@ -403,6 +430,7 @@ function AgendaWizard({
   onBack: () => void;
   onCreated: (id: number) => void;
 }) {
+  const { address, isConnected, openModal } = useWallet();
   const chat = useChat(undefined, "forum_proposal");
   const [draft, setDraft] = useState<AgendaDraft>({});
   const [userEditedFields, setUserEditedFields] = useState<Set<string>>(new Set());
@@ -412,11 +440,11 @@ function AgendaWizard({
   const [contentPreview, setContentPreview] = useState(false);
   const [nextTipNumber, setNextTipNumber] = useState<number>(1);
 
-  // Fetch agenda count to determine next TIP number
+  // Fetch next TIP number from backend
   useEffect(() => {
-    fetch("/api/forum/agenda")
+    fetch("/api/forum/agenda/next-tip-number")
       .then((r) => r.json())
-      .then((data) => setNextTipNumber((data.count ?? 0) + 1))
+      .then((data) => setNextTipNumber(data.nextTipNumber ?? 1))
       .catch(() => {});
   }, []);
 
@@ -459,7 +487,8 @@ function AgendaWizard({
     }
   };
 
-  const isReady = !!(draft.title && draft.content && draft.calldata);
+  const walletReady = !isWalletConfigured || isConnected;
+  const isReady = !!(draft.title && draft.content && draft.calldata && walletReady);
 
   // Build the full content with on-chain execution details appended
   const buildFinalContent = (): string => {
@@ -468,7 +497,10 @@ function AgendaWizard({
       const calls = draft.calldata.decodedCalls || [];
       const execSection = calls
         .map((c, i) => {
-          const argsStr = c.args.map((a) => `  - **${a.name}**: \`${a.value}\``).join("\n");
+          const argsStr = c.args
+            .filter((a) => a.name != null && a.value != null)
+            .map((a) => `  - **${a.name}**: \`${a.value}\``)
+            .join("\n");
           return `### Call ${calls.length > 1 ? i + 1 : ""}
 - **Target**: ${c.targetName} (\`${c.target}\`)
 - **Function**: \`${c.functionName}\`
@@ -477,7 +509,7 @@ ${argsStr ? `- **Arguments**:\n${argsStr}` : ""}
         })
         .join("\n\n");
 
-      finalContent += `\n\n---\n## On-Chain Execution\n\n${execSection}`;
+      finalContent += `\n\n## On-Chain Execution\n\n${execSection}`;
     }
     return finalContent;
   };
@@ -493,6 +525,7 @@ ${argsStr ? `- **Arguments**:\n${argsStr}` : ""}
         body: JSON.stringify({
           title: draft.title,
           content: buildFinalContent(),
+          creator: address,
         }),
       });
 
@@ -517,6 +550,35 @@ ${argsStr ? `- **Arguments**:\n${argsStr}` : ""}
 
   // Determine wizard step
   const step = draft.calldata ? 3 : draft.title ? 2 : 1;
+
+  // Split assistant messages that contain ```question blocks into two bubbles
+  const displayMessages = useMemo(() => {
+    return chat.messages.flatMap((msg, idx) => {
+      // Don't split the last message while streaming
+      if (msg.role !== "assistant") return [msg];
+      if (chat.isLoading && idx === chat.messages.length - 1) return [msg];
+
+      const fullText = msg.parts
+        .filter((p) => p.type === "text")
+        .map((p) => p.content || "")
+        .join("");
+      const qMatch = fullText.match(/```question\s*\n([\s\S]*?)\n```/);
+      if (!qMatch) return [msg];
+
+      const mainParts = msg.parts.map((p) =>
+        p.type === "text"
+          ? { ...p, content: (p.content || "").replace(/```question\s*\n[\s\S]*?\n```\s*$/, "").trimEnd() }
+          : p
+      );
+      const questionMsg: Message = {
+        role: "assistant",
+        content: qMatch[1]!,
+        parts: [{ type: "text", content: qMatch[1]! }],
+        timestamp: msg.timestamp,
+      };
+      return [{ ...msg, parts: mainParts }, questionMsg];
+    });
+  }, [chat.messages, chat.isLoading]);
 
   const hasMessages = chat.messages.length > 0;
 
@@ -561,13 +623,13 @@ ${argsStr ? `- **Arguments**:\n${argsStr}` : ""}
             </div>
           ) : (
             <div className="wizard-messages">
-              {chat.messages.map((msg, i) => (
+              {displayMessages.map((msg, i) => (
                 <ChatBubble
                   key={i}
                   message={msg}
                   isStreaming={
                     chat.isLoading &&
-                    i === chat.messages.length - 1 &&
+                    i === displayMessages.length - 1 &&
                     msg.role === "assistant"
                   }
                 />
@@ -618,13 +680,21 @@ ${argsStr ? `- **Arguments**:\n${argsStr}` : ""}
               </button>
             )}
           </div>
-          <input
-            className="forum-form-input"
-            type="text"
+          <textarea
+            className="forum-form-input wizard-title-input"
             value={draft.title || ""}
             onChange={(e) => handleTitleChange(e.target.value)}
             placeholder="AI will suggest a title..."
             maxLength={200}
+            rows={1}
+            onInput={(e) => {
+              const el = e.currentTarget;
+              el.style.height = "auto";
+              el.style.height = `${el.scrollHeight}px`;
+            }}
+            ref={(el) => {
+              if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; }
+            }}
           />
         </div>
 
@@ -713,15 +783,24 @@ ${argsStr ? `- **Arguments**:\n${argsStr}` : ""}
         {/* Submit */}
         {error && <div className="forum-form-error">{error}</div>}
 
-        <button
-          className="forum-form-submit wizard-submit"
-          disabled={!isReady || submitting}
-          onClick={handleSubmit}
-        >
-          {submitting ? "Submitting..." : "Submit for Review"}
-        </button>
+        {isWalletConfigured && !isConnected ? (
+          <button
+            className="forum-form-submit wizard-submit"
+            onClick={() => openModal()}
+          >
+            Connect Wallet to Submit
+          </button>
+        ) : (
+          <button
+            className="forum-form-submit wizard-submit"
+            disabled={!isReady || submitting}
+            onClick={handleSubmit}
+          >
+            {submitting ? "Submitting..." : "Submit for Review"}
+          </button>
+        )}
 
-        {!isReady && (
+        {isReady ? null : walletReady ? (
           <div className="wizard-submit-hint">
             {!draft.title
               ? "Describe your proposal in the chat to get started"
@@ -729,7 +808,7 @@ ${argsStr ? `- **Arguments**:\n${argsStr}` : ""}
                 ? "Continue chatting to build proposal content"
                 : "Waiting for AI to generate calldata..."}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -745,8 +824,6 @@ function AgendaDetailView({
   onBack: () => void;
 }) {
   const [detail, setDetail] = useState<AgendaDetail | null>(null);
-  const [summary, setSummary] = useState<string | null>(null);
-  const [summaryLoading, setSummaryLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
 
@@ -766,28 +843,6 @@ function AgendaDetailView({
   useEffect(() => {
     loadDetail();
   }, [loadDetail]);
-
-  useEffect(() => {
-    if (!detail || detail.status !== "open") return;
-    let cancelled = false;
-
-    async function loadSummary() {
-      setSummaryLoading(true);
-      try {
-        const res = await fetch(`/api/forum/agenda/${agendaId}/summary`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (!cancelled) setSummary(data.summaryText ?? data.summary ?? null);
-      } catch (err) {
-        console.error("[forum] failed to load summary:", err);
-      } finally {
-        if (!cancelled) setSummaryLoading(false);
-      }
-    }
-
-    loadSummary();
-    return () => { cancelled = true; };
-  }, [agendaId, detail?.status]);
 
   if (loading) {
     return (
@@ -834,7 +889,12 @@ function AgendaDetailView({
           </span>
         </div>
         <div className="forum-detail-meta">
-          <span>Created: {new Date(detail.createdAt).toLocaleDateString()}</span>
+          <span>Created: {parseUtc(detail.createdAt).toLocaleDateString()}</span>
+          {detail.creator && detail.creator !== "anonymous" && (
+            <span className="forum-thread-creator">
+              By: {truncateAddress(detail.creator)}
+            </span>
+          )}
           {detail.onChainAgendaId !== null && (
             <span>On-chain ID: #{detail.onChainAgendaId}</span>
           )}
@@ -864,10 +924,10 @@ function AgendaDetailView({
       {/* Opinions */}
       {detail.opinions.length > 0 ? (
         <>
-          <h3 className="forum-section-title">Agent Opinions ({detail.opinions.length})</h3>
-          <div className="forum-opinions-grid">
+          <h3 className="forum-section-title">Comments ({detail.opinions.length})</h3>
+          <div className="forum-comments">
             {detail.opinions.map((op) => (
-              <OpinionCard key={op.id} opinion={op} />
+              <OpinionComment key={op.id} opinion={op} />
             ))}
           </div>
         </>
@@ -877,23 +937,6 @@ function AgendaDetailView({
         </div>
       ) : null}
 
-      {/* Summary — only for open agendas with opinions */}
-      {detail.status === "open" && detail.opinions.length > 0 && (
-        <>
-          <h3 className="forum-section-title">AI Summary</h3>
-          <div className="forum-summary">
-            {summaryLoading ? (
-              <div className="forum-loading">Generating summary...</div>
-            ) : summary ? (
-              <TranslatableMarkdown text={summary} />
-            ) : (
-              <div className="forum-empty-opinions">
-                No summary available yet.
-              </div>
-            )}
-          </div>
-        </>
-      )}
     </div>
   );
 }
@@ -1256,20 +1299,25 @@ function TranslatableContent({ text }: { text: string }) {
   );
 }
 
-function TranslatableMarkdown({ text }: { text: string }) {
-  const { displayText, loading, showTranslated, toggle } = useTranslation(text);
+// ── Opinion Comment ──────────────────────────────────────────────────
 
-  return (
-    <>
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayText}</ReactMarkdown>
-      <TranslateButton loading={loading} showTranslated={showTranslated} onClick={toggle} />
-    </>
-  );
+function agentAvatarUrl(name: string): string {
+  const seed = encodeURIComponent(name);
+  return `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${seed}`;
 }
 
-// ── Opinion Card ─────────────────────────────────────────────────────
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - parseUtc(dateStr).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
 
-function OpinionCard({ opinion }: { opinion: Opinion }) {
+function OpinionComment({ opinion }: { opinion: Opinion }) {
   const verdictColor = VERDICT_COLORS[opinion.verdict] ?? "var(--term-text-muted)";
   const priorities: string[] = opinion.prioritiesJson
     ? JSON.parse(opinion.prioritiesJson).map((p: any) =>
@@ -1280,39 +1328,44 @@ function OpinionCard({ opinion }: { opinion: Opinion }) {
   const { displayText, loading, showTranslated, toggle } = useTranslation(opinion.reasoning);
 
   return (
-    <div
-      className="forum-opinion-card"
-      style={{ borderLeftColor: verdictColor }}
-    >
-      <div className="forum-opinion-header">
-        <span className="forum-opinion-name">{opinion.agentName}</span>
-        <div className="forum-opinion-badges">
+    <div className="forum-comment">
+      <img
+        className="forum-comment-avatar"
+        src={agentAvatarUrl(opinion.agentName)}
+        alt={opinion.agentName}
+      />
+      <div className="forum-comment-body">
+        <div className="forum-comment-meta">
+          <span className="forum-comment-name">{opinion.agentName}</span>
           <span className="agent-badge stakeholder">
             {STAKEHOLDER_LABELS[opinion.stakeholderType] ?? opinion.stakeholderType}
           </span>
           <span className={`agent-badge personality-${opinion.personality}`}>
             {PERSONALITY_LABELS[opinion.personality] ?? opinion.personality}
           </span>
+          <span className="forum-comment-time">{timeAgo(opinion.createdAt)}</span>
         </div>
-      </div>
 
-      <div className="forum-opinion-verdict-row">
-        <span className="forum-verdict" style={{ color: verdictColor }}>
-          {opinion.verdict}
-        </span>
-        <ConfidenceBar level={opinion.confidence} />
-      </div>
-
-      <div className="forum-opinion-reasoning"><ReactMarkdown remarkPlugins={[remarkGfm]}>{displayText}</ReactMarkdown></div>
-      <TranslateButton loading={loading} showTranslated={showTranslated} onClick={toggle} />
-
-      {priorities.length > 0 && (
-        <div className="forum-opinion-priorities">
-          {priorities.map((p) => (
-            <span key={p} className="forum-priority-tag">{p}</span>
-          ))}
+        <div className="forum-comment-verdict">
+          <span className="forum-verdict" style={{ color: verdictColor }}>
+            {opinion.verdict}
+          </span>
+          <ConfidenceBar level={opinion.confidence} />
         </div>
-      )}
+
+        <div className="forum-comment-text">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayText}</ReactMarkdown>
+        </div>
+        <TranslateButton loading={loading} showTranslated={showTranslated} onClick={toggle} />
+
+        {priorities.length > 0 && (
+          <div className="forum-opinion-priorities">
+            {priorities.map((p) => (
+              <span key={p} className="forum-priority-tag">{p}</span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

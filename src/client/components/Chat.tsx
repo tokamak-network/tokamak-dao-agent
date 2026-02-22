@@ -10,14 +10,17 @@ import { AgentsTab } from "./AgentsTab";
 import { ForumTab } from "./ForumTab";
 import { AgentProvider } from "../contexts/AgentContext";
 import { ElizaOSProvider } from "../contexts/ElizaOSContext";
+import { WalletProvider } from "../contexts/WalletContext";
 
 export default function Chat() {
   return (
-    <TabProvider>
-      <AgentProvider>
-        <ElizaOSWrapper />
-      </AgentProvider>
-    </TabProvider>
+    <WalletProvider>
+      <TabProvider>
+        <AgentProvider>
+          <ElizaOSWrapper />
+        </AgentProvider>
+      </TabProvider>
+    </WalletProvider>
   );
 }
 

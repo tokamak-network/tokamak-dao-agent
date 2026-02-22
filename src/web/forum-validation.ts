@@ -35,6 +35,12 @@ export function validateAgendaInput(body: any): string | null {
     return "onChainAgendaId must be a number";
   }
 
+  if (body.creator !== undefined && typeof body.creator === "string" && body.creator !== "anonymous") {
+    if (!/^0x[0-9a-fA-F]{40}$/.test(body.creator)) {
+      return "creator must be a valid Ethereum address (0x + 40 hex characters)";
+    }
+  }
+
   return null;
 }
 

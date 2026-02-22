@@ -55,9 +55,9 @@ forumRouter.post("/agenda", async (c) => {
   const input: CreateAgendaInput = {
     title: body.title,
     content: body.content,
-    deadline: body.deadline,
+    deadline: body.deadline ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     onChainAgendaId: body.onChainAgendaId,
-    creator: body.creator,
+    creator: body.creator ?? "anonymous",
   };
 
   const agenda = createAgenda(input);

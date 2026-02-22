@@ -66,8 +66,12 @@ forumRouter.post("/agenda", async (c) => {
   const error = validateAgendaInput(body);
   if (error) return c.json({ error }, 400);
 
+  // Strip any TIP prefix the frontend may have added so that
+  // getNextTipNumber() doesn't count the not-yet-committed title.
+  const rawTitle = body.onChainAgendaId ? body.title : stripTipPrefix(body.title);
+
   const input: CreateAgendaInput = {
-    title: body.title,
+    title: rawTitle,
     content: body.content,
     deadline: body.deadline ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     onChainAgendaId: body.onChainAgendaId,
@@ -78,7 +82,7 @@ forumRouter.post("/agenda", async (c) => {
 
   // Auto-prefix TIP-{n} for user-created agendas (skip on-chain synced)
   if (!input.onChainAgendaId) {
-    updateAgenda(agenda.id, { title: formatTipTitle(agenda.title) });
+    updateAgenda(agenda.id, { title: formatTipTitle(rawTitle) });
   }
 
   // Immediately move to pending_review and start validation

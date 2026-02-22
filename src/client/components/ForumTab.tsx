@@ -470,6 +470,11 @@ ${argsStr ? `- **Arguments**:\n${argsStr}` : ""}
     }
   };
 
+  // Auto-scroll chat when messages update
+  useEffect(() => {
+    chat.messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chat.messages]);
+
   // Determine wizard step
   const step = draft.calldata ? 3 : draft.title ? 2 : 1;
 

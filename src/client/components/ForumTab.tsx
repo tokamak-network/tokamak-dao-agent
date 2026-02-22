@@ -291,25 +291,36 @@ function AgendaListView({
           </button>
         </div>
       </div>
-      <div className="forum-agenda-grid">
+      <div className="forum-thread-list">
+        <div className="forum-thread-header">
+          <span className="forum-thread-header-topic">Topic</span>
+          <span className="forum-thread-header-stat" style={{ width: 80 }}>Opinions</span>
+          <span className="forum-thread-header-stat" style={{ width: 100 }}>Activity</span>
+        </div>
         {agendas.map((agenda) => (
           <button
             key={agenda.id}
-            className="forum-agenda-card"
+            className="forum-thread-row"
             onClick={() => onSelect(agenda.id)}
           >
-            <div className="forum-agenda-card-top">
-              <h3 className="forum-agenda-card-title">{agenda.title}</h3>
-              <span
-                className="forum-status-badge"
-                data-status={agenda.status}
-              >
-                {STATUS_LABELS[agenda.status] ?? agenda.status}
-              </span>
+            <div className="forum-thread-main">
+              <div className="forum-thread-title-line">
+                <span
+                  className="forum-status-badge"
+                  data-status={agenda.status}
+                >
+                  {STATUS_LABELS[agenda.status] ?? agenda.status}
+                </span>
+                <span className="forum-thread-title">{agenda.title}</span>
+              </div>
             </div>
-            <div className="forum-agenda-card-meta">
-              <span>Deadline: {new Date(agenda.deadline).toLocaleDateString()}</span>
-              <span>{agenda.opinionCount ?? 0} opinions</span>
+            <div className="forum-thread-stats">
+              <span className="forum-thread-stat-opinions">
+                {agenda.opinionCount ?? 0}
+              </span>
+              <span className="forum-thread-stat-activity">
+                {new Date(agenda.createdAt).toLocaleDateString()}
+              </span>
             </div>
           </button>
         ))}
@@ -359,6 +370,21 @@ function extractAgendaDraft(messages: Message[]): AgendaDraft | null {
   return null;
 }
 
+// ── TIP prefix helpers ───────────────────────────────────────────────
+
+function stripTipPrefix(title: string): string {
+  return title.replace(/^TIP-[^:]*:\s*/, "");
+}
+
+function makeTipPrefix(n: number): string {
+  return `TIP-${n}: `;
+}
+
+function ensureTipPrefix(title: string, n: number): string {
+  const bare = stripTipPrefix(title);
+  return bare ? `${makeTipPrefix(n)}${bare}` : "";
+}
+
 // ── Wizard Suggestions ───────────────────────────────────────────────
 
 const WIZARD_SUGGESTIONS = [
@@ -384,6 +410,15 @@ function AgendaWizard({
   const [error, setError] = useState<string | null>(null);
   const [calldataExpanded, setCalldataExpanded] = useState(false);
   const [contentPreview, setContentPreview] = useState(false);
+  const [nextTipNumber, setNextTipNumber] = useState<number>(1);
+
+  // Fetch agenda count to determine next TIP number
+  useEffect(() => {
+    fetch("/api/forum/agenda")
+      .then((r) => r.json())
+      .then((data) => setNextTipNumber((data.count ?? 0) + 1))
+      .catch(() => {});
+  }, []);
 
   // Extract draft from AI messages
   const latestDraft = useMemo(() => extractAgendaDraft(chat.messages), [chat.messages]);
@@ -392,16 +427,16 @@ function AgendaWizard({
     if (!latestDraft) return;
     setDraft((prev) => {
       const next = { ...prev };
-      if (latestDraft.title && !userEditedFields.has("title")) next.title = latestDraft.title;
+      if (latestDraft.title && !userEditedFields.has("title")) next.title = ensureTipPrefix(latestDraft.title, nextTipNumber);
       if (latestDraft.content && !userEditedFields.has("content")) next.content = latestDraft.content;
       if (latestDraft.calldata) next.calldata = latestDraft.calldata;
       return next;
     });
-  }, [latestDraft, userEditedFields]);
+  }, [latestDraft, userEditedFields, nextTipNumber]);
 
   const handleTitleChange = (val: string) => {
     setUserEditedFields((s) => new Set(s).add("title"));
-    setDraft((d) => ({ ...d, title: val }));
+    setDraft((d) => ({ ...d, title: ensureTipPrefix(val, nextTipNumber) }));
   };
 
   const handleContentChange = (val: string) => {
@@ -416,7 +451,11 @@ function AgendaWizard({
       return next;
     });
     if (latestDraft) {
-      setDraft((d) => ({ ...d, [field]: latestDraft[field] ?? d[field] }));
+      const val = latestDraft[field] ?? undefined;
+      setDraft((d) => ({
+        ...d,
+        [field]: field === "title" && val ? ensureTipPrefix(val, nextTipNumber) : val ?? d[field],
+      }));
     }
   };
 

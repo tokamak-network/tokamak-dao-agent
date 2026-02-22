@@ -45,6 +45,11 @@ import { syncOnChainAgendas } from "./agenda-sync.ts";
 
 export const forumRouter = new Hono();
 
+/** Auto-prefix title with TIP-{id}. Strips any existing TIP prefix first. */
+function formatTipTitle(id: number, title: string): string {
+  return `TIP-${id}: ${title.replace(/^TIP-[^:]*:\s*/, "")}`;
+}
+
 // ── Agenda endpoints ──────────────────────────────────────────────────
 
 forumRouter.post("/agenda", async (c) => {
@@ -61,6 +66,11 @@ forumRouter.post("/agenda", async (c) => {
   };
 
   const agenda = createAgenda(input);
+
+  // Auto-prefix TIP-{id} for user-created agendas (skip on-chain synced)
+  if (!input.onChainAgendaId) {
+    updateAgenda(agenda.id, { title: formatTipTitle(agenda.id, agenda.title) });
+  }
 
   // Immediately move to pending_review and start validation
   const updated = updateAgendaStatus(agenda.id, "pending_review")!;
@@ -133,7 +143,9 @@ forumRouter.patch("/agenda/:id", async (c) => {
     if (typeof body.title !== "string" || body.title.length < 1 || body.title.length > 200) {
       return c.json({ error: "title must be 1-200 characters" }, 400);
     }
-    fields.title = body.title;
+    fields.title = !agenda.onChainAgendaId
+      ? formatTipTitle(id, body.title)
+      : body.title;
   }
   if (body.content !== undefined) {
     if (typeof body.content !== "string" || body.content.length < 1 || body.content.length > 10000) {

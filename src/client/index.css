@@ -3625,6 +3625,70 @@ body {
   justify-content: space-between;
 }
 
+.wizard-field-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wizard-preview-btn {
+  background: transparent;
+  border: 1px solid var(--term-border);
+  border-radius: 4px;
+  color: var(--term-text-muted);
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.wizard-preview-btn:hover {
+  color: var(--term-accent);
+  border-color: var(--term-accent-dim);
+}
+
+.wizard-preview-btn.active {
+  color: var(--term-accent);
+  border-color: var(--term-accent-dim);
+}
+
+.wizard-content-preview {
+  flex: 1;
+  min-height: 200px;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid var(--term-border);
+  border-radius: 6px;
+  background: var(--term-bg-input);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.wizard-content-preview h2 {
+  font-size: 15px;
+  margin: 16px 0 8px;
+  color: var(--term-accent);
+}
+
+.wizard-content-preview h2:first-child {
+  margin-top: 0;
+}
+
+.wizard-content-preview h3 {
+  font-size: 14px;
+  margin: 12px 0 6px;
+  color: var(--term-accent-dim);
+}
+
+.wizard-content-preview p {
+  margin: 6px 0;
+}
+
+.wizard-content-preview-empty {
+  color: var(--term-text-dim);
+  font-style: italic;
+}
+
 .wizard-reset-btn {
   background: transparent;
   border: 1px solid var(--term-border);

@@ -383,6 +383,7 @@ function AgendaWizard({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [calldataExpanded, setCalldataExpanded] = useState(false);
+  const [contentPreview, setContentPreview] = useState(false);
 
   // Extract draft from AI messages
   const latestDraft = useMemo(() => extractAgendaDraft(chat.messages), [chat.messages]);
@@ -592,19 +593,37 @@ ${argsStr ? `- **Arguments**:\n${argsStr}` : ""}
         <div className="wizard-field wizard-field-grow">
           <div className="wizard-field-header">
             <label className="forum-form-label">Content</label>
-            {userEditedFields.has("content") && (
-              <button className="wizard-reset-btn" onClick={() => resetField("content")} title="Sync with AI">
-                &#x21bb;
+            <div className="wizard-field-actions">
+              <button
+                className={`wizard-preview-btn ${contentPreview ? "active" : ""}`}
+                onClick={() => setContentPreview(!contentPreview)}
+              >
+                {contentPreview ? "Edit" : "Preview"}
               </button>
-            )}
+              {userEditedFields.has("content") && (
+                <button className="wizard-reset-btn" onClick={() => resetField("content")} title="Sync with AI">
+                  &#x21bb;
+                </button>
+              )}
+            </div>
           </div>
-          <textarea
-            className="forum-form-textarea wizard-content-textarea"
-            value={draft.content || ""}
-            onChange={(e) => handleContentChange(e.target.value)}
-            placeholder="AI will build the proposal content..."
-            maxLength={10000}
-          />
+          {contentPreview ? (
+            <div className="wizard-content-preview">
+              {draft.content ? (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{draft.content}</ReactMarkdown>
+              ) : (
+                <span className="wizard-content-preview-empty">No content yet</span>
+              )}
+            </div>
+          ) : (
+            <textarea
+              className="forum-form-textarea wizard-content-textarea"
+              value={draft.content || ""}
+              onChange={(e) => handleContentChange(e.target.value)}
+              placeholder="AI will build the proposal content..."
+              maxLength={10000}
+            />
+          )}
         </div>
 
         {/* Calldata */}

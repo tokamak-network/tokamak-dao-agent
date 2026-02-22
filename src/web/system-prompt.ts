@@ -383,14 +383,18 @@ const FORUM_PROPOSAL_PROMPT = `${BASE_PROMPT}
 
 You are guiding the user through creating a **complete DAO governance proposal** — including title, content, and executable calldata. This is a unified wizard experience where you help articulate their intent and generate concrete on-chain actions.
 
+### Title — TIP Prefix
+
+ALWAYS prefix the title with "TIP-[draft]: " (e.g., "TIP-[draft]: Adjust DAO Seigniorage Rate to 10%"). The system will replace "[draft]" with the real ID number on submission.
+
 ### Your Output Format — \`agenda-draft\` Code Blocks
 
 As the conversation progresses, output structured drafts using \`\`\`agenda-draft code blocks. Update these progressively:
 
 \`\`\`agenda-draft
 {
-  "title": "...",
-  "content": "## Background\\n...\\n## Proposal\\n...\\n## Expected Outcomes\\n...",
+  "title": "TIP-[draft]: Adjust DAO Seigniorage Rate to 10%",
+  "content": "## Abstract\\nOne-sentence summary of the proposal.\\n\\n## Motivation\\nWhy this change is needed.\\n\\n## Specification\\nExact technical details (contracts, functions, parameter values).\\n\\n## Rationale\\nWhy this approach over alternatives.\\n\\n## Security Considerations\\nRisks and mitigations.\\n\\n## Expected Outcomes\\nMeasurable results after execution.",
   "calldata": {
     "description": "...",
     "targets": ["0x..."],
@@ -401,10 +405,21 @@ As the conversation progresses, output structured drafts using \`\`\`agenda-draf
 }
 \`\`\`
 
+### Content Structure — RFC Template
+
+All proposal content MUST follow this RFC template with these exact section headings:
+
+1. **Abstract** — 1-2 sentence summary of what the proposal does
+2. **Motivation** — Why this change is needed; what problem it solves
+3. **Specification** — Exact technical details: target contracts, functions called, parameter values, units
+4. **Rationale** — Why this approach was chosen over alternatives
+5. **Security Considerations** — Potential risks, attack vectors, and mitigations
+6. **Expected Outcomes** — Measurable results after execution (e.g., "DAO seigniorage rate changes from 5% to 10%")
+
 **Progressive output strategy:**
-1. After understanding intent → output draft with title only
-2. After discussion → add content (Background, Proposal, Expected Outcomes)
-3. After encoding → add calldata section
+1. After understanding intent → output draft with title + Abstract
+2. After research & discussion → fill in Motivation, Specification, Rationale, Security Considerations
+3. After encoding → add Expected Outcomes and calldata section
 
 ### Workflow — Same as Generate Calldata mode
 
@@ -431,7 +446,7 @@ As the conversation progresses, output structured drafts using \`\`\`agenda-draf
 
 **Step 3: Build Content & Parameters**
 - As the user provides answers, update the draft with richer content
-- Content should include: Background, Proposal, Expected Outcomes sections
+- Content MUST use the RFC template sections: Abstract, Motivation, Specification, Rationale, Security Considerations, Expected Outcomes
 - Ask ONE parameter question per message
 
 **Step 4: Encode Calldata**

@@ -12,6 +12,9 @@ import { updateAgendaStatus } from "../db/agendas.ts";
 import { createValidation } from "../db/validations.ts";
 import type { CreateValidationInput } from "../db/validations.ts";
 import { VALIDATION_MODEL, VALIDATION_MAX_TOKENS } from "../config.ts";
+import { getAgenda } from "../db/agendas.ts";
+import { runQocEvaluation } from "./qoc-agents.ts";
+import { generateSingleAgentOpinion } from "./forum-agents.ts";
 
 type ValidatorType = "format" | "relevance" | "feasibility";
 
@@ -192,4 +195,20 @@ export async function runValidationWorkflow(agenda: ForumAgenda): Promise<void> 
   console.log(
     `[forum-validators] agenda #${agenda.id}: ${newStatus} (${passCount}/3 passed)`,
   );
+
+  // Auto-trigger QOC evaluation + agent opinions when agenda passes validation
+  if (allPass) {
+    const freshAgenda = getAgenda(agenda.id);
+    if (freshAgenda) {
+      console.log(`[auto-eval] triggering QOC + agent opinions for agenda #${agenda.id}`);
+      runQocEvaluation(freshAgenda).catch((err) =>
+        console.error("[auto-eval] QOC error:", err),
+      );
+      for (const name of ["Agent Alpha", "Agent Beta", "Agent Gamma", "Agent Delta"]) {
+        generateSingleAgentOpinion(freshAgenda, name).catch((err) =>
+          console.error(`[auto-eval] opinion error for ${name}:`, err),
+        );
+      }
+    }
+  }
 }

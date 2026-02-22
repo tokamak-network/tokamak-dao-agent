@@ -1,6 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useChat } from "./chat/useChat.ts";
+import { ChatBubble } from "./chat/ChatBubble.tsx";
+import { ChatInput } from "./chat/ChatInput.tsx";
+import type { Message } from "./chat/types.ts";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -202,7 +206,7 @@ export function ForumTab() {
   }, []);
 
   if (state.view === "create") {
-    return <AgendaFormView onBack={goToList} onCreated={goToDetail} />;
+    return <AgendaWizard onBack={goToList} onCreated={goToDetail} />;
   }
 
   if (state.view === "detail") {
@@ -314,30 +318,131 @@ function AgendaListView({
   );
 }
 
-// ── Form View ────────────────────────────────────────────────────────
+// ── Agenda Draft Types & Extraction ───────────────────────────────────
 
-function AgendaFormView({
+interface AgendaDraftCalldata {
+  description: string;
+  targets: string[];
+  functionBytecodes: string[];
+  atomicExecute: boolean;
+  decodedCalls: {
+    target: string;
+    targetName: string;
+    functionName: string;
+    args: { name: string; value: string }[];
+    calldata: string;
+  }[];
+}
+
+interface AgendaDraft {
+  title?: string;
+  content?: string;
+  calldata?: AgendaDraftCalldata;
+}
+
+function extractAgendaDraft(messages: Message[]): AgendaDraft | null {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (msg.role !== "assistant") continue;
+    const text = msg.parts
+      .filter((p) => p.type === "text" && p.content)
+      .map((p) => p.content)
+      .join("");
+    const match = text.match(/```agenda-draft\s*\n([\s\S]*?)\n```/);
+    if (match) {
+      try {
+        const data = JSON.parse(match[1]!);
+        return data as AgendaDraft;
+      } catch {}
+    }
+  }
+  return null;
+}
+
+// ── Wizard Suggestions ───────────────────────────────────────────────
+
+const WIZARD_SUGGESTIONS = [
+  "Change the DAO seigniorage rate",
+  "Approve TON from the DAO vault",
+  "Update the minimum staking amount",
+  "Change the agenda creation fee",
+];
+
+// ── AgendaWizard (Split-Panel) ───────────────────────────────────────
+
+function AgendaWizard({
   onBack,
   onCreated,
-  initialData,
 }: {
   onBack: () => void;
   onCreated: (id: number) => void;
-  initialData?: { title: string; content: string; deadline: string; creator: string };
 }) {
-  const [title, setTitle] = useState(initialData?.title ?? "");
-  const [content, setContent] = useState(initialData?.content ?? "");
-  const [deadline, setDeadline] = useState(
-    initialData?.deadline
-      ? initialData.deadline.slice(0, 16)
-      : "",
-  );
-  const [creator, setCreator] = useState(initialData?.creator ?? "");
+  const chat = useChat(undefined, "forum_proposal");
+  const [draft, setDraft] = useState<AgendaDraft>({});
+  const [userEditedFields, setUserEditedFields] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [calldataExpanded, setCalldataExpanded] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Extract draft from AI messages
+  const latestDraft = useMemo(() => extractAgendaDraft(chat.messages), [chat.messages]);
+
+  useEffect(() => {
+    if (!latestDraft) return;
+    setDraft((prev) => {
+      const next = { ...prev };
+      if (latestDraft.title && !userEditedFields.has("title")) next.title = latestDraft.title;
+      if (latestDraft.content && !userEditedFields.has("content")) next.content = latestDraft.content;
+      if (latestDraft.calldata) next.calldata = latestDraft.calldata;
+      return next;
+    });
+  }, [latestDraft, userEditedFields]);
+
+  const handleTitleChange = (val: string) => {
+    setUserEditedFields((s) => new Set(s).add("title"));
+    setDraft((d) => ({ ...d, title: val }));
+  };
+
+  const handleContentChange = (val: string) => {
+    setUserEditedFields((s) => new Set(s).add("content"));
+    setDraft((d) => ({ ...d, content: val }));
+  };
+
+  const resetField = (field: "title" | "content") => {
+    setUserEditedFields((s) => {
+      const next = new Set(s);
+      next.delete(field);
+      return next;
+    });
+    if (latestDraft) {
+      setDraft((d) => ({ ...d, [field]: latestDraft[field] ?? d[field] }));
+    }
+  };
+
+  const isReady = !!(draft.title && draft.content && draft.calldata);
+
+  // Build the full content with on-chain execution details appended
+  const buildFinalContent = (): string => {
+    let finalContent = draft.content || "";
+    if (draft.calldata) {
+      const calls = draft.calldata.decodedCalls || [];
+      const execSection = calls
+        .map((c, i) => {
+          const argsStr = c.args.map((a) => `  - **${a.name}**: \`${a.value}\``).join("\n");
+          return `### Call ${calls.length > 1 ? i + 1 : ""}
+- **Target**: ${c.targetName} (\`${c.target}\`)
+- **Function**: \`${c.functionName}\`
+${argsStr ? `- **Arguments**:\n${argsStr}` : ""}
+- **Calldata**: \`${c.calldata}\``;
+        })
+        .join("\n\n");
+
+      finalContent += `\n\n---\n## On-Chain Execution\n\n${execSection}`;
+    }
+    return finalContent;
+  };
+
+  const handleSubmit = async () => {
     setError(null);
     setSubmitting(true);
 
@@ -346,10 +451,8 @@ function AgendaFormView({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title,
-          content,
-          deadline: new Date(deadline).toISOString(),
-          ...(creator ? { creator } : {}),
+          title: draft.title,
+          content: buildFinalContent(),
         }),
       });
 
@@ -367,91 +470,203 @@ function AgendaFormView({
     }
   };
 
+  // Determine wizard step
+  const step = draft.calldata ? 3 : draft.title ? 2 : 1;
+
+  const hasMessages = chat.messages.length > 0;
+
   return (
-    <div className="forum-container">
-      <button className="forum-back-btn" onClick={onBack}>
-        &larr; Back to agendas
-      </button>
-
-      <div className="forum-form-card">
-        <h2 className="forum-form-title">New Agenda</h2>
-        <p className="forum-form-desc">
-          Submit a governance proposal. It will be automatically validated before becoming open for discussion.
-        </p>
-
-        <form onSubmit={handleSubmit} className="forum-form">
-          <div className="forum-form-field">
-            <label className="forum-form-label" htmlFor="agenda-title">
-              Title
-            </label>
-            <input
-              id="agenda-title"
-              className="forum-form-input"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Clear, specific proposal title"
-              maxLength={200}
-              required
-            />
-          </div>
-
-          <div className="forum-form-field">
-            <label className="forum-form-label" htmlFor="agenda-content">
-              Content
-            </label>
-            <textarea
-              id="agenda-content"
-              className="forum-form-textarea"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Include: purpose/background, specific proposal, expected outcomes"
-              maxLength={10000}
-              rows={8}
-              required
-            />
-          </div>
-
-          <div className="forum-form-row">
-            <div className="forum-form-field">
-              <label className="forum-form-label" htmlFor="agenda-deadline">
-                Deadline
-              </label>
-              <input
-                id="agenda-deadline"
-                className="forum-form-input"
-                type="datetime-local"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="forum-form-field">
-              <label className="forum-form-label" htmlFor="agenda-creator">
-                Creator (optional)
-              </label>
-              <input
-                id="agenda-creator"
-                className="forum-form-input"
-                type="text"
-                value={creator}
-                onChange={(e) => setCreator(e.target.value)}
-                placeholder="anonymous"
-              />
-            </div>
-          </div>
-
-          {error && <div className="forum-form-error">{error}</div>}
-
-          <button
-            type="submit"
-            className="forum-form-submit"
-            disabled={submitting || !title || !content || !deadline}
-          >
-            {submitting ? "Submitting..." : "Submit for Review"}
+    <div className="wizard-container">
+      {/* Left Panel: Chat */}
+      <div className="wizard-left">
+        <div className="wizard-left-header">
+          <button className="forum-back-btn" onClick={onBack} style={{ margin: 0 }}>
+            &larr; Back
           </button>
-        </form>
+          <span className="wizard-left-title">Proposal Wizard</span>
+          {hasMessages && (
+            <button
+              className="wizard-new-chat-btn"
+              onClick={chat.handleNewChat}
+              title="Start over"
+            >
+              New
+            </button>
+          )}
+        </div>
+
+        <div className="wizard-chat-area">
+          {!hasMessages ? (
+            <div className="wizard-welcome">
+              <div className="wizard-welcome-title">What would you like to propose?</div>
+              <div className="wizard-welcome-desc">
+                Describe your governance idea and I'll help you build a complete proposal with executable calldata.
+              </div>
+              <div className="wizard-suggestions">
+                {WIZARD_SUGGESTIONS.map((s) => (
+                  <button
+                    key={s}
+                    className="chat-suggestion-btn"
+                    onClick={() => chat.handleSuggestion(s)}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="wizard-messages">
+              {chat.messages.map((msg, i) => (
+                <ChatBubble
+                  key={i}
+                  message={msg}
+                  isStreaming={
+                    chat.isLoading &&
+                    i === chat.messages.length - 1 &&
+                    msg.role === "assistant"
+                  }
+                />
+              ))}
+              <div ref={chat.messagesEndRef} />
+            </div>
+          )}
+        </div>
+
+        <div className="wizard-input-area">
+          <ChatInput
+            value={chat.input}
+            onChange={chat.setInput}
+            onSubmit={() => chat.handleSubmit()}
+            isLoading={chat.isLoading}
+            inputRef={chat.inputRef}
+          />
+        </div>
+      </div>
+
+      {/* Right Panel: Preview */}
+      <div className="wizard-right">
+        {/* Step Indicator */}
+        <div className="wizard-steps">
+          <div className={`wizard-step ${step >= 1 ? "active" : ""} ${step > 1 ? "done" : ""}`}>
+            <span className="wizard-step-num">1</span>
+            <span className="wizard-step-label">Draft</span>
+          </div>
+          <div className="wizard-step-line" />
+          <div className={`wizard-step ${step >= 2 ? "active" : ""} ${step > 2 ? "done" : ""}`}>
+            <span className="wizard-step-num">2</span>
+            <span className="wizard-step-label">Review</span>
+          </div>
+          <div className="wizard-step-line" />
+          <div className={`wizard-step ${step >= 3 ? "active" : ""}`}>
+            <span className="wizard-step-num">3</span>
+            <span className="wizard-step-label">Submit</span>
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="wizard-field">
+          <div className="wizard-field-header">
+            <label className="forum-form-label">Title</label>
+            {userEditedFields.has("title") && (
+              <button className="wizard-reset-btn" onClick={() => resetField("title")} title="Sync with AI">
+                &#x21bb;
+              </button>
+            )}
+          </div>
+          <input
+            className="forum-form-input"
+            type="text"
+            value={draft.title || ""}
+            onChange={(e) => handleTitleChange(e.target.value)}
+            placeholder="AI will suggest a title..."
+            maxLength={200}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="wizard-field wizard-field-grow">
+          <div className="wizard-field-header">
+            <label className="forum-form-label">Content</label>
+            {userEditedFields.has("content") && (
+              <button className="wizard-reset-btn" onClick={() => resetField("content")} title="Sync with AI">
+                &#x21bb;
+              </button>
+            )}
+          </div>
+          <textarea
+            className="forum-form-textarea wizard-content-textarea"
+            value={draft.content || ""}
+            onChange={(e) => handleContentChange(e.target.value)}
+            placeholder="AI will build the proposal content..."
+            maxLength={10000}
+          />
+        </div>
+
+        {/* Calldata */}
+        <div className="wizard-field">
+          <label className="forum-form-label">On-Chain Calldata</label>
+          {draft.calldata ? (
+            <div className="wizard-calldata">
+              <button
+                className="wizard-calldata-header"
+                onClick={() => setCalldataExpanded(!calldataExpanded)}
+              >
+                <span className="wizard-calldata-icon">TX</span>
+                <span className="wizard-calldata-desc">{draft.calldata.description}</span>
+                <span className={`tool-call-chevron ${calldataExpanded ? "open" : ""}`}>&#9654;</span>
+              </button>
+              {calldataExpanded && (
+                <div className="wizard-calldata-body">
+                  {draft.calldata.decodedCalls.map((call, i) => (
+                    <div key={i} className="wizard-calldata-call">
+                      <div className="wizard-calldata-fn">
+                        <span className="proposal-call-fn">{call.functionName}</span>
+                        <span className="proposal-call-target">{call.targetName}</span>
+                      </div>
+                      {call.args.length > 0 && (
+                        <ul className="wizard-calldata-args">
+                          {call.args.map((a, j) => (
+                            <li key={j}>
+                              <code>{a.name}</code>: {a.value}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="wizard-calldata-raw">
+                        <code>{call.calldata}</code>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="wizard-calldata-empty">
+              Chat with AI to generate executable calldata
+            </div>
+          )}
+        </div>
+
+        {/* Submit */}
+        {error && <div className="forum-form-error">{error}</div>}
+
+        <button
+          className="forum-form-submit wizard-submit"
+          disabled={!isReady || submitting}
+          onClick={handleSubmit}
+        >
+          {submitting ? "Submitting..." : "Submit for Review"}
+        </button>
+
+        {!isReady && (
+          <div className="wizard-submit-hint">
+            {!draft.title
+              ? "Describe your proposal in the chat to get started"
+              : !draft.content
+                ? "Continue chatting to build proposal content"
+                : "Waiting for AI to generate calldata..."}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -556,7 +771,6 @@ function AgendaDetailView({
           </span>
         </div>
         <div className="forum-detail-meta">
-          <span>Deadline: {new Date(detail.deadline).toLocaleDateString()}</span>
           <span>Created: {new Date(detail.createdAt).toLocaleDateString()}</span>
           {detail.onChainAgendaId !== null && (
             <span>On-chain ID: #{detail.onChainAgendaId}</span>

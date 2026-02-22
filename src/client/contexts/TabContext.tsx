@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
-export type TabMode = "chat" | "make_proposal" | "analyze_proposal" | "agents" | "forum";
+export type TabMode = "chat" | "make_proposal" | "analyze_proposal" | "agents" | "forum" | "forum_proposal";
 
 export interface Proposal {
   targets: string[];

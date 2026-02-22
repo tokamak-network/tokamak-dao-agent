@@ -46,4 +46,5 @@ export const MODE_MODELS: Record<string, string> = {
   chat: "gpt-5.2",
   analyze_proposal: "gpt-5.2-pro",
   make_proposal: "gpt-5.2",
+  forum_proposal: "gpt-5.2",
 };

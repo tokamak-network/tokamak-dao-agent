@@ -23,6 +23,16 @@ export function getDb(): Database {
     db.exec("PRAGMA journal_mode = WAL");
     db.exec("PRAGMA foreign_keys = ON");
     db.exec(SCHEMA_SQL);
+
+    // Migrations: add columns that may not exist in older databases
+    const cols = db.query("PRAGMA table_info(agendas)").all() as { name: string }[];
+    const colNames = new Set(cols.map((c) => c.name));
+    if (!colNames.has("on_chain_created_at")) {
+      db.exec("ALTER TABLE agendas ADD COLUMN on_chain_created_at TEXT");
+    }
+    if (!colNames.has("on_chain_status")) {
+      db.exec("ALTER TABLE agendas ADD COLUMN on_chain_status TEXT");
+    }
   }
   return db;
 }

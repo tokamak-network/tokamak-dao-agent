@@ -57,7 +57,7 @@ export function TerminalHeader({
 
           {/* Right: wallet + model selector + status */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {isWalletConfigured && <appkit-button size="sm" />}
+            {isWalletConfigured && <appkit-button size="sm" balance="hide" />}
             {model && onModelChange ? (
               <ModelSelector current={model} onSelect={onModelChange} />
             ) : model ? (

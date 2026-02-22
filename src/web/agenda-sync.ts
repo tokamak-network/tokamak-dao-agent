@@ -76,6 +76,7 @@ async function fetchOnChainAgenda(agendaId: number): Promise<{
   status: string;
   result: string;
   deadline: string;
+  createdAt: string;
 } | null> {
   try {
     const id = BigInt(agendaId);
@@ -143,7 +144,8 @@ ${decodedCalls.join("\n\n")}`;
       ? `On-Chain Agenda #${agendaId}: ${decodedCalls[0]?.match(/\*\*(.+?)\*\*/)?.[1] || "Governance Action"}`
       : `On-Chain Agenda #${agendaId}`;
 
-    return { title: title.slice(0, 200), content, status, result, deadline };
+    const createdAt = new Date(Number(info.createdTimestamp) * 1000).toISOString();
+    return { title: title.slice(0, 200), content, status, result, deadline, createdAt };
   } catch (err) {
     console.error(`[agenda-sync] failed to fetch agenda #${agendaId}:`, err);
     return null;
@@ -168,6 +170,7 @@ function getExistingOnChainIds(): Set<number> {
 export async function syncOnChainAgendas(): Promise<{
   total: number;
   newlyImported: number;
+  updated: number;
   errors: number;
 }> {
   console.log("[agenda-sync] starting on-chain agenda sync...");
@@ -183,12 +186,40 @@ export async function syncOnChainAgendas(): Promise<{
     total = Number(totalAgendas);
   } catch (err) {
     console.error("[agenda-sync] failed to fetch totalAgendas:", err);
-    return { total: 0, newlyImported: 0, errors: 1 };
+    return { total: 0, newlyImported: 0, updated: 0, errors: 1 };
   }
 
   const existingIds = getExistingOnChainIds();
   let newlyImported = 0;
+  let updated = 0;
   let errors = 0;
+
+  // Backfill: update existing on-chain agendas missing on_chain_created_at or on_chain_status
+  const db = getDb();
+  const staleRows = db
+    .query(
+      `SELECT id, on_chain_agenda_id FROM agendas
+       WHERE on_chain_agenda_id IS NOT NULL
+         AND (on_chain_created_at IS NULL OR on_chain_status IS NULL)`,
+    )
+    .all() as { id: number; on_chain_agenda_id: number }[];
+
+  if (staleRows.length > 0) {
+    console.log(`[agenda-sync] backfilling ${staleRows.length} existing on-chain agendas...`);
+    for (const row of staleRows) {
+      try {
+        const onChain = await fetchOnChainAgenda(row.on_chain_agenda_id);
+        if (onChain) {
+          db.prepare(
+            `UPDATE agendas SET on_chain_created_at = ?, on_chain_status = ?, updated_at = datetime('now') WHERE id = ?`,
+          ).run(onChain.createdAt, `${onChain.status} / ${onChain.result}`, row.id);
+          updated++;
+        }
+      } catch (err) {
+        console.error(`[agenda-sync] backfill failed for agenda #${row.on_chain_agenda_id}:`, err);
+      }
+    }
+  }
 
   // Process agendas in batches of 5
   for (let i = 0; i < total; i += 5) {
@@ -209,6 +240,8 @@ export async function syncOnChainAgendas(): Promise<{
           title: onChain.title,
           content: onChain.content,
           onChainAgendaId: agendaId,
+          onChainCreatedAt: onChain.createdAt,
+          onChainStatus: `${onChain.status} / ${onChain.result}`,
           creator: "on-chain-sync",
           deadline: onChain.deadline,
         });
@@ -239,10 +272,10 @@ export async function syncOnChainAgendas(): Promise<{
   }
 
   console.log(
-    `[agenda-sync] done: ${total} on-chain agendas, ${newlyImported} newly imported, ${errors} errors`,
+    `[agenda-sync] done: ${total} on-chain agendas, ${newlyImported} newly imported, ${updated} backfilled, ${errors} errors`,
   );
 
-  return { total, newlyImported, errors };
+  return { total, newlyImported, updated, errors };
 }
 
 /**

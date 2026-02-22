@@ -18,7 +18,15 @@ const WalletContext = createContext<WalletContextValue>({
   openModal: noop,
 });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function WalletContextBridge({ children }: { children: ReactNode }) {
   const { address, isConnected } = useAppKitAccount();

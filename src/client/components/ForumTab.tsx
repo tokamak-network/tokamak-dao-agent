@@ -15,6 +15,8 @@ interface Agenda {
   title: string;
   content: string;
   onChainAgendaId: number | null;
+  onChainCreatedAt: string | null;
+  onChainStatus: string | null;
   creator: string;
   deadline: string;
   status: "draft" | "pending_review" | "rejected" | "open" | "closed" | "archived";
@@ -45,8 +47,18 @@ interface Validation {
   createdAt: string;
 }
 
+interface UserComment {
+  id: number;
+  agendaId: number;
+  walletAddress: string;
+  content: string;
+  createdAt: string;
+}
+
 interface AgendaDetail extends Agenda {
+  updatedAt: string;
   opinions: Opinion[];
+  comments: UserComment[];
 }
 
 interface AgentInfo {
@@ -98,6 +110,26 @@ const STATUS_LABELS: Record<string, string> = {
   closed: "Closed",
   archived: "Archived",
 };
+
+/** Map on-chain status string (e.g. "EXECUTED / ACCEPT") to a display label and data-status for CSS. */
+function getOnChainBadge(onChainStatus: string | null): { label: string; dataStatus: string } | null {
+  if (!onChainStatus) return null;
+  const status = onChainStatus.split("/")[0]!.trim();
+  switch (status) {
+    case "EXECUTED":
+      return { label: "Executed", dataStatus: "executed" };
+    case "ENDED":
+      return { label: "Ended", dataStatus: "closed" };
+    case "NOTICE":
+      return { label: "Notice", dataStatus: "pending_review" };
+    case "VOTING":
+      return { label: "Voting", dataStatus: "open" };
+    case "WAITING_EXEC":
+      return { label: "Waiting", dataStatus: "draft" };
+    default:
+      return null;
+  }
+}
 
 const FALLBACK_AGENT_NAMES = [
   "Agent Alpha",
@@ -329,15 +361,20 @@ function AgendaListView({
           >
             <div className="forum-thread-main">
               <div className="forum-thread-title-line">
-                <span
-                  className="forum-status-badge"
-                  data-status={agenda.status}
-                >
-                  {STATUS_LABELS[agenda.status] ?? agenda.status}
-                </span>
+                {(() => {
+                  const badge = getOnChainBadge(agenda.onChainStatus);
+                  return (
+                    <span
+                      className="forum-status-badge"
+                      data-status={badge?.dataStatus ?? agenda.status}
+                    >
+                      {badge?.label ?? STATUS_LABELS[agenda.status] ?? agenda.status}
+                    </span>
+                  );
+                })()}
                 <span className="forum-thread-title">{agenda.title}</span>
               </div>
-              {agenda.creator && agenda.creator !== "anonymous" && (
+              {agenda.creator && agenda.creator !== "anonymous" && agenda.creator !== "on-chain-sync" && (
                 <span className="forum-thread-creator">{truncateAddress(agenda.creator)}</span>
               )}
             </div>
@@ -346,7 +383,7 @@ function AgendaListView({
                 {agenda.opinionCount ?? 0}
               </span>
               <span className="forum-thread-stat-activity">
-                {parseUtc(agenda.createdAt).toLocaleDateString()}
+                {parseUtc(agenda.onChainCreatedAt ?? agenda.createdAt).toLocaleDateString()}
               </span>
             </div>
           </button>
@@ -826,6 +863,7 @@ function AgendaDetailView({
   const [detail, setDetail] = useState<AgendaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"opinions" | "comments">("comments");
 
   const loadDetail = useCallback(async () => {
     try {
@@ -884,19 +922,27 @@ function AgendaDetailView({
       <div className="forum-detail-header">
         <div className="forum-detail-title-row">
           <h2 className="forum-detail-title">{detail.title}</h2>
-          <span className="forum-status-badge" data-status={detail.status}>
-            {STATUS_LABELS[detail.status] ?? detail.status}
-          </span>
+          {(() => {
+            const badge = getOnChainBadge(detail.onChainStatus);
+            return (
+              <span className="forum-status-badge" data-status={badge?.dataStatus ?? detail.status}>
+                {badge?.label ?? STATUS_LABELS[detail.status] ?? detail.status}
+              </span>
+            );
+          })()}
         </div>
         <div className="forum-detail-meta">
-          <span>Created: {parseUtc(detail.createdAt).toLocaleDateString()}</span>
-          {detail.creator && detail.creator !== "anonymous" && (
+          <span>Created: {parseUtc(detail.onChainCreatedAt ?? detail.createdAt).toLocaleDateString()}</span>
+          {detail.creator && detail.creator !== "anonymous" && detail.creator !== "on-chain-sync" && (
             <span className="forum-thread-creator">
               By: {truncateAddress(detail.creator)}
             </span>
           )}
           {detail.onChainAgendaId !== null && (
             <span>On-chain ID: #{detail.onChainAgendaId}</span>
+          )}
+          {detail.onChainStatus && (
+            <span>Result: {detail.onChainStatus}</span>
           )}
         </div>
         <TranslatableContent text={detail.content} />
@@ -921,21 +967,45 @@ function AgendaDetailView({
         />
       )}
 
-      {/* Opinions */}
-      {detail.opinions.length > 0 ? (
-        <>
-          <h3 className="forum-section-title">Comments ({detail.opinions.length})</h3>
+      {/* Tab bar */}
+      <div className="forum-detail-tabs">
+        <button
+          className={`forum-detail-tab ${activeTab === "comments" ? "active" : ""}`}
+          onClick={() => setActiveTab("comments")}
+        >
+          Comments ({(detail.comments ?? []).length})
+        </button>
+        <button
+          className={`forum-detail-tab ${activeTab === "opinions" ? "active" : ""}`}
+          onClick={() => setActiveTab("opinions")}
+        >
+          Agent Opinions ({detail.opinions.length})
+        </button>
+      </div>
+
+      {/* Tab content */}
+      {activeTab === "opinions" ? (
+        detail.opinions.length > 0 ? (
           <div className="forum-comments">
             {detail.opinions.map((op) => (
               <OpinionComment key={op.id} opinion={op} />
             ))}
           </div>
-        </>
-      ) : detail.status === "open" ? (
-        <div className="forum-empty-opinions">
-          No opinions yet. Use the buttons above to request agent opinions.
+        ) : detail.status === "open" ? (
+          <div className="forum-empty-opinions">
+            No opinions yet. Use the buttons above to request agent opinions.
+          </div>
+        ) : (
+          <div className="forum-empty-opinions">No agent opinions.</div>
+        )
+      ) : (
+        <div className="forum-comments">
+          {(detail.comments ?? []).map((comment) => (
+            <UserCommentItem key={comment.id} comment={comment} agendaId={agendaId} onChanged={loadDetail} />
+          ))}
+          <CommentForm agendaId={agendaId} onCommentAdded={loadDetail} />
         </div>
-      ) : null}
+      )}
 
     </div>
   );
@@ -1365,6 +1435,194 @@ function OpinionComment({ opinion }: { opinion: Opinion }) {
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ── User Comment Item ────────────────────────────────────────────────
+
+function UserCommentItem({
+  comment,
+  agendaId,
+  onChanged,
+}: {
+  comment: UserComment;
+  agendaId: number;
+  onChanged: () => void;
+}) {
+  const { address } = useWallet();
+  const isOwner = !!address && address.toLowerCase() === comment.walletAddress.toLowerCase();
+  const initials = comment.walletAddress.slice(2, 4).toUpperCase();
+
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    if (!editContent.trim()) return;
+    setError(null);
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/forum/agenda/${agendaId}/comment/${comment.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletAddress: address, content: editContent.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      setEditing(false);
+      onChanged();
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Delete this comment?")) return;
+    setError(null);
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/forum/agenda/${agendaId}/comment/${comment.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletAddress: address }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      onChanged();
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="forum-comment">
+      <div className="forum-comment-avatar-wallet">{initials}</div>
+      <div className="forum-comment-body">
+        <div className="forum-comment-meta">
+          <span className="forum-comment-name">
+            {truncateAddress(comment.walletAddress)}
+          </span>
+          <span className="forum-comment-time">{timeAgo(comment.createdAt)}</span>
+          {isOwner && !editing && (
+            <span className="forum-comment-actions">
+              <button className="forum-comment-action-btn" onClick={() => { setEditing(true); setEditContent(comment.content); }}>Edit</button>
+              <button className="forum-comment-action-btn delete" onClick={handleDelete} disabled={deleting}>
+                {deleting ? "..." : "Delete"}
+              </button>
+            </span>
+          )}
+        </div>
+        {error && <div className="forum-form-error">{error}</div>}
+        {editing ? (
+          <div className="forum-comment-edit">
+            <textarea
+              className="forum-form-textarea"
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              maxLength={2000}
+              rows={3}
+            />
+            <div className="forum-comment-edit-actions">
+              <button className="forum-comment-action-btn" onClick={() => setEditing(false)}>Cancel</button>
+              <button className="forum-form-submit" onClick={handleSave} disabled={saving || !editContent.trim()}>
+                {saving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="forum-comment-text">
+            <p>{comment.content}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Comment Form ─────────────────────────────────────────────────────
+
+function CommentForm({
+  agendaId,
+  onCommentAdded,
+}: {
+  agendaId: number;
+  onCommentAdded: () => void;
+}) {
+  const { address, isConnected, openModal } = useWallet();
+  const [content, setContent] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (isWalletConfigured && !isConnected) {
+    return (
+      <div className="forum-comment-form-connect">
+        <button className="forum-form-submit" onClick={() => openModal()}>
+          Connect Wallet to Comment
+        </button>
+      </div>
+    );
+  }
+
+  const handleSubmit = async () => {
+    if (!content.trim() || !address) return;
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      const res = await fetch(`/api/forum/agenda/${agendaId}/comment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletAddress: address, content: content.trim() }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+
+      setContent("");
+      onCommentAdded();
+    } catch (err) {
+      setError(String(err instanceof Error ? err.message : err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="forum-comment-form">
+      <textarea
+        className="forum-form-textarea"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        placeholder="Write a comment..."
+        maxLength={2000}
+        rows={3}
+      />
+      {error && <div className="forum-form-error">{error}</div>}
+      <div className="forum-comment-form-footer">
+        <span className="forum-comment-form-address">
+          {truncateAddress(address || "")}
+        </span>
+        <button
+          className="forum-form-submit"
+          onClick={handleSubmit}
+          disabled={submitting || !content.trim()}
+        >
+          {submitting ? "Posting..." : "Post Comment"}
+        </button>
       </div>
     </div>
   );

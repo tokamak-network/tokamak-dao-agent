@@ -9,6 +9,8 @@ export interface ForumAgenda {
   title: string;
   content: string;
   onChainAgendaId: number | null;
+  onChainCreatedAt: string | null;
+  onChainStatus: string | null;
   creator: string;
   deadline: string;
   status: "draft" | "pending_review" | "rejected" | "open" | "closed" | "archived";
@@ -21,6 +23,8 @@ export interface CreateAgendaInput {
   title: string;
   content: string;
   onChainAgendaId?: number;
+  onChainCreatedAt?: string;
+  onChainStatus?: string;
   creator?: string;
   deadline: string;
 }
@@ -38,6 +42,8 @@ function rowToAgenda(row: any): ForumAgenda {
     title: row.title,
     content: row.content,
     onChainAgendaId: row.on_chain_agenda_id,
+    onChainCreatedAt: row.on_chain_created_at ?? null,
+    onChainStatus: row.on_chain_status ?? null,
     creator: row.creator,
     deadline: row.deadline,
     status: row.status,
@@ -52,13 +58,15 @@ function rowToAgenda(row: any): ForumAgenda {
 export function createAgenda(input: CreateAgendaInput): ForumAgenda {
   const db = getDb();
   const stmt = db.prepare(`
-    INSERT INTO agendas (title, content, on_chain_agenda_id, creator, deadline)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO agendas (title, content, on_chain_agenda_id, on_chain_created_at, on_chain_status, creator, deadline)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   stmt.run(
     input.title,
     input.content,
     input.onChainAgendaId ?? null,
+    input.onChainCreatedAt ?? null,
+    input.onChainStatus ?? null,
     input.creator ?? "anonymous",
     input.deadline,
   );
@@ -102,7 +110,7 @@ export function listAgendas(opts: ListAgendaOptions = {}): ForumAgenda[] {
       orderBy = "opinion_count DESC, a.created_at DESC";
       break;
     default:
-      orderBy = "a.created_at DESC";
+      orderBy = "COALESCE(a.on_chain_created_at, a.created_at) DESC";
   }
 
   const limit = opts.limit ?? 20;
@@ -121,6 +129,19 @@ export function listAgendas(opts: ListAgendaOptions = {}): ForumAgenda[] {
     .all(...params, limit, offset);
 
   return rows.map(rowToAgenda);
+}
+
+/** Return the next available TIP number (max existing TIP-N + 1). */
+export function getNextTipNumber(): number {
+  const db = getDb();
+  const row = db
+    .query(
+      `SELECT MAX(CAST(SUBSTR(title, 5, INSTR(title, ':') - 5) AS INTEGER)) AS max_tip
+       FROM agendas
+       WHERE title LIKE 'TIP-%:%'`,
+    )
+    .get() as { max_tip: number | null } | null;
+  return (row?.max_tip ?? 0) + 1;
 }
 
 export function updateAgendaStatus(

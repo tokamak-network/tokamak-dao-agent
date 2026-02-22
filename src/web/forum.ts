@@ -7,12 +7,14 @@ import { Hono } from "hono";
 import {
   createAgenda,
   getAgenda,
+  getNextTipNumber,
   listAgendas,
   updateAgenda,
   updateAgendaStatus,
 } from "../db/agendas.ts";
 import type { CreateAgendaInput, ListAgendaOptions } from "../db/agendas.ts";
 import { createOpinion, getOpinionsForAgenda } from "../db/opinions.ts";
+import { createComment, getComment, updateComment, deleteComment, getCommentsForAgenda } from "../db/comments.ts";
 import {
   getValidationsForAgenda,
   clearValidationsForAgenda,
@@ -20,6 +22,7 @@ import {
 import {
   validateAgendaInput,
   validateAgentInput,
+  validateCommentInput,
   validateOpinionInput,
   validateWebhookInput,
 } from "./forum-validation.ts";
@@ -45,9 +48,15 @@ import { syncOnChainAgendas } from "./agenda-sync.ts";
 
 export const forumRouter = new Hono();
 
-/** Auto-prefix title with TIP-{id}. Strips any existing TIP prefix first. */
-function formatTipTitle(id: number, title: string): string {
-  return `TIP-${id}: ${title.replace(/^TIP-[^:]*:\s*/, "")}`;
+/** Strip any existing TIP prefix from a title. */
+function stripTipPrefix(title: string): string {
+  return title.replace(/^TIP-[^:]*:\s*/, "");
+}
+
+/** Auto-prefix title with TIP-{n} using the next available TIP number. */
+function formatTipTitle(title: string): string {
+  const tipNum = getNextTipNumber();
+  return `TIP-${tipNum}: ${stripTipPrefix(title)}`;
 }
 
 // ── Agenda endpoints ──────────────────────────────────────────────────
@@ -67,9 +76,9 @@ forumRouter.post("/agenda", async (c) => {
 
   const agenda = createAgenda(input);
 
-  // Auto-prefix TIP-{id} for user-created agendas (skip on-chain synced)
+  // Auto-prefix TIP-{n} for user-created agendas (skip on-chain synced)
   if (!input.onChainAgendaId) {
-    updateAgenda(agenda.id, { title: formatTipTitle(agenda.id, agenda.title) });
+    updateAgenda(agenda.id, { title: formatTipTitle(agenda.title) });
   }
 
   // Immediately move to pending_review and start validation
@@ -95,6 +104,10 @@ forumRouter.get("/agenda", (c) => {
   return c.json({ agendas, count: agendas.length });
 });
 
+forumRouter.get("/agenda/next-tip-number", (c) => {
+  return c.json({ nextTipNumber: getNextTipNumber() });
+});
+
 forumRouter.get("/agenda/:id", (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
@@ -103,7 +116,78 @@ forumRouter.get("/agenda/:id", (c) => {
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
   const opinions = getOpinionsForAgenda(id);
-  return c.json({ ...agenda, opinions });
+  const comments = getCommentsForAgenda(id);
+  return c.json({ ...agenda, opinions, comments });
+});
+
+// ── Comment endpoints ────────────────────────────────────────────────
+
+forumRouter.get("/agenda/:id/comments", (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  const comments = getCommentsForAgenda(id);
+  return c.json({ comments, count: comments.length });
+});
+
+forumRouter.post("/agenda/:id/comment", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
+
+  const agenda = getAgenda(id);
+  if (!agenda) return c.json({ error: "Agenda not found" }, 404);
+
+  const body = await c.req.json();
+  const error = validateCommentInput(body);
+  if (error) return c.json({ error }, 400);
+
+  const comment = createComment({
+    agendaId: id,
+    walletAddress: body.walletAddress,
+    content: body.content,
+  });
+
+  return c.json(comment, 201);
+});
+
+forumRouter.patch("/agenda/:id/comment/:commentId", async (c) => {
+  const commentId = Number(c.req.param("commentId"));
+  if (isNaN(commentId)) return c.json({ error: "Invalid comment ID" }, 400);
+
+  const existing = getComment(commentId);
+  if (!existing) return c.json({ error: "Comment not found" }, 404);
+
+  const body = await c.req.json();
+  const { walletAddress, content } = body;
+
+  if (typeof walletAddress !== "string" || walletAddress.toLowerCase() !== existing.walletAddress.toLowerCase()) {
+    return c.json({ error: "Only the comment author can edit" }, 403);
+  }
+  if (typeof content !== "string" || content.length < 1 || content.length > 2000) {
+    return c.json({ error: "content must be 1-2000 characters" }, 400);
+  }
+
+  const updated = updateComment(commentId, content);
+  return c.json(updated);
+});
+
+forumRouter.delete("/agenda/:id/comment/:commentId", async (c) => {
+  const commentId = Number(c.req.param("commentId"));
+  if (isNaN(commentId)) return c.json({ error: "Invalid comment ID" }, 400);
+
+  const existing = getComment(commentId);
+  if (!existing) return c.json({ error: "Comment not found" }, 404);
+
+  const body = await c.req.json();
+  if (typeof body?.walletAddress !== "string" || body.walletAddress.toLowerCase() !== existing.walletAddress.toLowerCase()) {
+    return c.json({ error: "Only the comment author can delete" }, 403);
+  }
+
+  deleteComment(commentId);
+  return c.json({ status: "deleted", id: commentId });
 });
 
 // ── Validation endpoints ──────────────────────────────────────────────
@@ -143,9 +227,14 @@ forumRouter.patch("/agenda/:id", async (c) => {
     if (typeof body.title !== "string" || body.title.length < 1 || body.title.length > 200) {
       return c.json({ error: "title must be 1-200 characters" }, 400);
     }
-    fields.title = !agenda.onChainAgendaId
-      ? formatTipTitle(id, body.title)
-      : body.title;
+    if (!agenda.onChainAgendaId) {
+      // Preserve existing TIP number on edit
+      const existingMatch = agenda.title.match(/^TIP-(\d+):/);
+      const tipNum = existingMatch ? Number(existingMatch[1]) : getNextTipNumber();
+      fields.title = `TIP-${tipNum}: ${stripTipPrefix(body.title)}`;
+    } else {
+      fields.title = body.title;
+    }
   }
   if (body.content !== undefined) {
     if (typeof body.content !== "string" || body.content.length < 1 || body.content.length > 10000) {

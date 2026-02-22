@@ -103,6 +103,21 @@ export function validateAgentInput(body: any): string | null {
   return null;
 }
 
+export function validateCommentInput(body: any): string | null {
+  if (!body || typeof body !== "object") return "Request body is required";
+
+  const { walletAddress, content } = body;
+
+  if (typeof walletAddress !== "string" || !/^0x[0-9a-fA-F]{40}$/.test(walletAddress)) {
+    return "walletAddress must be a valid Ethereum address (0x + 40 hex characters)";
+  }
+  if (typeof content !== "string" || content.length < 1 || content.length > 2000) {
+    return "content must be 1-2000 characters";
+  }
+
+  return null;
+}
+
 export function validateWebhookInput(body: any): string | null {
   if (!body || typeof body !== "object") return "Request body is required";
 

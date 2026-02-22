@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS agendas (
   title TEXT NOT NULL,
   content TEXT NOT NULL,
   on_chain_agenda_id INTEGER,
+  on_chain_created_at TEXT,
+  on_chain_status TEXT,
   creator TEXT NOT NULL DEFAULT 'anonymous',
   deadline TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'open',
@@ -119,5 +121,13 @@ CREATE TABLE IF NOT EXISTS agent_credibility (
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   resolved_at TEXT,
   UNIQUE(agent_name, agenda_id)
+);
+
+CREATE TABLE IF NOT EXISTS user_comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agenda_id INTEGER NOT NULL REFERENCES agendas(id) ON DELETE CASCADE,
+  wallet_address TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 `;

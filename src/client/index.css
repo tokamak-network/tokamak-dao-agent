@@ -4058,3 +4058,168 @@ body {
     overflow-y: auto;
   }
 }
+
+/* ── Forum Review Modal ─────────────────────────────────────────────── */
+
+.forum-review-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fade-in 0.15s ease-out;
+}
+
+.forum-review-modal {
+  background: var(--term-bg-secondary);
+  border: 1px solid var(--term-border);
+  border-radius: 16px;
+  padding: 28px;
+  width: 90vw;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.review-modal-header {
+  margin-bottom: 20px;
+}
+
+.review-modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--term-text-primary);
+  margin: 0 0 6px;
+}
+
+.review-modal-desc {
+  font-size: 13px;
+  color: var(--term-text-muted);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.review-modal-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.review-modal-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--term-bg-primary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.review-modal-progress-fill {
+  height: 100%;
+  background: var(--term-accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.review-modal-progress-label {
+  font-size: 12px;
+  color: var(--term-text-muted);
+  white-space: nowrap;
+}
+
+.review-modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-modal-card {
+  background: var(--term-bg-primary);
+  border: 1px solid var(--term-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: border-color 0.3s ease;
+}
+
+.review-modal-card.done {
+  border-width: 1px;
+}
+
+.review-modal-card.pending {
+  opacity: 0.7;
+}
+
+.review-modal-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.review-modal-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--term-bg-secondary);
+  flex-shrink: 0;
+}
+
+.review-modal-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.review-modal-agent-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--term-text-primary);
+}
+
+.review-modal-stakeholder {
+  display: block;
+  font-size: 11px;
+  color: var(--term-text-muted);
+  margin-top: 1px;
+}
+
+.review-modal-verdict {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.review-modal-verdict.pending {
+  color: var(--term-text-muted);
+  font-weight: 400;
+}
+
+.review-modal-reasoning {
+  font-size: 12px;
+  color: var(--term-text-muted);
+  line-height: 1.5;
+  margin: 6px 0 0;
+}
+
+.review-modal-pulse {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--term-bg-secondary) 0%, var(--term-border) 50%, var(--term-bg-secondary) 100%);
+  background-size: 200% 100%;
+  animation: review-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes review-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.review-modal-btn {
+  margin-top: 20px;
+  width: 100%;
+}

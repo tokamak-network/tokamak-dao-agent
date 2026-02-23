@@ -1,8 +1,8 @@
 # Knowledge Gaps Resolution
 
-Phase 1에서 발견된 8개 미해결 항목의 온체인 검증 결과.
+On-chain verification results for 8 unresolved items discovered in Phase 1.
 
-검증 일시: 2026-02-11
+Verification date: 2026-02-11
 RPC: Alchemy Ethereum Mainnet
 
 ---

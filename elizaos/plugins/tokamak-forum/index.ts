@@ -31,32 +31,32 @@ async function analyzeAndSubmitOpinion(
   const knowledge = (runtime.character.knowledge || []).join("\n- ");
   const styleGuidelines = (runtime.character.style?.all || []).join("\n- ");
 
-  const analysisPrompt = `당신은 토카막 네트워크 DAO 거버넌스 참여자입니다.
+  const analysisPrompt = `You are a Tokamak Network DAO governance participant.
 
-## 당신의 역할
+## Your Role
 ${stakeholderType}
 ${personality}
 
-## 보유 지식
+## Knowledge
 - ${knowledge}
 
-## 응답 스타일
+## Response Style
 - ${styleGuidelines}
 
-## 분석할 안건
-제목: ${agenda.title}
-내용: ${agenda.content}
-마감일: ${agenda.deadline}
+## Agenda to Analyze
+Title: ${agenda.title}
+Content: ${agenda.content}
+Deadline: ${agenda.deadline}
 
-## 요청사항
-이 안건에 대해 다음 형식으로 의견을 제시하세요:
+## Instructions
+Please provide your opinion on this agenda in the following format:
 
-1. **판정** (approve/reject/abstain 중 하나)
-2. **근거** (온체인 데이터를 참조하며 3-5문장)
-3. **신뢰도** (1-5, 온체인 검증이 뒷받침될수록 높음)
-4. **우선순위** (이 안건에서 고려한 상위 3가지 요소)
+1. **Verdict** (one of: approve/reject/abstain)
+2. **Reasoning** (3-5 sentences referencing on-chain data)
+3. **Confidence** (1-5, higher when supported by on-chain verification)
+4. **Priorities** (top 3 factors considered for this agenda)
 
-MCP 도구를 사용하여 관련 온체인 데이터를 조회한 후 의견을 작성하세요.`;
+Use MCP tools to query relevant on-chain data before writing your opinion.`;
 
   try {
     // Use runtime's message completion to generate analysis with MCP tool access
@@ -107,25 +107,25 @@ function parseOpinionResponse(text: string): {
 } {
   // Extract verdict (forum API requires uppercase: APPROVE, REJECT, NEEDS_REVIEW, ABSTAIN)
   let verdict = "ABSTAIN";
-  const verdictMatch = text.match(/판정[：:]\s*(approve|reject|abstain|needs_review)/i);
+  const verdictMatch = text.match(/Verdict[：:]\s*(approve|reject|abstain|needs_review)/i);
   if (verdictMatch) {
     verdict = verdictMatch[1].toUpperCase();
-  } else if (text.includes("찬성") || text.includes("승인")) {
+  } else if (text.includes("approve") || text.includes("in favor")) {
     verdict = "APPROVE";
-  } else if (text.includes("반대") || text.includes("거부")) {
+  } else if (text.includes("reject") || text.includes("oppose")) {
     verdict = "REJECT";
   }
 
   // Extract confidence
   let confidence = 3;
-  const confMatch = text.match(/신뢰도[：:]\s*(\d)/);
+  const confMatch = text.match(/Confidence[：:]\s*(\d)/i);
   if (confMatch) {
     confidence = Math.min(5, Math.max(1, parseInt(confMatch[1])));
   }
 
-  // Extract priorities from numbered/bulleted list after "우선순위"
+  // Extract priorities from numbered/bulleted list after "Priorities"
   const priorities: { id: string; label: string; weight: number }[] = [];
-  const prioritySection = text.split(/우선순위/i)[1];
+  const prioritySection = text.split(/Priorities/i)[1];
   if (prioritySection) {
     const lines = prioritySection.split("\n").filter((l) => l.trim().match(/^[\d\-\*•]/));
     lines.slice(0, 3).forEach((line, i) => {
@@ -142,8 +142,8 @@ function parseOpinionResponse(text: string): {
 
   // Use full text as reasoning (excluding parsed sections for cleanliness)
   const reasoning = text
-    .replace(/우선순위[\s\S]*$/, "")
-    .replace(/신뢰도[：:]\s*\d/, "")
+    .replace(/Priorities[\s\S]*$/i, "")
+    .replace(/Confidence[：:]\s*\d/i, "")
     .trim()
     .slice(0, 2000);
 
@@ -151,18 +151,18 @@ function parseOpinionResponse(text: string): {
 }
 
 function extractStakeholderType(bio: string): string {
-  if (bio.includes("TON") && bio.includes("보유자")) return "ton_holder";
-  if (bio.includes("오퍼레이터") || bio.includes("Layer 2")) return "l2_operator";
-  if (bio.includes("검증자") || bio.includes("밸리데이터")) return "validator";
-  if (bio.includes("재단")) return "foundation";
+  if (bio.includes("TON") && bio.includes("holder")) return "ton_holder";
+  if (bio.includes("operator") || bio.includes("Layer 2")) return "l2_operator";
+  if (bio.includes("validator")) return "validator";
+  if (bio.includes("foundation")) return "foundation";
   return "other";
 }
 
 function extractPersonality(bio: string): string {
-  if (bio.includes("진보적") || bio.includes("적극적 생태계 확장")) return "progressive";
-  if (bio.includes("보수적") || bio.includes("검증된 방안")) return "conservative";
-  if (bio.includes("방어적") || bio.includes("보안 취약점")) return "defensive";
-  if (bio.includes("공격적") || bio.includes("과감한")) return "aggressive";
+  if (bio.includes("Progressive") || bio.includes("active ecosystem expansion")) return "progressive";
+  if (bio.includes("Conservative") || bio.includes("proven solutions")) return "conservative";
+  if (bio.includes("Defensive") || bio.includes("security vulnerabilities")) return "defensive";
+  if (bio.includes("Aggressive") || bio.includes("bold")) return "aggressive";
   return "neutral";
 }
 
@@ -199,19 +199,19 @@ const webhookRoute: Route = {
 
 const analyzeAgendaAction = {
   name: "ANALYZE_AGENDA",
-  description: "DAO 안건을 분석하고 페르소나 기반 의견을 제출합니다",
-  similes: ["analyze proposal", "review agenda", "안건 분석", "의견 제출"],
+  description: "Analyzes DAO agendas and submits persona-based opinions",
+  similes: ["analyze proposal", "review agenda", "analyze agenda", "submit opinion"],
   validate: async (_runtime: IAgentRuntime, message: any) => {
     const text = message.content?.text || "";
-    return text.includes("agenda") || text.includes("안건") || text.includes("proposal");
+    return text.includes("agenda") || text.includes("proposal");
   },
   handler: async (runtime: IAgentRuntime, message: any, state: any) => {
     const text = message.content?.text || "";
 
     // Try to extract agenda ID from message
-    const idMatch = text.match(/(?:agenda|안건)\s*#?(\d+)/i);
+    const idMatch = text.match(/(?:agenda|proposal)\s*#?(\d+)/i);
     if (!idMatch) {
-      return { text: "안건 ID를 지정해주세요. 예: 'agenda #1 분석'" };
+      return { text: "Please specify an agenda ID. Example: 'agenda #1 analyze'" };
     }
 
     const agendaId = parseInt(idMatch[1]);
@@ -219,19 +219,19 @@ const analyzeAgendaAction = {
     // Fetch agenda from forum API
     const res = await fetch(`${FORUM_BASE_URL}/agenda/${agendaId}`);
     if (!res.ok) {
-      return { text: `안건 #${agendaId}을 찾을 수 없습니다.` };
+      return { text: `Agenda #${agendaId} not found.` };
     }
 
     const agenda = (await res.json()) as { id: number; title: string; content: string; deadline: string };
 
     await analyzeAndSubmitOpinion(runtime, agenda);
 
-    return { text: `안건 #${agendaId} "${agenda.title}"에 대한 분석과 의견 제출이 완료되었습니다.` };
+    return { text: `Analysis and opinion submission for agenda #${agendaId} "${agenda.title}" completed.` };
   },
   examples: [
     [
-      { user: "user", content: { text: "agenda #5 분석해줘" } },
-      { user: "agent", content: { text: "안건 #5에 대한 분석과 의견 제출이 완료되었습니다." } },
+      { user: "user", content: { text: "analyze agenda #5" } },
+      { user: "agent", content: { text: "Analysis and opinion submission for agenda #5 completed." } },
     ],
   ],
 };
@@ -240,7 +240,7 @@ const analyzeAgendaAction = {
 
 export const tokamakForumPlugin: Plugin = {
   name: "tokamak-forum",
-  description: "토카막 DAO 포럼 통합: 안건 웹훅 수신, 분석, 의견 제출",
+  description: "Tokamak DAO forum integration: receives agenda webhooks, analyzes, and submits opinions",
   routes: [webhookRoute],
   actions: [analyzeAgendaAction],
 };

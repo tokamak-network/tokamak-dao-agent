@@ -1,0 +1,27 @@
+{
+  "name": "govlens",
+  "version": "0.1.0",
+  "description": "Universal DAO governance analysis service",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot src/server.ts",
+    "build": "bun build src/server.ts --outdir dist --target bun",
+    "test": "bun test",
+    "db:migrate": "bun run src/db/migrate.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.7.0",
+    "viem": "^2.23.0",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "openai": "^4.77.0",
+    "postgres": "^3.4.5",
+    "bullmq": "^5.34.0",
+    "ioredis": "^5.4.2",
+    "nanoid": "^5.0.9"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "typescript": "^5.7.0"
+  }
+}

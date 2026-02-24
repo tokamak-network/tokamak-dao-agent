@@ -1,0 +1,22 @@
+{
+  "chainId": 11155111,
+  "deployer": "",
+  "contracts": {
+    "MockERC20Votes": "",
+    "MockGovernor": "",
+    "AIAgentRegistry": "",
+    "AIDelegation": "",
+    "RationaleCommitment": "",
+    "GovernorResolver": "",
+    "CredibilityRegistry": "",
+    "GovernorAIDelegation": ""
+  },
+  "config": {
+    "votingDelay": 1,
+    "votingPeriod": 100,
+    "quorum": "1000000000000000000",
+    "highConfidenceThreshold": 70,
+    "verdictPositiveThreshold": 1,
+    "deltas": [3, 1, -2, -1]
+  }
+}

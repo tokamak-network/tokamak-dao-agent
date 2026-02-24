@@ -1,0 +1,180 @@
+import { useState, useMemo, useEffect } from "react";
+import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { keccak256, encodePacked } from "viem";
+import { useDemo } from "../../../contexts/DemoContext";
+import { CONTRACTS } from "../../../config/contracts";
+import TxStatus from "../TxStatus";
+import { pushLog } from "../EventLog";
+
+export default function CommitRationaleStep() {
+  const { agentId, proposalId, completeStep, update } = useDemo();
+  const [rationaleURI, setRationaleURI] = useState("ipfs://QmDemoRationale");
+  const [confidence, setConfidence] = useState("85");
+  const [step, setStep] = useState<"commit" | "predict" | "done">("commit");
+
+  // Generate salt deterministically from agent + proposal (for demo simplicity)
+  const salt = useMemo(() => {
+    if (!agentId || proposalId === null) return null;
+    return keccak256(encodePacked(["string"], [`demo-salt-${agentId}-${proposalId}`]));
+  }, [agentId, proposalId]);
+
+  const commitHash = useMemo(() => {
+    if (!salt) return null;
+    return keccak256(encodePacked(["string", "bytes32"], [rationaleURI, salt]));
+  }, [rationaleURI, salt]);
+
+  // Commit tx
+  const {
+    writeContract: writeCommit,
+    data: commitTxHash,
+    isPending: commitPending,
+    error: commitError,
+  } = useWriteContract();
+  const { isLoading: commitConfirming, isSuccess: commitSuccess } = useWaitForTransactionReceipt({
+    hash: commitTxHash,
+  });
+
+  useEffect(() => {
+    if (commitSuccess) {
+      pushLog("RationaleCommitted", {
+        agentId: agentId!,
+        proposalId: proposalId!.toString(),
+        commitHash: commitHash!,
+      }, commitTxHash);
+      setStep("predict");
+    }
+  }, [commitSuccess]);
+
+  // Predict tx
+  const {
+    writeContract: writePredict,
+    data: predictTxHash,
+    isPending: predictPending,
+    error: predictError,
+  } = useWriteContract();
+  const { isLoading: predictConfirming, isSuccess: predictSuccess } = useWaitForTransactionReceipt({
+    hash: predictTxHash,
+  });
+
+  useEffect(() => {
+    if (predictSuccess) {
+      update({ rationaleURI, salt: salt!, commitHash: commitHash! });
+      completeStep(3);
+      pushLog("PredictionRecorded", {
+        agentId: agentId!,
+        proposalId: proposalId!.toString(),
+        verdict: "1 (For)",
+        confidence: confidence,
+      }, predictTxHash);
+      setStep("done");
+    }
+  }, [predictSuccess]);
+
+  const submitCommit = () => {
+    if (!agentId || proposalId === null || !commitHash) return;
+    writeCommit({
+      ...CONTRACTS.rationale,
+      functionName: "commitRationale",
+      args: [agentId, proposalId, commitHash],
+    });
+  };
+
+  const submitPredict = () => {
+    if (!agentId || proposalId === null) return;
+    writePredict({
+      ...CONTRACTS.credibility,
+      functionName: "recordPrediction",
+      args: [agentId, proposalId, 1, BigInt(confidence)], // 1 = For
+    });
+  };
+
+  return (
+    <div>
+      <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+        4. Commit Rationale + Predict
+      </h3>
+      <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: "1rem" }}>
+        Two transactions: (1) commit a hash of the rationale URI for tamper-proof integrity,
+        then (2) record a prediction with confidence score for credibility tracking.
+      </p>
+
+      <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
+        Rationale URI
+      </label>
+      <input
+        className="input"
+        value={rationaleURI}
+        onChange={(e) => setRationaleURI(e.target.value)}
+        disabled={step !== "commit"}
+        style={{ marginBottom: "0.75rem" }}
+      />
+
+      <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
+        Confidence (0-100)
+      </label>
+      <input
+        className="input"
+        type="number"
+        min="0"
+        max="100"
+        value={confidence}
+        onChange={(e) => setConfidence(e.target.value)}
+        disabled={step === "done"}
+        style={{ marginBottom: "0.75rem" }}
+      />
+
+      {/* Hash visualization */}
+      {commitHash && (
+        <div style={{
+          padding: "0.75rem",
+          background: "var(--bg-primary)",
+          border: "1px solid var(--border)",
+          borderRadius: "var(--radius)",
+          marginBottom: "1rem",
+          fontFamily: "var(--font-mono)",
+          fontSize: "0.75rem",
+        }}>
+          <div style={{ color: "var(--text-muted)", marginBottom: "0.25rem" }}>
+            keccak256(rationaleURI || salt):
+          </div>
+          <div style={{ color: "var(--accent-purple)", wordBreak: "break-all" }}>
+            {commitHash}
+          </div>
+          <div style={{ color: "var(--text-muted)", marginTop: "0.5rem" }}>Salt:</div>
+          <div style={{ color: "var(--text-secondary)", wordBreak: "break-all" }}>{salt}</div>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: "0.75rem" }}>
+        {step === "commit" && (
+          <button
+            className="btn btn-primary"
+            onClick={submitCommit}
+            disabled={!agentId || proposalId === null || commitPending || commitConfirming}
+          >
+            {commitPending ? "Signing..." : commitConfirming ? "Confirming..." : "1. Commit Hash"}
+          </button>
+        )}
+        {step === "predict" && (
+          <button
+            className="btn btn-primary"
+            onClick={submitPredict}
+            disabled={predictPending || predictConfirming}
+          >
+            {predictPending ? "Signing..." : predictConfirming ? "Confirming..." : "2. Record Prediction"}
+          </button>
+        )}
+        {step === "done" && (
+          <span className="badge badge-green">Both transactions confirmed</span>
+        )}
+      </div>
+
+      {step === "commit" && (
+        <TxStatus hash={commitTxHash} isPending={commitPending} isConfirming={commitConfirming} isSuccess={commitSuccess} error={commitError} />
+      )}
+      {step === "predict" && (
+        <TxStatus hash={predictTxHash} isPending={predictPending} isConfirming={predictConfirming} isSuccess={predictSuccess} error={predictError} />
+      )}
+    </div>
+  );
+}

@@ -2375,10 +2375,16 @@ body {
   font-size: 12px;
 }
 
-/* Translate button */
+/* Content action buttons row */
+.forum-content-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Translate / Copy button */
 .forum-translate-btn {
   display: inline-block;
-  margin-top: 8px;
   padding: 3px 10px;
   background: transparent;
   border: 1px solid var(--term-border);

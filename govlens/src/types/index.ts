@@ -259,14 +259,18 @@ export interface DelegationPreferences {
   principles: string[];
 }
 
-/** Off-chain evaluation result (pointed to by IEvaluationCommitment.evaluationURI) */
-export interface EvaluationJSON {
+/** Off-chain rationale result (pointed to by IRationaleCommitment.rationaleURI) */
+export interface RationaleJSON {
+  version: "1.0";
   proposalId: string;
   criterionScores: Record<string, { score: number; evidence: string; reasoning: string }>;
   lensResults: LensResult[];
   finalScore: number;
   verdict: QocVerdict;
 }
+
+/** @deprecated Use RationaleJSON instead */
+export type EvaluationJSON = RationaleJSON;
 
 /** On-chain agent delegation state (mirrors IAIDelegation.getAIDelegation return) */
 export interface OnChainDelegation {

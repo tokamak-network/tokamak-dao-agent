@@ -7,6 +7,11 @@ pragma solidity ^0.8.24;
 ///      - Expiry timestamps (delegations MUST NOT be permanent)
 ///      - Preference constraints via off-chain JSON URI
 ///      - Escalation mechanism for low-confidence decisions
+///
+///      Integration with ERC-5805:
+///      - Implementations MAY bridge to IVotes.delegate() internally
+///      - The agent's operator address SHOULD be usable as an IVotes delegatee
+///      - Existing Governor contracts require no modification
 interface IAIDelegation {
     /// @notice Emitted when a delegation to an AI agent is created
     event AIDelegationCreated(
@@ -20,7 +25,11 @@ interface IAIDelegation {
     event AIDelegationRevoked(bytes32 indexed delegationId);
 
     /// @notice Emitted when an agent escalates a decision to the human delegator
-    event Escalated(bytes32 indexed delegationId, uint256 indexed proposalId, string reason);
+    /// @dev The reasonURI points to a JSON document explaining the escalation.
+    ///      Escalation signals that the agent declines to vote on this proposal
+    ///      and returns the decision to the delegator. It does NOT cancel any
+    ///      previously cast vote. Off-chain systems SHOULD notify the delegator.
+    event Escalated(bytes32 indexed delegationId, uint256 indexed proposalId, string reasonURI);
 
     /// @notice Delegate voting power to an AI agent with constraints
     /// @param agentId Registered agent from IAIAgentRegistry
@@ -49,9 +58,11 @@ interface IAIDelegation {
     );
 
     /// @notice Agent escalates a decision to the human delegator
-    /// @dev Only callable by the agent's operator
+    /// @dev Only callable by the agent's operator.
+    ///      Escalation indicates the agent declines to vote on the given proposal
+    ///      and defers the decision back to the human delegator.
     /// @param delegationId The delegation under which this escalation occurs
     /// @param proposalId The proposal being escalated
-    /// @param reason Human-readable reason for escalation
-    function escalate(bytes32 delegationId, uint256 proposalId, string calldata reason) external;
+    /// @param reasonURI URI to a JSON document explaining the escalation reason (ERC-4824 pattern)
+    function escalate(bytes32 delegationId, uint256 proposalId, string calldata reasonURI) external;
 }

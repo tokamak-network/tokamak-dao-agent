@@ -1,6 +1,6 @@
 ---
 title: AI Agent Governance Interface
-description: Interfaces for AI agent registration, delegation, evaluation commitment, and credibility tracking in DAOs
+description: Interfaces for AI agent registration, delegation, rationale commitment, and credibility tracking in DAOs
 author: Tokamak Network (@nicetokamak)
 discussions-to: https://ethereum-magicians.org/t/erc-ai-agent-governance-interface
 status: Draft
@@ -12,20 +12,25 @@ requires: 5805, 4824
 
 ## Abstract
 
-This ERC defines four Solidity interfaces that enable AI agents to participate in DAO governance transparently and accountably:
+This ERC defines a modular set of Solidity interfaces that enable AI agents to participate in DAO governance transparently and accountably. The interfaces are organized into two tiers:
+
+**Core (MUST implement):**
 
 1. **`IAIAgentRegistry`** — On-chain registration of AI agents with off-chain metadata
 2. **`IAIDelegation`** — Preference-based voting delegation to AI agents with expiry and escalation
-3. **`IEvaluationCommitment`** — Commit-reveal scheme for tamper-proof proposal evaluations
+
+**Extensions (MAY implement):**
+
+3. **`IRationaleCommitment`** — Commit-reveal scheme for tamper-proof proposal rationales
 4. **`ICredibilityRegistry`** — Cross-DAO credibility tracking based on prediction accuracy
 
-Together, these interfaces provide the minimal on-chain primitives needed for any DAO to integrate AI agents as governance participants while preserving human oversight, transparency, and accountability.
+Together, these interfaces provide the minimal on-chain primitives needed for any DAO to integrate AI agents as governance participants while preserving human oversight, transparency, and accountability. The core interfaces enable agent identity and delegation; the extensions add integrity guarantees and reputation tracking.
 
 ## Motivation
 
 ### The Attention Bottleneck in DAO Governance
 
-DAOs suffer from chronic voter apathy. Most token holders lack the time or expertise to evaluate every proposal, leading to low participation rates and governance capture by small, active minorities. AI agents can bridge this gap by analyzing proposals, providing evaluations, and voting on behalf of delegators — but only if their participation is transparent and accountable.
+DAOs suffer from chronic voter apathy. Most token holders lack the time or expertise to evaluate every proposal, leading to low participation rates and governance capture by small, active minorities. AI agents can bridge this gap by analyzing proposals, providing rationales, and voting on behalf of delegators — but only if their participation is transparent and accountable.
 
 ### Current Problems
 
@@ -33,7 +38,7 @@ DAOs suffer from chronic voter apathy. Most token holders lack the time or exper
 
 2. **ERC-5805 delegation lacks AI-specific constraints.** `delegate(address)` is permanent and unconditional. Delegating to an AI agent requires expiry (delegation MUST NOT be permanent), preference constraints (the delegator's values and risk tolerance), and escalation (the agent should defer to the human on low-confidence decisions).
 
-3. **No evaluation integrity guarantees.** AI agents can observe voting outcomes and retroactively fabricate evaluations that appear prescient. Without a commit-reveal mechanism, there is no way to verify that an evaluation was formed independently.
+3. **No rationale integrity guarantees.** AI agents can observe voting outcomes and retroactively fabricate rationales that appear prescient. Without a commit-reveal mechanism, there is no way to verify that a rationale was formed independently.
 
 4. **No cross-DAO reputation.** An AI agent that consistently makes accurate predictions in one DAO has no portable credibility. Each DAO treats every agent as a blank slate, preventing informed delegation decisions.
 
@@ -47,7 +52,7 @@ DAOs suffer from chronic voter apathy. Most token holders lack the time or exper
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119 and RFC 8174.
 
-### Interface: `IAIAgentRegistry`
+### Core Interface: `IAIAgentRegistry`
 
 Provides on-chain registration and lifecycle management for AI agents.
 
@@ -87,10 +92,10 @@ interface IAIAgentRegistry {
 - `registerAgent` MUST return a deterministic `agentId` derived from `msg.sender` and a nonce.
 - `registerAgent` MUST revert if `metadataURI` is empty.
 - `updateAgent` and `deactivateAgent` MUST revert if called by any address other than the agent's operator.
-- `agentURI` MUST point to a JSON document conforming to the AgentProfile schema defined in this ERC.
+- `agentURI` SHOULD point to a JSON document conforming to the AgentProfile schema defined in this ERC.
 - `isActiveAgent` MUST return `false` for unregistered agent IDs.
 
-### Interface: `IAIDelegation`
+### Core Interface: `IAIDelegation`
 
 Extends the concept of ERC-5805 delegation with AI-specific constraints.
 
@@ -106,7 +111,7 @@ interface IAIDelegation {
         uint256 expiry
     );
     event AIDelegationRevoked(bytes32 indexed delegationId);
-    event Escalated(bytes32 indexed delegationId, uint256 indexed proposalId, string reason);
+    event Escalated(bytes32 indexed delegationId, uint256 indexed proposalId, string reasonURI);
 
     /// @notice Delegate voting power to an AI agent with constraints
     /// @param agentId Registered agent from IAIAgentRegistry
@@ -129,7 +134,8 @@ interface IAIDelegation {
     );
 
     /// @notice Agent escalates a decision to the human delegator
-    function escalate(bytes32 delegationId, uint256 proposalId, string calldata reason) external;
+    /// @param reasonURI URI to a JSON document explaining the escalation
+    function escalate(bytes32 delegationId, uint256 proposalId, string calldata reasonURI) external;
 }
 ```
 
@@ -142,41 +148,42 @@ interface IAIDelegation {
 - `getAIDelegation` MUST return zero values if the delegation has expired or been revoked.
 - `escalate` MUST only be callable by the agent's operator (as registered in `IAIAgentRegistry`).
 - `escalate` MUST emit the `Escalated` event. Off-chain systems SHOULD notify the human delegator.
+- Escalation signals that the agent declines to vote on a specific proposal and returns the decision to the delegator. Escalation does NOT cancel any previously cast vote. It SHOULD be interpreted as a signal for the delegator to vote directly on future proposals.
 
-### Interface: `IEvaluationCommitment`
+### Extension Interface: `IRationaleCommitment`
 
-Implements a commit-reveal scheme for AI agent evaluations.
+Implements a commit-reveal scheme for AI agent rationales. This extension is OPTIONAL — implementations MAY deploy it alongside the core interfaces for additional transparency.
 
 ```solidity
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-interface IEvaluationCommitment {
-    event EvaluationCommitted(
+interface IRationaleCommitment {
+    event RationaleCommitted(
         bytes32 indexed agentId,
         uint256 indexed proposalId,
         bytes32 commitHash,
         uint256 timestamp
     );
-    event EvaluationRevealed(
+    event RationaleRevealed(
         bytes32 indexed agentId,
         uint256 indexed proposalId,
-        string evaluationURI
+        string rationaleURI
     );
 
-    /// @notice Commit evaluation hash before voting ends
-    /// @param commitHash keccak256(abi.encodePacked(evaluationURI, salt))
-    function commitEvaluation(
+    /// @notice Commit rationale hash before voting ends
+    /// @param commitHash keccak256(abi.encodePacked(rationaleURI, salt))
+    function commitRationale(
         bytes32 agentId,
         uint256 proposalId,
         bytes32 commitHash
     ) external;
 
-    /// @notice Reveal evaluation after voting ends
-    function revealEvaluation(
+    /// @notice Reveal rationale after voting ends
+    function revealRationale(
         bytes32 agentId,
         uint256 proposalId,
-        string calldata evaluationURI,
+        string calldata rationaleURI,
         bytes32 salt
     ) external;
 
@@ -184,22 +191,22 @@ interface IEvaluationCommitment {
     function getCommitment(bytes32 agentId, uint256 proposalId)
         external view returns (bytes32 commitHash, uint256 timestamp);
 
-    /// @notice Check if an evaluation has been revealed
+    /// @notice Check if a rationale has been revealed
     function isRevealed(bytes32 agentId, uint256 proposalId) external view returns (bool);
 }
 ```
 
 **Requirements:**
 
-- `commitEvaluation` MUST only be callable by the agent's operator.
-- `commitEvaluation` MUST revert if a commitment already exists for the same (agentId, proposalId) pair.
-- `revealEvaluation` MUST verify that `keccak256(abi.encodePacked(evaluationURI, salt))` equals the committed hash.
-- `revealEvaluation` MUST revert if no commitment exists or if the evaluation has already been revealed.
+- `commitRationale` MUST only be callable by the agent's operator.
+- `commitRationale` MUST revert if a commitment already exists for the same (agentId, proposalId) pair.
+- `revealRationale` MUST verify that `keccak256(abi.encodePacked(rationaleURI, salt))` equals the committed hash.
+- `revealRationale` MUST revert if no commitment exists or if the rationale has already been revealed.
 - Implementations SHOULD enforce that commitments are made before the proposal's voting period ends and reveals after.
 
-### Interface: `ICredibilityRegistry`
+### Extension Interface: `ICredibilityRegistry`
 
-Tracks AI agent prediction accuracy across DAOs.
+Tracks AI agent prediction accuracy across DAOs. This extension is OPTIONAL — implementations MAY deploy it for cross-DAO reputation tracking.
 
 ```solidity
 // SPDX-License-Identifier: CC0-1.0
@@ -219,7 +226,7 @@ interface ICredibilityRegistry {
     );
 
     /// @notice Record agent's prediction for a proposal
-    /// @param verdict 0=REJECT, 1=ABSTAIN, 2=NEEDS_REVIEW, 3=APPROVE
+    /// @param verdict Application-defined verdict value
     /// @param score Confidence score 0-100
     function recordPrediction(
         bytes32 agentId,
@@ -229,6 +236,7 @@ interface ICredibilityRegistry {
     ) external;
 
     /// @notice Resolve prediction against actual outcome
+    /// @dev MUST only be callable by a designated resolver, NOT the agent operator
     /// @param actualOutcome 0=negative, 1=positive
     function resolvePrediction(
         bytes32 agentId,
@@ -249,24 +257,29 @@ interface ICredibilityRegistry {
 **Requirements:**
 
 - `recordPrediction` MUST only be callable by the agent's operator.
-- `recordPrediction` MUST revert if `verdict > 3` or `score > 100`.
+- `recordPrediction` MUST revert if `score > 100`.
 - `recordPrediction` MUST revert if a prediction already exists for the same (agentId, proposalId) pair.
-- `resolvePrediction` MUST compute the credibility delta according to the following matrix:
-
-| Confidence | Correct | Delta |
-|-----------|---------|-------|
-| High (score >= 70 or score <= 30) | Yes | +3 |
-| Low (30 < score < 70) | Yes | +1 |
-| High | No | -2 |
-| Low | No | -1 |
-
-- Verdict direction: `APPROVE` (3) and `NEEDS_REVIEW` (2) are "positive"; `REJECT` (0) and `ABSTAIN` (1) are "negative".
-- A prediction is "correct" if the verdict direction matches the actual outcome direction.
+- `resolvePrediction` MUST only be callable by a designated resolver, NOT the agent's operator. This separation prevents agents from self-reporting favorable outcomes.
 - `getCredibility` MUST return cumulative scores across all resolved predictions.
+
+**Behavioral Properties (SHOULD):**
+
+Implementations SHOULD satisfy the following behavioral properties for credibility delta computation:
+
+- High-confidence correct predictions SHOULD yield greater reward than low-confidence correct predictions.
+- High-confidence incorrect predictions SHOULD yield greater penalty than low-confidence incorrect predictions.
+
+These properties incentivize agents to express honest confidence levels. The reference implementation provides a configurable delta matrix satisfying these properties.
+
+**Verdict Encoding (RECOMMENDED):**
+
+Verdict values are application-defined (`uint8`). Implementations following the Governor convention SHOULD use: `0=Against`, `1=For`, `2=Abstain` (matching `IGovernor.VoteType`). Implementations MAY define additional verdict values for richer semantics (e.g., `3=NeedsReview`).
 
 ### Off-Chain Metadata Schemas
 
 The following JSON schemas define the off-chain data referenced by on-chain URIs. These follow the pattern established by ERC-4824's `daoURI`.
+
+Implementations SHOULD conform to these schemas. Implementations MAY extend them with additional fields. All schemas include a `version` field for future compatibility.
 
 #### AgentProfile JSON
 
@@ -276,31 +289,16 @@ Referenced by `IAIAgentRegistry.agentURI()`.
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["name", "version", "type", "model", "operator"],
+  "required": ["version", "name", "model", "operator"],
   "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version"
+    },
     "name": {
       "type": "string",
       "description": "Human-readable agent name"
-    },
-    "version": {
-      "type": "string",
-      "description": "Semantic version of the agent"
-    },
-    "type": {
-      "type": "string",
-      "enum": ["criterion", "meta", "delegate"],
-      "description": "Agent role: criterion evaluator, meta-analyst, or delegate voter"
-    },
-    "criterionId": {
-      "type": "string",
-      "description": "For criterion agents, the criterion they evaluate"
-    },
-    "stakeholder": {
-      "type": "object",
-      "properties": {
-        "type": { "type": "string" },
-        "perspective": { "type": "string" }
-      }
     },
     "model": {
       "type": "string",
@@ -309,6 +307,10 @@ Referenced by `IAIAgentRegistry.agentURI()`.
     "operator": {
       "type": "string",
       "description": "Organization or individual operating this agent"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the agent's purpose and methodology"
     }
   }
 }
@@ -322,12 +324,12 @@ Referenced by `IAIDelegation.delegateToAgent()` via `preferencesURI`.
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["criterionWeights", "riskTolerance"],
+  "required": ["version", "riskTolerance"],
   "properties": {
-    "criterionWeights": {
-      "type": "object",
-      "description": "Map of criterionId → weight (0-100, sum should be 100)",
-      "additionalProperties": { "type": "number" }
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version"
     },
     "riskTolerance": {
       "type": "string",
@@ -356,45 +358,40 @@ Referenced by `IAIDelegation.delegateToAgent()` via `preferencesURI`.
 }
 ```
 
-#### Evaluation JSON
+#### Rationale JSON
 
-Referenced by `IEvaluationCommitment.revealEvaluation()` via `evaluationURI`.
+Referenced by `IRationaleCommitment.revealRationale()` via `rationaleURI`.
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["proposalId", "criterionScores", "finalScore", "verdict"],
+  "required": ["version", "proposalId", "verdict"],
   "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version"
+    },
     "proposalId": { "type": "string" },
-    "criterionScores": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "object",
-        "required": ["score", "evidence", "reasoning"],
-        "properties": {
-          "score": { "type": "number", "minimum": 0, "maximum": 100 },
-          "evidence": { "type": "string" },
-          "reasoning": { "type": "string" }
-        }
-      }
-    },
-    "lensResults": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "lensId": { "type": "string" },
-          "lensName": { "type": "string" },
-          "weightedScore": { "type": "number" },
-          "verdict": { "type": "string", "enum": ["APPROVE", "NEEDS_REVIEW", "ABSTAIN", "REJECT"] }
-        }
-      }
-    },
-    "finalScore": { "type": "number", "minimum": 0, "maximum": 100 },
     "verdict": {
       "type": "string",
-      "enum": ["APPROVE", "NEEDS_REVIEW", "ABSTAIN", "REJECT"]
+      "description": "The agent's verdict. Values are application-defined."
+    },
+    "reasoning": {
+      "type": "string",
+      "description": "Human-readable explanation of the agent's decision"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Confidence score for this evaluation"
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Supporting evidence or references"
     }
   }
 }
@@ -418,25 +415,44 @@ ERC-5805's `delegate(address delegatee)` signature is too simple for AI delegati
 - **Preferences**: A human delegates with intent ("I care about security and fiscal conservatism"). `delegate(address)` cannot express this.
 - **Escalation**: The agent must be able to defer decisions back to the human. This requires a dedicated on-chain event that off-chain systems can index.
 
-We define `IAIDelegation` as a separate interface rather than extending `IVotes` to avoid breaking existing governor contracts. Implementations MAY bridge the two by having `delegateToAgent` internally call `delegate()`.
+We define `IAIDelegation` as a separate interface rather than extending `IVotes` to avoid breaking existing governor contracts. Implementations MAY bridge the two internally:
+- `delegateToAgent()` MAY internally call `IVotes.delegate()` using the agent's operator address as the delegatee.
+- The agent's operator address SHOULD be usable as an `IVotes` delegatee.
+- Existing Governor contracts require no modification to work with this ERC.
 
-### Why commit-reveal for evaluations?
+### Why Core + Extension architecture?
+
+The four interfaces address distinct concerns at different adoption levels:
+- **Core**: Agent identity and delegation are fundamental — any DAO integrating AI agents needs both.
+- **Extensions**: Commit-reveal and credibility are valuable but not universally required. A small DAO may trust its agents without formal credibility tracking. A private DAO may not need commit-reveal.
+
+This separation follows the pattern of ERC-20 (core) + ERC-2612 (permit extension) and enables incremental adoption.
+
+### Why commit-reveal for rationales?
 
 Without commit-reveal, an agent can:
 1. Wait for the voting outcome.
-2. Generate an evaluation that matches the outcome.
+2. Generate a rationale that matches the outcome.
 3. Claim prescience to build false credibility.
 
-The commit-reveal pattern in `IEvaluationCommitment` prevents this by requiring the evaluation hash to be committed before the outcome is known. The salt prevents rainbow table attacks against the hash.
+The commit-reveal pattern in `IRationaleCommitment` prevents this by requiring the rationale hash to be committed before the outcome is known. The salt prevents rainbow table attacks against the hash.
 
-### Why an asymmetric credibility delta?
+### Why behavioral properties instead of a fixed delta matrix?
 
-The delta matrix `(+3, +1, -2, -1)` is deliberately asymmetric:
-- **High-confidence correct predictions (+3)** deserve strong reward because they demonstrate genuine analytical capability.
-- **High-confidence wrong predictions (-2)** are penalized more than low-confidence wrong predictions (-1) because confident mistakes are more damaging to delegators.
-- The asymmetry incentivizes agents to express honest confidence levels rather than always hedging.
+A successful ERC defines *what* (interfaces) not *how* (algorithms). Just as ERC-4626 specifies rounding direction without prescribing yield formulas, this ERC specifies behavioral properties for credibility deltas without prescribing specific values:
 
-This matrix is codified as a MUST in the specification to ensure cross-DAO credibility scores are comparable.
+- "High confidence + correct > low confidence + correct" (SHOULD)
+- "High confidence + wrong penalty > low confidence + wrong penalty" (SHOULD)
+
+This allows different DAOs to calibrate their credibility systems while ensuring cross-DAO comparability at the interface level. The reference implementation provides a configurable default (`+3/+1/-2/-1`).
+
+### Why a separate resolver role for credibility?
+
+If the agent's operator can both record predictions and resolve outcomes, they can trivially game credibility scores by reporting favorable outcomes. The resolver role separation follows the oracle pattern — the entity determining truth must be independent of the entity being evaluated.
+
+### Why `reasonURI` instead of `string reason`?
+
+Following the ERC-4824 pattern, escalation reasons are referenced via URI rather than stored on-chain as strings. This reduces gas costs (a URI is typically ~50 bytes vs. potentially kilobytes of explanation) while enabling rich off-chain content including structured JSON.
 
 ### Why `bytes32` agent IDs instead of addresses?
 
@@ -449,8 +465,11 @@ This matrix is codified as a MUST in the specification to ensure cross-DAO credi
 ### ERC-5805 (Voting with Delegation)
 
 This ERC is complementary to ERC-5805, not a replacement. `IAIDelegation` operates alongside `IVotes`:
+
 - Implementations MAY internally call `IVotes.delegate()` when `delegateToAgent()` is called, bridging AI delegation into existing governor contracts.
+- The agent's operator address SHOULD be usable as an `IVotes` delegatee. This allows the agent to cast votes through the standard Governor flow without any Governor contract modifications.
 - Existing governor contracts continue to function without modification.
+- `revokeDelegation()` SHOULD also revoke the underlying `IVotes` delegation if bridging is used.
 
 ### ERC-4824 (Common Interfaces for DAOs)
 
@@ -458,23 +477,28 @@ This ERC follows the URI pattern established by ERC-4824:
 - `agentURI` follows the same model as `daoURI`.
 - Off-chain metadata schemas use JSON following the ERC-4824 convention.
 - A DAO's `daoURI` MAY include references to its registered AI agents.
+- `reasonURI` in `escalate()` follows the same content-addressed URI pattern.
 
 ### ERC-1202 (Voting Interface)
 
 `ICredibilityRegistry` does not modify the voting interface but adds a transparency layer:
 - AI agents' predictions are recorded alongside their votes.
-- Post-resolution, anyone can verify whether the agent's evaluation matched the outcome.
+- Post-resolution, anyone can verify whether the agent's rationale matched the outcome.
 
 ## Reference Implementation
 
 A complete reference implementation is provided in the `contracts/src/governance/` directory:
 
 - `AIAgentRegistry.sol` — Agent registration with deterministic IDs
-- `AIDelegation.sol` — Delegation with expiry, auto-revocation, and escalation
-- `EvaluationCommitment.sol` — Commit-reveal with hash verification
-- `CredibilityRegistry.sol` — Prediction recording and delta computation
+- `AIDelegation.sol` — Delegation with expiry, auto-revocation, and escalation via URI
+- `RationaleCommitment.sol` — Commit-reveal with hash verification
+- `CredibilityRegistry.sol` — Prediction recording with configurable delta computation and resolver role separation
 
-The off-chain components (evaluation engine, aggregation, credibility tracking) are implemented in the GovLens project as pure TypeScript functions that produce the JSON schemas defined in this ERC.
+The `CredibilityRegistry` reference implementation accepts constructor parameters for:
+- **Delta values**: Configurable `[highConfCorrect, lowConfCorrect, highConfWrong, lowConfWrong]` (default: `[+3, +1, -2, -1]`)
+- **Confidence threshold**: Score value that separates high/low confidence (default: 70)
+- **Verdict threshold**: Verdict value above which predictions are considered "positive direction" (default: 1, matching Governor's `For`)
+- **Resolver address**: Independent address authorized to resolve predictions
 
 ## Security Considerations
 
@@ -485,26 +509,30 @@ Multiple AI agents operated by the same entity could coordinate to manipulate cr
 - Implementations SHOULD consider weighting credibility by operator diversity.
 - Governance frameworks SHOULD set maximum voting power caps for AI-delegated votes.
 
-### Oracle Manipulation
+### Oracle Manipulation (Resolver Compromise)
 
-`ICredibilityRegistry.resolvePrediction()` requires an `actualOutcome` parameter. If the resolver is compromised, credibility scores become meaningless. Mitigations:
-- Implementations SHOULD restrict resolution to a trusted oracle or governance multisig.
-- Resolved outcomes SHOULD be verifiable against on-chain proposal state (e.g., `IGovernor.state()`).
+`ICredibilityRegistry.resolvePrediction()` requires a designated resolver address. If the resolver is compromised, credibility scores become meaningless. Mitigations:
+- The resolver MUST be separate from agent operators (enforced at the interface level).
+- Implementations SHOULD use a trusted oracle, governance multisig, or on-chain proposal state (e.g., `IGovernor.state()`) for resolution.
 - A time-delayed resolution with a challenge period is RECOMMENDED for high-stakes DAOs.
+
+### Self-Resolution Prevention
+
+Agent operators MUST NOT be able to resolve their own predictions. The `ICredibilityRegistry` specification requires that `resolvePrediction` is callable only by a designated resolver. This prevents agents from reporting favorable outcomes to inflate their credibility.
 
 ### Metadata Integrity
 
-`agentURI`, `preferencesURI`, and `evaluationURI` point to off-chain data that can be modified after the on-chain reference is set. Mitigations:
+`agentURI`, `preferencesURI`, and `rationaleURI` point to off-chain data that can be modified after the on-chain reference is set. Mitigations:
 - Content-addressed URIs (IPFS, Arweave) are RECOMMENDED over mutable HTTP URIs.
-- `IEvaluationCommitment`'s commit-reveal ensures evaluation content is fixed at commit time.
+- `IRationaleCommitment`'s commit-reveal ensures rationale content is fixed at commit time.
 - Implementations MAY store a content hash on-chain alongside the URI.
 
 ### Privacy Concerns
 
-Agent evaluations may reveal proprietary analysis methods. Mitigations:
+Agent rationales may reveal proprietary analysis methods. Mitigations:
 - The commit-reveal pattern delays full disclosure until after voting ends.
-- Agents MAY omit internal reasoning from the evaluation JSON, including only scores and evidence summaries.
-- Zero-knowledge proofs for evaluation verification are a potential future extension.
+- Agents MAY omit internal reasoning from the rationale JSON, including only verdicts and evidence summaries.
+- Zero-knowledge proofs for rationale verification are a potential future extension.
 
 ### Credibility Gaming
 

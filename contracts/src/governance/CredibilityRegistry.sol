@@ -6,16 +6,21 @@ import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
 /// @title CredibilityRegistry
 /// @notice Reference implementation of ICredibilityRegistry.
-/// @dev Credibility delta matrix (mirrors GovLens off-chain logic):
-///      - High confidence (score >= 70 or <= 30) + correct = +3
-///      - Low confidence  (30 < score < 70)      + correct = +1
-///      - High confidence + wrong = -2
-///      - Low confidence  + wrong = -1
-///      Verdict direction: APPROVE/NEEDS_REVIEW → positive, REJECT/ABSTAIN → negative
+/// @dev Credibility deltas are configurable via constructor:
+///      - highConfCorrect:  reward for high-confidence correct prediction (default +3)
+///      - lowConfCorrect:   reward for low-confidence correct prediction (default +1)
+///      - highConfWrong:    penalty for high-confidence incorrect prediction (default -2)
+///      - lowConfWrong:     penalty for low-confidence incorrect prediction (default -1)
+///
+///      Resolution is restricted to a designated resolver address (not the agent operator)
+///      to prevent agents from self-reporting favorable outcomes.
+///
+///      Verdict values are not restricted to a fixed range. The implementation treats
+///      verdict >= verdictPositiveThreshold as "positive direction" for correctness checks.
 contract CredibilityRegistry is ICredibilityRegistry {
     struct Prediction {
-        uint8 verdict;      // 0=REJECT, 1=ABSTAIN, 2=NEEDS_REVIEW, 3=APPROVE
-        uint256 score;      // 0-100
+        uint8 verdict;
+        uint256 score;
         bool exists;
         bool resolved;
         int8 delta;
@@ -26,7 +31,24 @@ contract CredibilityRegistry is ICredibilityRegistry {
         uint256 totalPredictions;
     }
 
+    struct DeltaConfig {
+        int8 highConfCorrect;
+        int8 lowConfCorrect;
+        int8 highConfWrong;
+        int8 lowConfWrong;
+    }
+
     IAIAgentRegistry public immutable registry;
+    address public immutable resolver;
+
+    /// @notice Confidence threshold: score >= highConfThreshold is high confidence
+    uint256 public immutable highConfThreshold;
+
+    /// @notice Verdict threshold: verdict >= this value is considered "positive direction"
+    uint8 public immutable verdictPositiveThreshold;
+
+    /// @notice Delta configuration
+    DeltaConfig public deltaConfig;
 
     /// @notice (agentId, proposalId) → Prediction
     mapping(bytes32 => mapping(uint256 => Prediction)) internal _predictions;
@@ -35,21 +57,50 @@ contract CredibilityRegistry is ICredibilityRegistry {
     mapping(bytes32 => AgentCredibility) internal _credibility;
 
     error NotAgentOperator(bytes32 agentId, address caller);
+    error NotResolver(address caller);
     error AgentNotActive(bytes32 agentId);
     error PredictionExists(bytes32 agentId, uint256 proposalId);
     error PredictionNotFound(bytes32 agentId, uint256 proposalId);
     error AlreadyResolved(bytes32 agentId, uint256 proposalId);
-    error InvalidVerdict(uint8 verdict);
     error InvalidScore(uint256 score);
     error InvalidOutcome(uint8 outcome);
+    error InvalidDeltaConfig();
 
-    constructor(address _registry) {
+    /// @param _registry Address of the IAIAgentRegistry
+    /// @param _resolver Address authorized to resolve predictions
+    /// @param _highConfThreshold Score threshold for high confidence (default: 70)
+    /// @param _verdictPositiveThreshold Verdict values >= this are "positive" (default: 1 for Governor-compatible)
+    /// @param _deltas Delta values [highConfCorrect, lowConfCorrect, highConfWrong, lowConfWrong]
+    constructor(
+        address _registry,
+        address _resolver,
+        uint256 _highConfThreshold,
+        uint8 _verdictPositiveThreshold,
+        int8[4] memory _deltas
+    ) {
+        if (_deltas[0] <= _deltas[1]) revert InvalidDeltaConfig(); // highConfCorrect > lowConfCorrect
+        if (_deltas[2] > _deltas[3]) revert InvalidDeltaConfig();  // highConfWrong <= lowConfWrong (more negative = harsher penalty)
+
         registry = IAIAgentRegistry(_registry);
+        resolver = _resolver;
+        highConfThreshold = _highConfThreshold;
+        verdictPositiveThreshold = _verdictPositiveThreshold;
+        deltaConfig = DeltaConfig({
+            highConfCorrect: _deltas[0],
+            lowConfCorrect: _deltas[1],
+            highConfWrong: _deltas[2],
+            lowConfWrong: _deltas[3]
+        });
     }
 
     modifier onlyAgentOperator(bytes32 agentId) {
         address operator = registry.agentOperator(agentId);
         if (msg.sender != operator) revert NotAgentOperator(agentId, msg.sender);
+        _;
+    }
+
+    modifier onlyResolver() {
+        if (msg.sender != resolver) revert NotResolver(msg.sender);
         _;
     }
 
@@ -61,7 +112,6 @@ contract CredibilityRegistry is ICredibilityRegistry {
         uint256 score
     ) external onlyAgentOperator(agentId) {
         if (!registry.isActiveAgent(agentId)) revert AgentNotActive(agentId);
-        if (verdict > 3) revert InvalidVerdict(verdict);
         if (score > 100) revert InvalidScore(score);
         if (_predictions[agentId][proposalId].exists) revert PredictionExists(agentId, proposalId);
 
@@ -81,7 +131,7 @@ contract CredibilityRegistry is ICredibilityRegistry {
         bytes32 agentId,
         uint256 proposalId,
         uint8 actualOutcome
-    ) external onlyAgentOperator(agentId) {
+    ) external onlyResolver {
         if (actualOutcome > 1) revert InvalidOutcome(actualOutcome);
 
         Prediction storage p = _predictions[agentId][proposalId];
@@ -115,23 +165,21 @@ contract CredibilityRegistry is ICredibilityRegistry {
         return (p.verdict, p.score, p.resolved, p.delta);
     }
 
-    /// @dev Compute credibility delta matching GovLens off-chain logic
-    ///      High confidence: score >= 70 OR score <= 30
-    ///      Verdict direction: APPROVE(3)/NEEDS_REVIEW(2) → positive, others → negative
-    function _computeDelta(uint8 verdict, uint256 score, uint8 actualOutcome) internal pure returns (int8) {
-        bool highConf = score >= 70 || score <= 30;
+    /// @dev Compute credibility delta using configurable parameters
+    ///      High confidence: score >= highConfThreshold OR score <= (100 - highConfThreshold)
+    ///      Verdict direction: verdict >= verdictPositiveThreshold → positive
+    function _computeDelta(uint8 verdict, uint256 score, uint8 actualOutcome) internal view returns (int8) {
+        bool highConf = score >= highConfThreshold || score <= (100 - highConfThreshold);
 
-        // Verdict direction: APPROVE(3) and NEEDS_REVIEW(2) are "positive"
-        bool predictedPositive = verdict >= 2;
-
-        // Actual outcome: 1 = positive, 0 = negative
+        bool predictedPositive = verdict >= verdictPositiveThreshold;
         bool actualPositive = actualOutcome == 1;
-
         bool correct = predictedPositive == actualPositive;
 
-        if (correct && highConf) return 3;
-        if (correct && !highConf) return 1;
-        if (!correct && highConf) return -2;
-        return -1;
+        DeltaConfig memory d = deltaConfig;
+
+        if (correct && highConf) return d.highConfCorrect;
+        if (correct && !highConf) return d.lowConfCorrect;
+        if (!correct && highConf) return d.highConfWrong;
+        return d.lowConfWrong;
     }
 }

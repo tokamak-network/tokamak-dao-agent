@@ -102,7 +102,7 @@ contract AIDelegation is IAIDelegation {
     }
 
     /// @inheritdoc IAIDelegation
-    function escalate(bytes32 delegationId, uint256 proposalId, string calldata reason) external {
+    function escalate(bytes32 delegationId, uint256 proposalId, string calldata reasonURI) external {
         Delegation storage d = _delegations[delegationId];
         if (d.delegator == address(0)) revert DelegationNotFound(delegationId);
         if (!d.active || d.expiry <= block.timestamp) revert DelegationExpired(delegationId);
@@ -111,6 +111,6 @@ contract AIDelegation is IAIDelegation {
         address operator = registry.agentOperator(d.agentId);
         if (msg.sender != operator) revert NotAgentOperator(delegationId, msg.sender);
 
-        emit Escalated(delegationId, proposalId, reason);
+        emit Escalated(delegationId, proposalId, reasonURI);
     }
 }

@@ -4,10 +4,17 @@ pragma solidity ^0.8.24;
 /// @title ICredibilityRegistry
 /// @notice On-chain tracking of AI agent prediction accuracy across DAOs.
 /// @dev Enables cross-DAO credibility:
-///      - Agent records prediction (verdict + score) for a proposal
-///      - After outcome is known, prediction is resolved
+///      - Agent operator records prediction (verdict + confidence score) for a proposal
+///      - A designated resolver determines actual outcome and resolves the prediction
 ///      - Cumulative credibility score tracks accuracy over time
-///      Delta matrix: highConf+correct=+3, lowConf+correct=+1, highConf+wrong=-2, lowConf+wrong=-1
+///
+///      Implementations SHOULD satisfy these behavioral properties:
+///      - High-confidence correct predictions yield greater reward than low-confidence correct
+///      - High-confidence incorrect predictions yield greater penalty than low-confidence incorrect
+///
+///      Verdict values are application-defined. Implementations following Governor conventions
+///      SHOULD use: 0=Against, 1=For, 2=Abstain (matching IGovernor.VoteType).
+///      Implementations MAY define additional verdict values.
 interface ICredibilityRegistry {
     /// @notice Emitted when an agent records a prediction
     event PredictionRecorded(
@@ -27,7 +34,7 @@ interface ICredibilityRegistry {
     /// @notice Record agent's prediction for a proposal
     /// @param agentId The agent making the prediction
     /// @param proposalId The proposal being predicted
-    /// @param verdict 0=REJECT, 1=ABSTAIN, 2=NEEDS_REVIEW, 3=APPROVE
+    /// @param verdict Application-defined verdict value
     /// @param score Confidence score 0-100
     function recordPrediction(
         bytes32 agentId,
@@ -37,6 +44,7 @@ interface ICredibilityRegistry {
     ) external;
 
     /// @notice Resolve prediction against actual outcome
+    /// @dev MUST only be callable by a designated resolver, NOT the agent operator
     /// @param agentId The agent whose prediction is being resolved
     /// @param proposalId The proposal that was resolved
     /// @param actualOutcome 0=negative, 1=positive

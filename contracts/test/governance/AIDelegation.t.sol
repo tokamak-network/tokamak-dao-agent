@@ -27,7 +27,7 @@ contract AIDelegationTest is Test {
 
     event AIDelegationCreated(address indexed delegator, bytes32 indexed agentId, bytes32 delegationId, uint256 expiry);
     event AIDelegationRevoked(bytes32 indexed delegationId);
-    event Escalated(bytes32 indexed delegationId, uint256 indexed proposalId, string reason);
+    event Escalated(bytes32 indexed delegationId, uint256 indexed proposalId, string reasonURI);
 
     function setUp() public {
         registry = new AIAgentRegistry();
@@ -146,17 +146,19 @@ contract AIDelegationTest is Test {
         assertEq(retAgent, bytes32(0));
     }
 
-    // ─── Escalation ───
+    // ─── Escalation (now uses reasonURI) ───
 
     function test_escalate_success() public {
         vm.prank(delegator1);
         bytes32 delegationId = delegation.delegateToAgent(agentId, expiry, PREFS_URI);
 
+        string memory reasonURI = "ipfs://QmEscalationReason1";
+
         vm.expectEmit(true, true, false, true);
-        emit Escalated(delegationId, 42, "Low confidence on treasury proposal");
+        emit Escalated(delegationId, 42, reasonURI);
 
         vm.prank(operator);
-        delegation.escalate(delegationId, 42, "Low confidence on treasury proposal");
+        delegation.escalate(delegationId, 42, reasonURI);
     }
 
     function test_escalate_revertNotOperator() public {
@@ -165,7 +167,7 @@ contract AIDelegationTest is Test {
 
         vm.prank(stranger);
         vm.expectRevert(abi.encodeWithSelector(AIDelegation.NotAgentOperator.selector, delegationId, stranger));
-        delegation.escalate(delegationId, 42, "reason");
+        delegation.escalate(delegationId, 42, "ipfs://QmReason");
     }
 
     function test_escalate_revertExpired() public {
@@ -176,7 +178,7 @@ contract AIDelegationTest is Test {
 
         vm.prank(operator);
         vm.expectRevert(abi.encodeWithSelector(AIDelegation.DelegationExpired.selector, delegationId));
-        delegation.escalate(delegationId, 42, "reason");
+        delegation.escalate(delegationId, 42, "ipfs://QmReason");
     }
 
     // ─── Multiple delegators ───

@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IEvaluationCommitment} from "./IEvaluationCommitment.sol";
+import {IRationaleCommitment} from "./IRationaleCommitment.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
-/// @title EvaluationCommitment
-/// @notice Reference implementation of IEvaluationCommitment.
-/// @dev Commit-reveal prevents post-hoc evaluation manipulation:
-///      1. Agent commits keccak256(evaluationURI, salt) during voting
-///      2. Agent reveals evaluationURI + salt after voting ends
+/// @title RationaleCommitment
+/// @notice Reference implementation of IRationaleCommitment.
+/// @dev Commit-reveal prevents post-hoc rationale manipulation:
+///      1. Agent commits keccak256(rationaleURI, salt) during voting
+///      2. Agent reveals rationaleURI + salt after voting ends
 ///      3. Contract verifies hash match
-contract EvaluationCommitment is IEvaluationCommitment {
+contract RationaleCommitment is IRationaleCommitment {
     struct Commitment {
         bytes32 commitHash;
         uint256 timestamp;
         bool revealed;
-        string evaluationURI;
+        string rationaleURI;
     }
 
     IAIAgentRegistry public immutable registry;
@@ -40,8 +40,8 @@ contract EvaluationCommitment is IEvaluationCommitment {
         _;
     }
 
-    /// @inheritdoc IEvaluationCommitment
-    function commitEvaluation(
+    /// @inheritdoc IRationaleCommitment
+    function commitRationale(
         bytes32 agentId,
         uint256 proposalId,
         bytes32 commitHash
@@ -55,33 +55,33 @@ contract EvaluationCommitment is IEvaluationCommitment {
             commitHash: commitHash,
             timestamp: block.timestamp,
             revealed: false,
-            evaluationURI: ""
+            rationaleURI: ""
         });
 
-        emit EvaluationCommitted(agentId, proposalId, commitHash, block.timestamp);
+        emit RationaleCommitted(agentId, proposalId, commitHash, block.timestamp);
     }
 
-    /// @inheritdoc IEvaluationCommitment
-    function revealEvaluation(
+    /// @inheritdoc IRationaleCommitment
+    function revealRationale(
         bytes32 agentId,
         uint256 proposalId,
-        string calldata evaluationURI,
+        string calldata rationaleURI,
         bytes32 salt
     ) external onlyAgentOperator(agentId) {
         Commitment storage c = _commitments[agentId][proposalId];
         if (c.timestamp == 0) revert NoCommitment(agentId, proposalId);
         if (c.revealed) revert AlreadyRevealed(agentId, proposalId);
 
-        bytes32 computedHash = keccak256(abi.encodePacked(evaluationURI, salt));
+        bytes32 computedHash = keccak256(abi.encodePacked(rationaleURI, salt));
         if (computedHash != c.commitHash) revert HashMismatch(c.commitHash, computedHash);
 
         c.revealed = true;
-        c.evaluationURI = evaluationURI;
+        c.rationaleURI = rationaleURI;
 
-        emit EvaluationRevealed(agentId, proposalId, evaluationURI);
+        emit RationaleRevealed(agentId, proposalId, rationaleURI);
     }
 
-    /// @inheritdoc IEvaluationCommitment
+    /// @inheritdoc IRationaleCommitment
     function getCommitment(bytes32 agentId, uint256 proposalId)
         external view returns (bytes32 commitHash, uint256 timestamp)
     {
@@ -89,7 +89,7 @@ contract EvaluationCommitment is IEvaluationCommitment {
         return (c.commitHash, c.timestamp);
     }
 
-    /// @inheritdoc IEvaluationCommitment
+    /// @inheritdoc IRationaleCommitment
     function isRevealed(bytes32 agentId, uint256 proposalId) external view returns (bool) {
         return _commitments[agentId][proposalId].revealed;
     }

@@ -1,16 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { AsciiSpinner } from "./chat/AsciiSpinner";
 import { TerminalHeader } from "./chat/TerminalHeader";
 import { TabProvider, useTabContext } from "../contexts/TabContext";
 import { TabBar } from "./TabBar";
 import { ChatInterface } from "./ChatInterface";
-import { MakeProposalTab } from "./MakeProposalTab";
-import { AnalyzeProposalTab } from "./AnalyzeProposalTab";
-import { AgentsTab } from "./AgentsTab";
-import { ForumTab } from "./ForumTab";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { AgentProvider } from "../contexts/AgentContext";
 import { ElizaOSProvider } from "../contexts/ElizaOSContext";
 import { WalletProvider } from "../contexts/WalletContext";
+
+// Code-split heavy tabs for faster initial load
+const MakeProposalTab = lazy(() => import("./MakeProposalTab").then((m) => ({ default: m.MakeProposalTab })));
+const AnalyzeProposalTab = lazy(() => import("./AnalyzeProposalTab").then((m) => ({ default: m.AnalyzeProposalTab })));
+const AgentsTab = lazy(() => import("./AgentsTab").then((m) => ({ default: m.AgentsTab })));
+const ForumTab = lazy(() => import("./ForumTab").then((m) => ({ default: m.ForumTab })));
+
+function LazyFallback() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 32,
+        color: "var(--term-text-dim, #888)",
+        fontFamily: "var(--font-mono, monospace)",
+        fontSize: 13,
+      }}
+    >
+      Loading...
+    </div>
+  );
+}
 
 export default function Chat() {
   return (
@@ -106,39 +127,57 @@ function ChatApp() {
       <TabBar />
 
       {activeTab === "chat" && (
-        <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-          <ChatInterface
-            mode="chat"
-            selectedModel={selectedModel}
-            welcomeTitle="Tokamak DAO Agent"
-            welcomeSubtitle="Verification-first AI for Tokamak Network governance. Pick a demo scenario or ask anything."
-            suggestions={CHAT_SUGGESTIONS}
-          />
-        </div>
+        <ErrorBoundary>
+          <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+            <ChatInterface
+              mode="chat"
+              selectedModel={selectedModel}
+              welcomeTitle="Tokamak DAO Agent"
+              welcomeSubtitle="Verification-first AI for Tokamak Network governance. Pick a demo scenario or ask anything."
+              suggestions={CHAT_SUGGESTIONS}
+            />
+          </div>
+        </ErrorBoundary>
       )}
 
       {activeTab === "make_proposal" && (
-        <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-          <MakeProposalTab selectedModel={selectedModel} />
-        </div>
+        <ErrorBoundary>
+          <Suspense fallback={<LazyFallback />}>
+            <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+              <MakeProposalTab selectedModel={selectedModel} />
+            </div>
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {activeTab === "analyze_proposal" && (
-        <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-          <AnalyzeProposalTab selectedModel={selectedModel} />
-        </div>
+        <ErrorBoundary>
+          <Suspense fallback={<LazyFallback />}>
+            <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+              <AnalyzeProposalTab selectedModel={selectedModel} />
+            </div>
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {activeTab === "agents" && (
-        <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-          <AgentsTab />
-        </div>
+        <ErrorBoundary>
+          <Suspense fallback={<LazyFallback />}>
+            <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+              <AgentsTab />
+            </div>
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {activeTab === "forum" && (
-        <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-          <ForumTab />
-        </div>
+        <ErrorBoundary>
+          <Suspense fallback={<LazyFallback />}>
+            <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+              <ForumTab />
+            </div>
+          </Suspense>
+        </ErrorBoundary>
       )}
     </div>
   );

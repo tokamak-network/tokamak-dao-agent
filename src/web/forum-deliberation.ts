@@ -190,13 +190,17 @@ ${evalBlock}`;
 function parseMetaResponse(text: string): MetaAnalysisResponse | null {
   try {
     return validateMetaResponse(JSON.parse(text));
-  } catch {}
+  } catch (err) {
+    console.error("[deliberation] meta JSON parse failed, trying regex extraction:", err instanceof Error ? err.message : err);
+  }
 
   const match = text.match(/\{[\s\S]*\}/);
   if (match) {
     try {
       return validateMetaResponse(JSON.parse(match[0]));
-    } catch {}
+    } catch (err) {
+      console.error("[deliberation] regex-extracted meta JSON parse failed:", err instanceof Error ? err.message : err);
+    }
   }
   return null;
 }

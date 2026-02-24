@@ -40,7 +40,9 @@ export async function handleDecodeCalldata(args: {
         functionName: decoded.functionName,
         args: argsStr,
       });
-    } catch {}
+    } catch {
+      // Expected: most ABIs won't match the selector — skip silently
+    }
   }
 
   if (results.length === 0) {

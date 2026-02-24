@@ -77,13 +77,17 @@ ${agenda.onChainAgendaId ? `On-chain agenda ID: ${agenda.onChainAgendaId}` : ""}
 function parseCriterionResponse(text: string): QocCriterionRawResponse | null {
   try {
     return validateCriterionResponse(JSON.parse(text));
-  } catch {}
+  } catch (err) {
+    console.error("[qoc-agents] JSON parse failed, trying regex extraction:", err instanceof Error ? err.message : err);
+  }
 
   const match = text.match(/\{[\s\S]*\}/);
   if (match) {
     try {
       return validateCriterionResponse(JSON.parse(match[0]));
-    } catch {}
+    } catch (err) {
+      console.error("[qoc-agents] regex-extracted JSON parse failed:", err instanceof Error ? err.message : err);
+    }
   }
 
   return null;
@@ -168,11 +172,16 @@ export async function runQocEvaluation(
   );
 
   const succeeded: QocCriterionEvaluation[] = [];
-  for (const r of results) {
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i]!;
     if (r.status === "fulfilled") {
       succeeded.push(r.value);
     } else {
-      console.error("[qoc-agents] criterion agent failed:", r.reason);
+      const agent = CRITERION_AGENTS[i];
+      console.error(
+        `[qoc-agents] criterion agent failed: criterion=${agent?.criterionId}, agent=${agent?.agentName}, agenda=#${agenda.id}`,
+        r.reason,
+      );
     }
   }
 

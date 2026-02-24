@@ -98,13 +98,17 @@ interface ValidatorResponse {
 function parseValidatorResponse(text: string): ValidatorResponse | null {
   try {
     return JSON.parse(text);
-  } catch {}
+  } catch (err) {
+    console.error("[forum-validators] JSON parse failed, trying regex extraction:", err instanceof Error ? err.message : err);
+  }
 
   const match = text.match(/\{[\s\S]*\}/);
   if (match) {
     try {
       return JSON.parse(match[0]);
-    } catch {}
+    } catch (err) {
+      console.error("[forum-validators] regex-extracted JSON parse failed:", err instanceof Error ? err.message : err);
+    }
   }
 
   return null;

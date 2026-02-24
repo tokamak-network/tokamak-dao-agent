@@ -4,6 +4,8 @@
  */
 
 import { Hono } from "hono";
+import { timeout } from "hono/timeout";
+import { rateLimit } from "./middleware/rate-limit.ts";
 import {
   createAgenda,
   getAgenda,
@@ -46,6 +48,23 @@ import { determineVerdict } from "./qoc-aggregation.ts";
 import { syncOnChainAgendas } from "./agenda-sync.ts";
 
 export const forumRouter = new Hono();
+
+// ── Rate limits & timeouts ───────────────────────────────────────────
+
+// Write operations
+forumRouter.use("/agenda", rateLimit({ limit: 5, windowMs: 60_000, keyPrefix: "forum-agenda-post" }));
+forumRouter.use("/agenda/:id/opinion/request", rateLimit({ limit: 5, windowMs: 60_000, keyPrefix: "forum-opinion" }));
+forumRouter.use("/agenda/:id/comment", rateLimit({ limit: 10, windowMs: 60_000, keyPrefix: "forum-comment" }));
+
+// LLM-heavy operations — lower rate limit + timeout
+forumRouter.use("/agenda/:id/qoc/*", rateLimit({ limit: 3, windowMs: 60_000, keyPrefix: "forum-qoc" }));
+forumRouter.use("/agenda/:id/deliberate", rateLimit({ limit: 3, windowMs: 60_000, keyPrefix: "forum-deliberate" }));
+forumRouter.use("/agenda/:id/qoc/*", timeout(120_000));
+forumRouter.use("/agenda/:id/deliberate", timeout(120_000));
+forumRouter.use("/agenda/:id/opinion/request", timeout(60_000));
+
+// Read operations — generous limit
+forumRouter.use("*", rateLimit({ limit: 120, windowMs: 60_000, keyPrefix: "forum-read" }));
 
 /** Strip any existing TIP prefix from a title. */
 function stripTipPrefix(title: string): string {

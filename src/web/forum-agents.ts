@@ -131,14 +131,18 @@ function parseAgentResponse(text: string): AgentResponse | null {
   // Try direct parse
   try {
     return JSON.parse(text);
-  } catch {}
+  } catch (err) {
+    console.error("[forum-agents] JSON parse failed, trying regex extraction:", err instanceof Error ? err.message : err);
+  }
 
   // Extract JSON from markdown code block or surrounding text
   const match = text.match(/\{[\s\S]*\}/);
   if (match) {
     try {
       return JSON.parse(match[0]);
-    } catch {}
+    } catch (err) {
+      console.error("[forum-agents] regex-extracted JSON parse failed:", err instanceof Error ? err.message : err);
+    }
   }
 
   return null;

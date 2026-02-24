@@ -7,6 +7,11 @@
 
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { secureHeaders } from "hono/secure-headers";
+import { logger } from "hono/logger";
+import { requestId } from "hono/request-id";
+import { bodyLimit } from "hono/body-limit";
+import { timeout } from "hono/timeout";
 import { stream } from "hono/streaming";
 import { serveStatic } from "hono/bun";
 import { resolve } from "path";
@@ -35,10 +40,86 @@ import {
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { registerAllTools } from "../mcp/tools/index.ts";
+import { closeDb, getDb } from "../db/index.ts";
+import { rateLimit } from "./middleware/rate-limit.ts";
 
 const app = new Hono();
 
-app.use("/api/*", cors());
+// ── Global middleware ──────────────────────────────────────────────────
+
+// Request ID for tracing
+app.use("*", requestId());
+
+// Request logging
+app.use("*", logger());
+
+// Security headers: CSP, HSTS, X-Frame-Options, etc.
+app.use(
+  "*",
+  secureHeaders({
+    contentSecurityPolicy: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: [
+        "'self'",
+        "https://*.walletconnect.com",
+        "https://*.walletconnect.org",
+        "wss://*.walletconnect.com",
+        "wss://*.walletconnect.org",
+        "https://*.reown.com",
+        "wss://*.reown.com",
+      ],
+      frameSrc: ["'none'"],
+    },
+    crossOriginEmbedderPolicy: false,
+    xFrameOptions: "DENY",
+    referrerPolicy: "strict-origin-when-cross-origin",
+  }),
+);
+
+// CORS — whitelist-based in production, permissive in development
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : null;
+
+app.use(
+  "/api/*",
+  cors({
+    origin: ALLOWED_ORIGINS
+      ? (origin) => (ALLOWED_ORIGINS.includes(origin) ? origin : "")
+      : "*",
+  }),
+);
+
+// Body size limits
+app.use("/api/chat", bodyLimit({ maxSize: 2 * 1024 * 1024 })); // 2MB for chat
+app.use("/api/*", bodyLimit({ maxSize: 1 * 1024 * 1024 })); // 1MB for other API
+
+// ── Global error handler ──────────────────────────────────────────────
+
+app.onError((err, c) => {
+  const reqId = c.get("requestId") || "unknown";
+  console.error(`[error] reqId=${reqId} ${c.req.method} ${c.req.path}:`, err);
+  const status = "status" in err && typeof err.status === "number" ? err.status : 500;
+  // Never expose stack traces in production
+  return c.json(
+    { error: status === 413 ? "Request body too large" : "Internal server error", requestId: reqId },
+    status as any,
+  );
+});
+
+app.notFound((c) => {
+  return c.json({ error: "Not found" }, 404);
+});
+
+// ── Rate-limited routes ─────────────────────────────────────────────
+
+app.use("/api/chat", rateLimit({ limit: 20, windowMs: 60_000, keyPrefix: "chat" }));
+
+// Forum routes
 app.route("/api/forum", forumRouter);
 app.route("/api/elizaos", elizaosRouter);
 
@@ -98,15 +179,48 @@ const defaultConfig = detectProvider(MODEL_RAW);
 
 const startedAt = Date.now();
 
-app.get("/api/health", (c) =>
-  c.json({
-    status: "ok",
-    provider: defaultConfig.provider,
-    model: defaultConfig.model,
-    tools: getToolDefinitions().length,
-    uptime: Math.floor((Date.now() - startedAt) / 1000),
-  }),
-);
+// ── Health check (enhanced with DB + RPC) ─────────────────────────────
+
+app.get("/api/health", async (c) => {
+  const checks: Record<string, string> = {};
+
+  // DB connectivity
+  try {
+    const db = getDb();
+    const row = db.query("SELECT 1 as ok").get() as { ok: number } | null;
+    checks.db = row?.ok === 1 ? "ok" : "error";
+  } catch {
+    checks.db = "error";
+  }
+
+  // RPC connectivity (if configured)
+  if (process.env.ALCHEMY_RPC_URL) {
+    try {
+      const res = await fetch(process.env.ALCHEMY_RPC_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: 1 }),
+        signal: AbortSignal.timeout(3000),
+      });
+      checks.rpc = res.ok ? "ok" : "error";
+    } catch {
+      checks.rpc = "error";
+    }
+  }
+
+  const healthy = checks.db === "ok";
+  return c.json(
+    {
+      status: healthy ? "ok" : "degraded",
+      provider: defaultConfig.provider,
+      model: defaultConfig.model,
+      tools: getToolDefinitions().length,
+      uptime: Math.floor((Date.now() - startedAt) / 1000),
+      checks,
+    },
+    healthy ? 200 : 503,
+  );
+});
 
 // ── Model listing ──────────────────────────────────────────────────────
 
@@ -392,6 +506,14 @@ app.post("/api/chat", async (c) => {
 const DIST_DIR = resolve(import.meta.dir, "../../dist");
 const INDEX_HTML_PATH = resolve(DIST_DIR, "index.html");
 
+// Hashed assets — immutable cache
+app.use(
+  "/assets/*",
+  async (c, next) => {
+    await next();
+    c.header("Cache-Control", "public, max-age=31536000, immutable");
+  },
+);
 app.use("/assets/*", serveStatic({ root: "./dist" }));
 
 app.get("/", (c) => c.redirect("/chat"));
@@ -399,6 +521,7 @@ app.get("/", (c) => c.redirect("/chat"));
 const serveSpa = async (c: any) => {
   const file = Bun.file(INDEX_HTML_PATH);
   if (await file.exists()) {
+    c.header("Cache-Control", "no-cache");
     return c.html(await file.text());
   }
   return c.text("App not built. Run: bun run build", 404);
@@ -409,6 +532,22 @@ for (const route of ["/chat", "/calldata", "/proposal", "/agents", "/forum"]) {
   app.get(route, serveSpa);
   app.get(`${route}/*`, serveSpa);
 }
+
+// ── Graceful shutdown ────────────────────────────────────────────────
+
+function gracefulShutdown(signal: string) {
+  console.log(`[server] received ${signal}, shutting down gracefully...`);
+  try {
+    closeDb();
+    console.log("[server] database closed");
+  } catch (err) {
+    console.error("[server] error closing database:", err);
+  }
+  process.exit(0);
+}
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
 // ── Server startup ───────────────────────────────────────────────────
 

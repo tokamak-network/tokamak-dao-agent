@@ -62,7 +62,9 @@ function decodeCalldata(calldata: string): { functionName: string; contractName:
             .join(", ")
         : "(no arguments)";
       return { functionName: decoded.functionName, contractName, args: argsStr };
-    } catch {}
+    } catch {
+      // Expected: most ABIs won't match — skip silently
+    }
   }
   return null;
 }

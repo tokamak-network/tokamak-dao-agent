@@ -22,6 +22,7 @@ export function getDb(): Database {
     db = new Database(DB_PATH);
     db.exec("PRAGMA journal_mode = WAL");
     db.exec("PRAGMA foreign_keys = ON");
+    db.exec("PRAGMA busy_timeout = 5000");
     db.exec(SCHEMA_SQL);
 
     // Migrations: add columns that may not exist in older databases

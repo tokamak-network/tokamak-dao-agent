@@ -232,6 +232,55 @@ export interface CredibilitySummary {
   accuracy: number;
 }
 
+// ─── On-Chain Agent Registration (ERC AI Governance) ────────
+
+/** Off-chain metadata for a registered AI agent (pointed to by IAIAgentRegistry.agentURI) */
+export interface AgentProfile {
+  name: string;
+  version: string;
+  type: "criterion" | "meta" | "delegate";
+  criterionId?: string;
+  stakeholder?: {
+    type: string;
+    perspective: string;
+  };
+  model: string;
+  operator: string;
+}
+
+/** Off-chain delegation preferences (pointed to by IAIDelegation.preferencesURI) */
+export interface DelegationPreferences {
+  criterionWeights: Record<string, number>;
+  riskTolerance: "conservative" | "moderate" | "aggressive";
+  escalation: {
+    confidenceThreshold: number;
+    alwaysEscalateFor: string[];
+  };
+  principles: string[];
+}
+
+/** Off-chain evaluation result (pointed to by IEvaluationCommitment.evaluationURI) */
+export interface EvaluationJSON {
+  proposalId: string;
+  criterionScores: Record<string, { score: number; evidence: string; reasoning: string }>;
+  lensResults: LensResult[];
+  finalScore: number;
+  verdict: QocVerdict;
+}
+
+/** On-chain agent delegation state (mirrors IAIDelegation.getAIDelegation return) */
+export interface OnChainDelegation {
+  agentId: Hex;
+  expiry: bigint;
+  preferencesURI: string;
+}
+
+/** On-chain credibility state (mirrors ICredibilityRegistry.getCredibility return) */
+export interface OnChainCredibility {
+  totalScore: bigint;
+  totalPredictions: bigint;
+}
+
 // ─── Verification ────────────────────────────────────────────
 
 export interface SimulationResult {

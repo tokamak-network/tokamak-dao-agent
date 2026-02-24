@@ -11,10 +11,10 @@ import type {
   QocAggregatedResult,
   QocLensResult,
   QocVerdict,
-} from "./qoc-types.ts";
-import { CRITERION_IDS } from "./qoc-types.ts";
-import { WEIGHT_PROFILES } from "./qoc-weights.ts";
-import type { WeightProfile } from "./qoc-weights.ts";
+} from "./types.ts";
+import { CRITERION_IDS } from "./types.ts";
+import { WEIGHT_PROFILES } from "./weights.ts";
+import type { WeightProfile } from "./weights.ts";
 
 /**
  * Apply a single stakeholder lens to criterion scores.

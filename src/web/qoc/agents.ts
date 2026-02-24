@@ -6,24 +6,24 @@
  * detailed evidence. Stakeholder lenses are applied as pure math.
  */
 
-import { detectProvider, getOrCreateProvider } from "./providers/index.ts";
-import type { ForumAgenda } from "../db/agendas.ts";
+import { detectProvider, getOrCreateProvider } from "../providers/index.ts";
+import type { ForumAgenda } from "../../db/agendas.ts";
 import type {
   QocCriterionEvaluation,
   QocCriterionRawResponse,
   QocAggregatedResult,
-} from "./qoc-types.ts";
-import { CRITERIA, CRITERION_AGENTS } from "./qoc-weights.ts";
-import type { CriterionAgent, CriterionDef } from "./qoc-weights.ts";
-import { aggregateCriterionBased } from "./qoc-aggregation.ts";
+} from "./types.ts";
+import { CRITERIA, CRITERION_AGENTS } from "./weights.ts";
+import type { CriterionAgent, CriterionDef } from "./weights.ts";
+import { aggregateCriterionBased } from "./aggregation.ts";
 import {
   createCriterionEvaluation,
   getCriterionEvaluationsForAgenda,
   saveQocResult,
   clearCriterionEvaluationsForAgenda,
   clearQocResultForAgenda,
-} from "../db/qoc.ts";
-import { QOC_MODEL, QOC_MAX_TOKENS } from "../config.ts";
+} from "../../db/qoc.ts";
+import { QOC_MODEL, QOC_MAX_TOKENS } from "../../config.ts";
 
 /**
  * Build system prompt for a criterion-specialist agent.

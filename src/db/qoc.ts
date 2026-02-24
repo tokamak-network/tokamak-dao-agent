@@ -9,7 +9,7 @@ import type {
   QocVerdict,
   QocLensResult,
   CriterionId,
-} from "../web/qoc-types.ts";
+} from "../web/qoc/types.ts";
 
 // ── QOC Criterion Evaluations ────────────────────────────────────────
 

@@ -5,7 +5,7 @@
 
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
-import { rateLimit } from "./middleware/rate-limit.ts";
+import { rateLimit } from "../middleware/rate-limit.ts";
 import {
   createAgenda,
   getAgenda,
@@ -13,39 +13,39 @@ import {
   listAgendas,
   updateAgenda,
   updateAgendaStatus,
-} from "../db/agendas.ts";
-import type { CreateAgendaInput, ListAgendaOptions } from "../db/agendas.ts";
-import { createOpinion, getOpinionsForAgenda } from "../db/opinions.ts";
-import { createComment, getComment, updateComment, deleteComment, getCommentsForAgenda } from "../db/comments.ts";
+} from "../../db/agendas.ts";
+import type { CreateAgendaInput, ListAgendaOptions } from "../../db/agendas.ts";
+import { createOpinion, getOpinionsForAgenda } from "../../db/opinions.ts";
+import { createComment, getComment, updateComment, deleteComment, getCommentsForAgenda } from "../../db/comments.ts";
 import {
   getValidationsForAgenda,
   clearValidationsForAgenda,
-} from "../db/validations.ts";
+} from "../../db/validations.ts";
 import {
   validateAgendaInput,
   validateAgentInput,
   validateCommentInput,
   validateOpinionInput,
   validateWebhookInput,
-} from "./forum-validation.ts";
-import { generateSummary } from "./forum-summary.ts";
-import { generateAgentOpinions, generateSingleAgentOpinion } from "./forum-agents.ts";
-import { translateText } from "./forum-translate.ts";
-import { listAgents, createAgent, deleteAgent } from "../db/agents.ts";
-import { getDb } from "../db/index.ts";
-import { runQocEvaluation, runSingleCriterionEvaluation } from "./qoc-agents.ts";
-import { getCriterionEvaluationsForAgenda, getQocResult } from "../db/qoc.ts";
-import { runDeliberation, getDeliberationRounds } from "./forum-deliberation.ts";
+} from "./validation.ts";
+import { generateSummary } from "./summary.ts";
+import { generateAgentOpinions, generateSingleAgentOpinion } from "./agents.ts";
+import { translateText } from "./translate.ts";
+import { listAgents, createAgent, deleteAgent } from "../../db/agents.ts";
+import { getDb } from "../../db/index.ts";
+import { runQocEvaluation, runSingleCriterionEvaluation } from "../qoc/agents.ts";
+import { getCriterionEvaluationsForAgenda, getQocResult } from "../../db/qoc.ts";
+import { runDeliberation, getDeliberationRounds } from "./deliberation.ts";
 import {
   recordPrediction,
   resolvePrediction,
   getAgentCredibilityHistory,
   getCredibilitySummaries,
   getCredibilityForAgenda,
-} from "./agent-credibility.ts";
-import { WEIGHT_PROFILES } from "./qoc-weights.ts";
-import { determineVerdict } from "./qoc-aggregation.ts";
-import { syncOnChainAgendas } from "./agenda-sync.ts";
+} from "../agent-credibility.ts";
+import { WEIGHT_PROFILES } from "../qoc/weights.ts";
+import { determineVerdict } from "../qoc/aggregation.ts";
+import { syncOnChainAgendas } from "../agenda-sync.ts";
 
 export const forumRouter = new Hono();
 

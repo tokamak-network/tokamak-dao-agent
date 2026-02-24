@@ -13,7 +13,7 @@ import { loadAbi, loadAllAbis } from "../mcp/data/abis.ts";
 import { getContractName } from "../mcp/data/contracts.ts";
 import { createAgenda, getAgenda, updateAgendaStatus } from "../db/agendas.ts";
 import { getDb } from "../db/index.ts";
-import { runQocEvaluation } from "./qoc-agents.ts";
+import { runQocEvaluation } from "./qoc/agents.ts";
 
 const DAO_AGENDA_MANAGER = "0xcD4421d082752f363E1687544a09d5112cD4f484" as Address;
 

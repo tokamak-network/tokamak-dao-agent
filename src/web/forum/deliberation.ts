@@ -9,25 +9,25 @@
  * After Phase 2, the final aggregation uses adjusted scores.
  */
 
-import { detectProvider, getOrCreateProvider } from "./providers/index.ts";
-import type { ForumAgenda } from "../db/agendas.ts";
+import { detectProvider, getOrCreateProvider } from "../providers/index.ts";
+import type { ForumAgenda } from "../../db/agendas.ts";
 import type {
   QocCriterionEvaluation,
   QocAggregatedResult,
   CriterionId,
-} from "./qoc-types.ts";
-import { CRITERION_IDS } from "./qoc-types.ts";
-import { CRITERION_AGENTS } from "./qoc-weights.ts";
-import { aggregateCriterionBased } from "./qoc-aggregation.ts";
+} from "../qoc/types.ts";
+import { CRITERION_IDS } from "../qoc/types.ts";
+import { CRITERION_AGENTS } from "../qoc/weights.ts";
+import { aggregateCriterionBased } from "../qoc/aggregation.ts";
 import {
   saveQocResult,
   clearQocResultForAgenda,
   clearCriterionEvaluationsForAgenda,
   createCriterionEvaluation,
-} from "../db/qoc.ts";
-import { getDb } from "../db/index.ts";
-import { QOC_MODEL, QOC_MAX_TOKENS } from "../config.ts";
-import { runQocEvaluation } from "./qoc-agents.ts";
+} from "../../db/qoc.ts";
+import { getDb } from "../../db/index.ts";
+import { QOC_MODEL, QOC_MAX_TOKENS } from "../../config.ts";
+import { runQocEvaluation } from "../qoc/agents.ts";
 
 // ── Types ────────────────────────────────────────────────────────────
 

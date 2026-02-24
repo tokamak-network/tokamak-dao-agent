@@ -3,8 +3,8 @@
  * Reuses the existing provider infrastructure.
  */
 
-import { detectProvider, getOrCreateProvider } from "./providers/index.ts";
-import { TRANSLATE_MODEL, TRANSLATE_MAX_TOKENS } from "../config.ts";
+import { detectProvider, getOrCreateProvider } from "../providers/index.ts";
+import { TRANSLATE_MODEL, TRANSLATE_MAX_TOKENS } from "../../config.ts";
 
 const TRANSLATE_SYSTEM_PROMPT = `You are a professional English-to-Korean translator specializing in blockchain and DAO governance.
 

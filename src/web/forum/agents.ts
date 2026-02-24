@@ -3,12 +3,12 @@
  * Uses user-created agents from DB, falls back to hardcoded defaults when none exist.
  */
 
-import { detectProvider, getOrCreateProvider } from "./providers/index.ts";
-import type { ForumAgenda } from "../db/agendas.ts";
-import { createOpinion } from "../db/opinions.ts";
-import { listAgents } from "../db/agents.ts";
-import type { DbAgent } from "../db/agents.ts";
-import { OPINION_MODEL, OPINION_MAX_TOKENS } from "../config.ts";
+import { detectProvider, getOrCreateProvider } from "../providers/index.ts";
+import type { ForumAgenda } from "../../db/agendas.ts";
+import { createOpinion } from "../../db/opinions.ts";
+import { listAgents } from "../../db/agents.ts";
+import type { DbAgent } from "../../db/agents.ts";
+import { OPINION_MODEL, OPINION_MAX_TOKENS } from "../../config.ts";
 
 interface AgentConfig {
   agentName: string;

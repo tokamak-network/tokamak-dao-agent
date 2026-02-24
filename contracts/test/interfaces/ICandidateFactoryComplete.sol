@@ -12,6 +12,14 @@ interface ICandidateFactoryComplete {
         address _seigManager
     ) external returns (address);
 
+    function setAddress(
+        address _depositManager,
+        address _daoCommittee,
+        address _candidateImp,
+        address _ton,
+        address _wton
+    ) external;
+
     // -- View --
     function candidateImplementation() external view returns (address);
     function deployers(address) external view returns (bool);

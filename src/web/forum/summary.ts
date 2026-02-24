@@ -3,11 +3,11 @@
  * Reuses the existing provider infrastructure.
  */
 
-import { detectProvider, getOrCreateProvider } from "./providers/index.ts";
-import type { ForumAgenda } from "../db/agendas.ts";
-import type { ForumOpinion } from "../db/opinions.ts";
-import { getCachedSummary, cacheSummary, getOpinionCount } from "../db/opinions.ts";
-import { SUMMARY_MODEL, SUMMARY_MAX_TOKENS } from "../config.ts";
+import { detectProvider, getOrCreateProvider } from "../providers/index.ts";
+import type { ForumAgenda } from "../../db/agendas.ts";
+import type { ForumOpinion } from "../../db/opinions.ts";
+import { getCachedSummary, cacheSummary, getOpinionCount } from "../../db/opinions.ts";
+import { SUMMARY_MODEL, SUMMARY_MAX_TOKENS } from "../../config.ts";
 
 const SUMMARY_SYSTEM_PROMPT = `You are a DAO governance analyst for Tokamak Network.
 Summarize the collected agent opinions on a governance agenda.

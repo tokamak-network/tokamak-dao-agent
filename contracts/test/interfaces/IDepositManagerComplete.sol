@@ -49,6 +49,11 @@ interface IDepositManagerComplete {
 
     function withdrawAndDepositL2(address layer2, uint256 amount) external returns (bool);
 
+    // -- V1.1 Admin Functions --
+    function setMinDepositGasLimit(uint32 gasLimit_) external;
+    function setAddresses(address _l1BridgeRegistry, address _layer2Manager) external;
+    function minDepositGasLimit() external view returns (uint32);
+
     // ============================================================
     // Proxy/Access
     // ============================================================

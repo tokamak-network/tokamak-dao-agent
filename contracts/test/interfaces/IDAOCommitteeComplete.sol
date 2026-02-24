@@ -133,6 +133,10 @@ interface IDAOCommitteeComplete {
     function setQuorum(uint256 _quorum) external;
     function setCooldownTime(uint256 _cooltime) external;
     function setActivityRewardPerSecond(uint256 _value) external;
+    function setCreateAgendaFees(uint256 _fees) external;
+    function setMinimumNoticePeriodSeconds(uint256 _minimumNoticePeriod) external;
+    function setMinimumVotingPeriodSeconds(uint256 _minimumVotingPeriod) external;
+    function setExecutingPeriodSeconds(uint256 _executingPeriodSeconds) external;
 
     // -- Batch Operations (onlyOwner) --
     function setCandidatesSeigManager(address[] calldata _candidateContracts, address _seigManager) external;

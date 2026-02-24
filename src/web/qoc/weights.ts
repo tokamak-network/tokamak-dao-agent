@@ -5,7 +5,7 @@
  * stakeholder perspective. Every criterion gets at least weight 5.
  */
 
-import type { CriterionId } from "./qoc-types.ts";
+import type { CriterionId } from "./types.ts";
 
 /** Metadata for a single evaluation criterion */
 export interface CriterionDef {

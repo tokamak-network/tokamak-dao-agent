@@ -13,7 +13,7 @@ import { WalletProvider } from "../contexts/WalletContext";
 const MakeProposalTab = lazy(() => import("./MakeProposalTab").then((m) => ({ default: m.MakeProposalTab })));
 const AnalyzeProposalTab = lazy(() => import("./AnalyzeProposalTab").then((m) => ({ default: m.AnalyzeProposalTab })));
 const AgentsTab = lazy(() => import("./AgentsTab").then((m) => ({ default: m.AgentsTab })));
-const ForumTab = lazy(() => import("./ForumTab").then((m) => ({ default: m.ForumTab })));
+const ForumTab = lazy(() => import("./forum").then((m) => ({ default: m.ForumTab })));
 
 function LazyFallback() {
   return (

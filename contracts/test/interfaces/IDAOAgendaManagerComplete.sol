@@ -73,10 +73,13 @@ interface IDAOAgendaManagerComplete {
     function executingPeriodSeconds() external view returns (uint256);
 
     // -- Setters (onlyOwner) --
+    function setCommittee(address _committee) external;
     function setCreateAgendaFees(uint256 _fees) external;
     function setMinimumNoticePeriodSeconds(uint256 _seconds) external;
     function setMinimumVotingPeriodSeconds(uint256 _seconds) external;
     function setExecutingPeriodSeconds(uint256 _seconds) external;
+    function endAgendaVoting(uint256 _agendaID) external;
+    function committee() external view returns (address);
 
     // -- AccessibleCommon --
     function addAdmin(address account) external;

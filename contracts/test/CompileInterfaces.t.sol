@@ -13,6 +13,9 @@ import "./interfaces/ISeigManagerComplete.sol";
 import "./interfaces/IDepositManagerComplete.sol";
 import "./interfaces/IDAOAgendaManagerComplete.sol";
 import "./interfaces/IProxyActionComplete.sol";
+import "./interfaces/ITONComplete.sol";
+import "./interfaces/IL1BridgeRegistryComplete.sol";
+import "./interfaces/ILayer2ManagerComplete.sol";
 
 contract CompileInterfaces {
     // Reference each interface type to ensure compilation
@@ -25,4 +28,7 @@ contract CompileInterfaces {
     IDepositManagerComplete public depositManager;
     IDAOAgendaManagerComplete public agendaManager;
     IProxyActionComplete public proxyAction;
+    ITONComplete public ton;
+    IL1BridgeRegistryComplete public l1BridgeRegistry;
+    ILayer2ManagerComplete public layer2Manager;
 }

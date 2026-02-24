@@ -24,6 +24,12 @@ interface ILayer2RegistryComplete {
     function isOwner() external view returns (bool);
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 
+    // -- Role Management --
+    function addMinter(address account) external;
+    function removeMinter(address account) external;
+    function addOperator(address account) external;
+    function removeOperator(address account) external;
+
     // -- ProxyStorage --
     function pauseProxy() external view returns (bool);
     function proxyImplementation(uint256) external view returns (address);

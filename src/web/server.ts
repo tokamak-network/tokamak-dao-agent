@@ -28,8 +28,8 @@ import {
   DEFAULT_CHAT_MODEL,
   MODE_MODELS,
 } from "../config.ts";
-import { forumRouter } from "./forum.ts";
-import { elizaosRouter } from "./elizaos.ts";
+import { forumRouter } from "./forum/index.ts";
+import { elizaosRouter } from "./elizaos/index.ts";
 import { startAgendaSync } from "./agenda-sync.ts";
 import {
   initAgentWallets,

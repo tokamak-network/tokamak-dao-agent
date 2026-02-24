@@ -6,15 +6,15 @@
  * - Feasibility: technical/governance feasibility
  */
 
-import { detectProvider, getOrCreateProvider } from "./providers/index.ts";
-import type { ForumAgenda } from "../db/agendas.ts";
-import { updateAgendaStatus } from "../db/agendas.ts";
-import { createValidation } from "../db/validations.ts";
-import type { CreateValidationInput } from "../db/validations.ts";
-import { VALIDATION_MODEL, VALIDATION_MAX_TOKENS } from "../config.ts";
-import { getAgenda } from "../db/agendas.ts";
-import { runQocEvaluation } from "./qoc-agents.ts";
-import { generateSingleAgentOpinion } from "./forum-agents.ts";
+import { detectProvider, getOrCreateProvider } from "../providers/index.ts";
+import type { ForumAgenda } from "../../db/agendas.ts";
+import { updateAgendaStatus } from "../../db/agendas.ts";
+import { createValidation } from "../../db/validations.ts";
+import type { CreateValidationInput } from "../../db/validations.ts";
+import { VALIDATION_MODEL, VALIDATION_MAX_TOKENS } from "../../config.ts";
+import { getAgenda } from "../../db/agendas.ts";
+import { runQocEvaluation } from "../qoc/agents.ts";
+import { generateSingleAgentOpinion } from "./agents.ts";
 
 type ValidatorType = "format" | "relevance" | "feasibility";
 

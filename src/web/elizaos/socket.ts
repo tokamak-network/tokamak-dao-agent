@@ -4,7 +4,7 @@
  */
 
 import { io, type Socket } from "socket.io-client";
-import { ELIZAOS_BASE_URL } from "../config.ts";
+import { ELIZAOS_BASE_URL } from "../../config.ts";
 
 let socket: Socket | null = null;
 const joinedChannels = new Set<string>();

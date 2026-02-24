@@ -4,7 +4,7 @@
  * Provides Anthropic API tool definitions and a single executeTool() dispatcher.
  */
 
-import type { ToolDefinition } from "../../web/providers/types.ts";
+import type { ToolDefinition } from "../../types/tool-definition.ts";
 import { handleGetContractInfo } from "./contract-info.ts";
 import { handleReadContractSource, handleSearchContractCode } from "./contract-source.ts";
 import { handleReadStorageSlot, handleReadContractState } from "./storage.ts";

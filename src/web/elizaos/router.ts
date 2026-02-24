@@ -4,11 +4,11 @@
  */
 
 import { Hono } from "hono";
-import { ELIZAOS_BASE_URL } from "../config.ts";
+import { ELIZAOS_BASE_URL } from "../../config.ts";
 import {
   WEB_USER_ENTITY_ID,
   WEB_USER_NAME,
-} from "./elizaos-socket.ts";
+} from "./socket.ts";
 
 export const elizaosRouter = new Hono();
 

@@ -6,16 +6,7 @@
  * the same streaming and tool-execution pipeline.
  */
 
-/** JSON-Schema-based tool definition (matches Anthropic's native format). */
-export interface ToolDefinition {
-  name: string;
-  description: string;
-  input_schema: {
-    type: "object";
-    properties: Record<string, any>;
-    required?: string[];
-  };
-}
+export type { ToolDefinition } from "../../types/tool-definition.ts";
 
 /** Role-tagged message flowing through the agentic loop. */
 export interface ChatMessage {

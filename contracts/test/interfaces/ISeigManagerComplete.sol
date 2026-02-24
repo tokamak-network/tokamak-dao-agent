@@ -88,6 +88,42 @@ interface ISeigManagerComplete {
     function isOwner() external view returns (bool);
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 
+    // -- DAO-Callable Setters (onlyOwner via V1_2) --
+    function setData(
+        address powerton_,
+        address daoAddress,
+        uint256 powerTONSeigRate_,
+        uint256 daoSeigRate_,
+        uint256 relativeSeigRate_,
+        uint256 adjustDelay_,
+        uint256 minimumAmount_
+    ) external;
+    function setPowerTON(address powerton_) external;
+    function setDao(address daoAddress) external;
+    function setPowerTONSeigRate(uint256 powerTONSeigRate_) external;
+    function setDaoSeigRate(uint256 daoSeigRate_) external;
+    function setPseigRate(uint256 pseigRate_) external;
+    function setCoinageFactory(address factory_) external;
+    function transferCoinageOwnership(address newSeigManager, address[] calldata coinages_) external;
+    function renounceWTONMinter() external;
+    function setAdjustDelay(uint256 adjustDelay_) external;
+    function setMinimumAmount(uint256 minimumAmount_) external;
+    function setSeigStartBlock(uint256 _seigStartBlock) external;
+    function setInitialTotalSupply(uint256 _initialTotalSupply) external;
+    function setBurntAmountAtDAO(uint256 _burntAmountAtDAO) external;
+    function renounceMinter(address target) external;
+    function renouncePauser(address target) external;
+    function renounceOwnership(address target) external;
+    function transferOwnership(address target, address newOwner) external;
+
+    // -- Role Management (onlyOwner) --
+    function addMinter(address account) external;
+    function removeMinter(address account) external;
+    function addOperator(address account) external;
+    function removeOperator(address account) external;
+    function addChallenger(address account) external;
+    function removeChallenger(address account) external;
+
     // ============================================================
     // V1_3 Functions (selector-routed)
     // ============================================================

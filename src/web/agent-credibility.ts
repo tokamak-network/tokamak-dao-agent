@@ -13,7 +13,7 @@
  */
 
 import { getDb } from "../db/index.ts";
-import type { QocVerdict } from "./qoc-types.ts";
+import type { QocVerdict } from "./qoc/types.ts";
 
 // ── Types ────────────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 /**
  * Unit tests for QOC criterion-based aggregation engine.
- * Run: bun test src/web/qoc-aggregation.test.ts
+ * Run: bun test src/web/qoc/aggregation.test.ts
  */
 
 import { describe, test, expect } from "bun:test";
@@ -10,10 +10,10 @@ import {
   determineVerdict,
   checkHardVeto,
   aggregateCriterionBased,
-} from "./qoc-aggregation.ts";
-import type { QocCriterionEvaluation, CriterionId } from "./qoc-types.ts";
-import { CRITERION_IDS } from "./qoc-types.ts";
-import { WEIGHT_PROFILES } from "./qoc-weights.ts";
+} from "./aggregation.ts";
+import type { QocCriterionEvaluation, CriterionId } from "./types.ts";
+import { CRITERION_IDS } from "./types.ts";
+import { WEIGHT_PROFILES } from "./weights.ts";
 
 // Helper: create uniform criterion scores record
 function uniformCriterionScores(

@@ -53,22 +53,29 @@ export async function runMigrations(): Promise<void> {
     new URL("./schema.sql", import.meta.url).pathname,
   ).text();
 
-  // Split by semicolons and execute each statement
-  const statements = schema
-    .split(";")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !s.startsWith("--"));
+  // Execute the entire schema as a single transaction
+  try {
+    await sql.unsafe(schema);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    if (!msg.includes("already exists")) {
+      throw error;
+    }
+    // If "already exists" error, run statements individually for idempotency
+    const statements = schema
+      .split(";")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0 && !s.startsWith("--"));
 
-  for (const statement of statements) {
-    try {
-      await sql.unsafe(statement);
-    } catch (error) {
-      // Ignore "already exists" errors for idempotency
-      const msg = error instanceof Error ? error.message : String(error);
-      if (!msg.includes("already exists")) {
-        console.error(`Migration error: ${msg}`);
-        console.error(`Statement: ${statement.slice(0, 100)}...`);
-        throw error;
+    for (const statement of statements) {
+      try {
+        await sql.unsafe(statement);
+      } catch (err) {
+        const m = err instanceof Error ? err.message : String(err);
+        if (!m.includes("already exists")) {
+          console.error(`Migration error: ${m}`);
+          console.error(`Statement: ${statement.slice(0, 100)}...`);
+        }
       }
     }
   }

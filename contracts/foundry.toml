@@ -54,5 +54,7 @@ evm_version = "paris"
 optimizer = true
 optimizer_runs = 200
 remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
     "forge-std/=lib/forge-std/src/"
 ]

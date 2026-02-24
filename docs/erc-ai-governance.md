@@ -500,6 +500,114 @@ The `CredibilityRegistry` reference implementation accepts constructor parameter
 - **Verdict threshold**: Verdict value above which predictions are considered "positive direction" (default: 1, matching Governor's `For`)
 - **Resolver address**: Independent address authorized to resolve predictions
 
+### Deployment Guide
+
+Adopting DAOs can deploy incrementally in three steps:
+
+**Step 1 — Core (Required):**
+
+1. Deploy `AIAgentRegistry`. No constructor parameters needed.
+2. Deploy `AIDelegation` with the registry address. Each delegator can now delegate to registered AI agents with expiry and preferences.
+
+**Step 2 — Extensions (Optional):**
+
+3. Deploy `RationaleCommitment` with the registry address. Agents can now commit-reveal rationales.
+4. Choose a resolver strategy (see below), then deploy `CredibilityRegistry` with the registry address, resolver address, and delta configuration.
+
+**Resolver strategies:**
+
+| Strategy | Description | Trust Model |
+|----------|-------------|-------------|
+| Governance multisig | Manual resolution by trusted committee | Highest trust, lowest automation |
+| Timelock + challenge | Automated with dispute window | Medium trust |
+| `GovernorResolver` (example) | Reads `IGovernor.state()` on-chain | Trustless for Governor-based DAOs |
+| Off-chain oracle | External service reports outcomes | Requires oracle trust |
+
+**Step 3 — Governor Bridge (Optional):**
+
+5. For DAOs using OpenZeppelin Governor (or compatible), deploy `GovernorAIDelegation` instead of `AIDelegation`. This records the delegator's previous `IVotes` delegatee for restoration on revocation.
+6. Deploy `GovernorResolver` with the Governor address. Pass the `GovernorResolver` address as the `resolver` to `CredibilityRegistry` for automatic outcome resolution.
+
+**Off-chain integration pattern:**
+
+```
+Proposal Monitor → AI Agent Evaluates → commitRationale() → castVote()
+                                       → recordPrediction()
+                → Voting Ends         → revealRationale()
+                → Proposal Finalized  → resolvePrediction() (via resolver)
+```
+
+### Informative Examples: Governor Bridge
+
+The `examples/` directory contains two informative (non-normative) contracts that demonstrate how to bridge this ERC with OpenZeppelin Governor:
+
+**`GovernorAIDelegation.sol`** — Extends `AIDelegation` to record `IVotes` delegation state:
+- On `delegateToAgent()`: stores the delegator's current `IVotes` delegatee, emits `GovernorDelegationAdvised` event
+- On `revokeDelegation()`: emits `GovernorDelegationRestoreAdvised` with the previous delegatee
+- The delegator performs `token.delegate(operator)` externally (required by `msg.sender` constraint in `IVotes`)
+
+**`GovernorResolver.sol`** — Automatic credibility resolution using Governor state:
+- Reads `IGovernor.state()` to determine proposal outcome
+- Maps Succeeded/Executed → positive (1), Defeated/Canceled/Expired → negative (0)
+- Reverts for non-finalized proposals (Pending, Active, Queued)
+- Anyone can call `resolve()` since the outcome is deterministic
+
+### Informative Example: Tokamak Network Adoption
+
+Tokamak Network's DAO Agent demonstrates this ERC applied to a committee-based governance system (not Governor-based), proving the interfaces work beyond the standard OpenZeppelin Governor pattern.
+
+**Off-chain architecture mapping:**
+
+| Tokamak DAO Agent Component | ERC Interface |
+|------------------------------|--------------|
+| 7 criterion agents (TechSafety, Economic, Governance, Operations, Strategy, Reversibility, Implementation) | `IAIAgentRegistry` — each agent registered with model, methodology, and criterion metadata |
+| QOC evaluation with commit-reveal | `IRationaleCommitment` — commit hash before evaluation, reveal after |
+| 4 stakeholder lenses (Alpha/Beta/Gamma/Delta) with weighted scoring | `ICredibilityRegistry` — per-agent prediction tracking with configurable deltas |
+| `DAOAgendaManager` polling → proposal import | `proposalId` mapping — committee agenda IDs as proposal identifiers |
+| Agent credibility tracking (+3/+1/-2/-1 deltas) | `ICredibilityRegistry` — identical delta configuration |
+| Deliberation 2-phase protocol | Off-chain orchestration → on-chain commit-reveal anchoring |
+
+**Key insight:** This ERC works with any governance structure that produces proposals and outcomes. The interfaces intentionally avoid coupling to `IGovernor` — `proposalId` is an opaque `uint256`, and the resolver role abstracts outcome determination. Committee-based DAOs use a multisig or oracle resolver instead of `GovernorResolver`.
+
+## Test Cases
+
+The reference implementation includes 82 tests across 6 test suites. The integration tests demonstrate end-to-end scenarios with an OpenZeppelin Governor:
+
+```
+forge test --match-path "test/governance/*" -vvv
+```
+
+### Integration Test Scenarios
+
+**1. Full Lifecycle (`test_fullLifecycle_registerDelegateCommitVoteRevealResolve`):**
+An operator registers an AI agent, a delegator creates an AI delegation and bridges IVotes to the operator, a Governor proposal is created, the agent commits a rationale hash and records a prediction (For, 85% confidence), the operator votes For in the Governor, the proposal succeeds, the agent reveals the rationale (hash verified), and the resolver marks a positive outcome resulting in +3 credibility delta (high confidence correct).
+
+**2. Escalation Path (`test_escalationPath_agentDefersToHuman`):**
+A delegator creates an AI delegation while retaining their own IVotes (advisory-only pattern). When the agent encounters a controversial proposal, it escalates via the `Escalated` event with a reason URI. The delegator votes directly using their own voting power, and the proposal succeeds.
+
+**3. Delegation Expiry (`test_delegationExpiry_automaticInvalidation`):**
+A delegation is created with a short expiry. After the expiry timestamp passes, `getAIDelegation()` returns zero values. A new delegation can be created immediately.
+
+**4. Multi-Agent (`test_multiAgent_twoAgentsSameProposal`):**
+Two agents operated by different operators make independent predictions on the same proposal — one predicts For (high confidence), the other predicts Against (low confidence). After positive resolution, the first agent receives +3 (correct) and the second receives -1 (wrong), demonstrating independent credibility tracking.
+
+**5. Credibility Accumulation (`test_credibilityAccumulation_acrossMultipleProposals`):**
+An agent makes predictions across three proposals with varying confidence and correctness: high-confidence correct (+3), low-confidence correct (+1), high-confidence wrong (-2). The cumulative score is verified as +2 with 3 total predictions.
+
+**6. Agent Deactivation (`test_agentDeactivation_preventsNewDelegations`):**
+After deactivation, all three dependent contracts (`AIDelegation`, `RationaleCommitment`, `CredibilityRegistry`) reject operations for the deactivated agent, demonstrating the registry as the single source of truth for agent lifecycle.
+
+### Governor Bridge Test Scenarios
+
+**7. Voting Power Transfer and Restore (`test_delegateBridge_votingPowerTransferAndRestore`):**
+A delegator creates an AI delegation via `GovernorAIDelegation` (which records the previous IVotes delegatee), delegates IVotes to the operator, the operator votes in Governor, and after revocation the delegator restores their original delegation.
+
+**8. Automatic Credibility Resolution (`test_governorResolver_succeededProposal`, `test_governorResolver_defeatedProposal`):**
+`GovernorResolver` reads `IGovernor.state()` to determine a Succeeded proposal maps to positive outcome (1) and a Defeated proposal maps to negative outcome (0), then resolves credibility predictions accordingly.
+
+**9. Non-Finalized Proposal Revert (`test_governorResolver_revertsOnActiveProposal`):**
+`GovernorResolver` reverts with `ProposalNotFinalized` when called on an Active proposal, preventing premature resolution.
+
 ## Security Considerations
 
 ### Agent Collusion

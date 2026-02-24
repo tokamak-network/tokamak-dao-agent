@@ -46,7 +46,7 @@ contract AIDelegation is IAIDelegation {
         bytes32 agentId,
         uint256 expiry,
         string calldata preferencesURI
-    ) external returns (bytes32 delegationId) {
+    ) public virtual returns (bytes32 delegationId) {
         if (!registry.isActiveAgent(agentId)) revert AgentNotActive(agentId);
         if (expiry <= block.timestamp) revert ExpiryInPast(expiry);
 
@@ -73,7 +73,7 @@ contract AIDelegation is IAIDelegation {
     }
 
     /// @inheritdoc IAIDelegation
-    function revokeDelegation(bytes32 delegationId) external {
+    function revokeDelegation(bytes32 delegationId) public virtual {
         Delegation storage d = _delegations[delegationId];
         if (d.delegator == address(0)) revert DelegationNotFound(delegationId);
         if (d.delegator != msg.sender) revert NotDelegator(delegationId, msg.sender);
@@ -102,7 +102,7 @@ contract AIDelegation is IAIDelegation {
     }
 
     /// @inheritdoc IAIDelegation
-    function escalate(bytes32 delegationId, uint256 proposalId, string calldata reasonURI) external {
+    function escalate(bytes32 delegationId, uint256 proposalId, string calldata reasonURI) public virtual {
         Delegation storage d = _delegations[delegationId];
         if (d.delegator == address(0)) revert DelegationNotFound(delegationId);
         if (!d.active || d.expiry <= block.timestamp) revert DelegationExpired(delegationId);

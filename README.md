@@ -425,95 +425,136 @@ fly deploy
 
 ```
 src/
-├── config.ts                Shared constants (models, token limits)
+├── config.ts                  Shared constants (models, token limits)
+├── types/                     Shared type definitions
+│   ├── index.ts
+│   └── tool-definition.ts     ToolDefinition interface (used by mcp + web)
 ├── mcp/
-│   ├── server.ts            MCP server entry (stdio transport)
-│   ├── server-sse.ts        SSE bridge for ElizaOS agents
-│   ├── client.ts            viem public client instance
-│   ├── paths.ts             Path resolution utilities
-│   ├── data/                Contract registry, ABI, DEX protocol configs
-│   └── tools/               15 tool handlers + validation + dispatcher
-│       ├── handlers.ts      Unified tool registry and executeTool()
-│       ├── index.ts         MCP server tool registration
-│       ├── validation.ts    Input validation utilities
+│   ├── server.ts              MCP server entry (stdio transport)
+│   ├── server-sse.ts          SSE bridge for ElizaOS agents
+│   ├── client.ts              viem public client instance
+│   ├── paths.ts               Path resolution utilities
+│   ├── data/                  Contract registry, ABI, DEX protocol configs
+│   └── tools/                 15 tool handlers + validation + dispatcher
+│       ├── handlers.ts        Unified tool registry and executeTool()
+│       ├── index.ts           MCP server tool registration
+│       ├── validation.ts      Input validation utilities
 │       ├── contract-info.ts
 │       ├── contract-source.ts
 │       ├── storage.ts
 │       ├── on-chain.ts
-│       ├── governance.ts    decode_calldata handler
-│       ├── encode.ts        encode_calldata handler
+│       ├── governance.ts      decode_calldata handler
+│       ├── encode.ts          encode_calldata handler
 │       ├── simulation.ts
-│       ├── verification.ts  test_token_transfer handler
+│       ├── verification.ts    test_token_transfer handler
 │       ├── fork-test.ts
 │       ├── dao-actions-tool.ts
 │       ├── upgrade-path.ts
 │       ├── agenda-analysis.ts
 │       └── web-fetch.ts
 ├── db/
-│   ├── index.ts             SQLite connection and initialization
-│   ├── schema.ts            DDL for 11 tables
-│   ├── agendas.ts           Agenda CRUD
-│   ├── opinions.ts          Opinion CRUD
-│   ├── comments.ts          Comment CRUD
-│   ├── validations.ts       Validation records
-│   ├── agents.ts            Agent registration
-│   └── qoc.ts               QOC evaluation and result storage
+│   ├── index.ts               SQLite connection and initialization
+│   ├── schema.ts              DDL for 11 tables
+│   ├── agendas.ts             Agenda CRUD
+│   ├── opinions.ts            Opinion CRUD
+│   ├── comments.ts            Comment CRUD
+│   ├── validations.ts         Validation records
+│   ├── agents.ts              Agent registration
+│   └── qoc.ts                 QOC evaluation and result storage
 ├── web/
-│   ├── server.ts            Web server (Hono + SSE streaming + Streamable HTTP MCP)
-│   ├── forum.ts             Forum API router (32 endpoints)
-│   ├── forum-validation.ts  Input validation for forum endpoints
-│   ├── forum-summary.ts     AI summary generation
-│   ├── forum-agents.ts      Agent opinion generation
-│   ├── forum-deliberation.ts 2-phase deliberation protocol
-│   ├── forum-translate.ts   Text translation
-│   ├── forum-validators.ts  Proposal content validators
-│   ├── agenda-sync.ts       On-chain agenda sync from DAOAgendaManager
-│   ├── agent-credibility.ts Prediction vs outcome tracking
-│   ├── agent-wallets.ts     Agent wallet management
-│   ├── qoc-types.ts         QOC type definitions
-│   ├── qoc-weights.ts       7 criteria + 4 lens weight profiles
-│   ├── qoc-aggregation.ts   Score aggregation engine
-│   ├── qoc-agents.ts        Criterion agent execution
-│   ├── qoc-aggregation.test.ts  27 unit tests
-│   ├── system-prompt.ts     AI system prompt (verification-first)
-│   ├── elizaos.ts           ElizaOS integration endpoints
-│   ├── elizaos-socket.ts    Socket.IO client (for future use)
+│   ├── server.ts              Web server (Hono + SSE streaming + Streamable HTTP MCP)
+│   ├── server.test.ts         Integration tests
+│   ├── system-prompt.ts       AI system prompt (verification-first)
+│   ├── agent-wallets.ts       Agent wallet management
+│   ├── agent-credibility.ts   Prediction vs outcome tracking
+│   ├── agenda-sync.ts         On-chain agenda sync from DAOAgendaManager
+│   ├── middleware/
+│   │   └── rate-limit.ts      Rate limiting middleware
+│   ├── forum/                 Forum API (8 modules)
+│   │   ├── index.ts           Barrel export
+│   │   ├── router.ts          Forum API router (32 endpoints)
+│   │   ├── agents.ts          Agent opinion generation
+│   │   ├── deliberation.ts    2-phase deliberation protocol
+│   │   ├── summary.ts         AI summary generation
+│   │   ├── translate.ts       Text translation
+│   │   ├── validation.ts      Input validation for forum endpoints
+│   │   └── validators.ts      Proposal content validators
+│   ├── qoc/                   QOC Decision Engine (6 modules)
+│   │   ├── index.ts           Barrel export
+│   │   ├── types.ts           QOC type definitions
+│   │   ├── weights.ts         7 criteria + 4 lens weight profiles
+│   │   ├── aggregation.ts     Score aggregation engine
+│   │   ├── aggregation.test.ts  27 unit tests
+│   │   └── agents.ts          Criterion agent execution
+│   ├── elizaos/               ElizaOS integration (3 modules)
+│   │   ├── index.ts           Barrel export
+│   │   ├── router.ts          ElizaOS integration endpoints
+│   │   └── socket.ts          Socket.IO client (for future use)
 │   └── providers/
-│       ├── types.ts         ChatProvider interface
-│       ├── index.ts         Provider detection and factory
-│       ├── anthropic.ts     Anthropic API provider
-│       └── openai.ts        OpenAI API provider
-└── client/                  React frontend (Vite)
-    ├── App.tsx              Router with 5 tabs
-    ├── main.tsx             Entry point
+│       ├── types.ts           ChatProvider interface
+│       ├── index.ts           Provider detection and factory
+│       ├── anthropic.ts       Anthropic API provider
+│       └── openai.ts          OpenAI API provider
+└── client/                    React frontend (Vite)
+    ├── App.tsx                Router with 5 tabs
+    ├── main.tsx               Entry point
+    ├── index.css
+    ├── config/
+    │   └── wagmi.ts           Wagmi wallet configuration
+    ├── types/
+    │   └── appkit.d.ts        AppKit type declarations
+    ├── contexts/
+    │   ├── TabContext.tsx      Tab navigation state
+    │   ├── AgentContext.tsx    Agent management state
+    │   ├── ElizaOSContext.tsx  ElizaOS connection state
+    │   └── WalletContext.tsx   Wallet connection state
     ├── components/
-    │   ├── Chat.tsx         Main chat interface
-    │   ├── ChatInterface.tsx Chat with tool display
-    │   ├── MakeProposalTab.tsx  Calldata generation
+    │   ├── Chat.tsx           Main chat interface
+    │   ├── ChatInterface.tsx  Chat with tool display
+    │   ├── MakeProposalTab.tsx   Calldata generation
     │   ├── AnalyzeProposalTab.tsx  Proposal analysis
-    │   ├── AgentsTab.tsx    Agent management
-    │   ├── ForumTab.tsx     Governance forum
-    │   ├── TabBar.tsx       Navigation
+    │   ├── AgentsTab.tsx      Agent management
+    │   ├── TabBar.tsx         Navigation
+    │   ├── ErrorBoundary.tsx  Error boundary wrapper
     │   ├── AgentChatPanel.tsx
     │   ├── AgentCreator.tsx
+    │   ├── CharacterCreation.tsx  ElizaOS character creation
     │   ├── GroupChatPicker.tsx
-    │   └── chat/            Chat sub-components
-    └── contexts/            React contexts (Tab, Agent, ElizaOS, Wallet)
+    │   ├── chat/              Chat sub-components (11 modules)
+    │   └── forum/             Governance forum (18 modules)
+    │       ├── index.tsx      ForumTab entry point
+    │       ├── types.ts       Shared types and interfaces
+    │       ├── constants.ts   Static config values
+    │       ├── helpers.ts     Utility functions
+    │       ├── useTranslation.tsx
+    │       ├── AgendaListView.tsx
+    │       ├── AgendaDetailView.tsx
+    │       ├── AgendaEditView.tsx
+    │       ├── AgendaWizard.tsx
+    │       ├── AgentEvaluationPanel.tsx
+    │       ├── AgentReviewModal.tsx
+    │       ├── OpinionRequestPanel.tsx
+    │       ├── OpinionComment.tsx
+    │       ├── ValidationResultsPanel.tsx
+    │       ├── CommentForm.tsx
+    │       ├── UserCommentItem.tsx
+    │       ├── ConfidenceBar.tsx
+    │       └── TranslatableContent.tsx
 elizaos/
-├── characters/              4 agent persona definitions
+├── characters/                4 agent persona definitions
 └── plugins/
-    └── tokamak-forum/       Webhook receiver + opinion submission plugin
+    └── tokamak-forum/         Webhook receiver + opinion submission plugin
 contracts/
-├── src/                     Verified Solidity sources (44 contracts, 746+ files)
-├── out/                     Compiled ABIs (Foundry)
-├── test/                    11 fork tests
-└── lib/                     Foundry dependencies
+├── src/                       Verified Solidity sources (44 contracts, 746+ files)
+├── out/                       Compiled ABIs (Foundry)
+├── test/                      11 fork tests
+└── lib/                       Foundry dependencies
 scripts/
 ├── mainnet/
-│   └── contracts.json       Contract registry (addresses, types, proxy relationships)
+│   └── contracts.json         Contract registry (addresses, types, proxy relationships)
 └── storage/
-    ├── layouts/             Storage layout JSONs (40 files)
-    └── reader.ts            Storage reading utilities
+    ├── layouts/               Storage layout JSONs (40 files)
+    └── reader.ts              Storage reading utilities
 ```
 
 ## License

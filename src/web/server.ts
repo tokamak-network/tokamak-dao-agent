@@ -562,10 +562,10 @@ console.log(`Serving static files from ${DIST_DIR}`);
 // Load agent wallets from .env
 initAgentWallets();
 
-// On-chain agenda sync disabled — use POST /api/forum/sync to trigger manually
-// if (process.env.ALCHEMY_RPC_URL) {
-//   startAgendaSync();
-// }
+// On-chain agenda sync — auto-start if ALCHEMY_RPC_URL is available
+if (process.env.ALCHEMY_RPC_URL) {
+  startAgendaSync();
+}
 
 export default {
   port,

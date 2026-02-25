@@ -9,6 +9,7 @@ import { rateLimit } from "../middleware/rate-limit.ts";
 import {
   createAgenda,
   getAgenda,
+  resolveAgenda,
   getNextTipNumber,
   listAgendas,
   updateAgenda,
@@ -142,11 +143,11 @@ forumRouter.get("/agenda/:id", (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
-  const opinions = getOpinionsForAgenda(id);
-  const comments = getCommentsForAgenda(id);
+  const opinions = getOpinionsForAgenda(agenda.id);
+  const comments = getCommentsForAgenda(agenda.id);
   return c.json({ ...agenda, opinions, comments });
 });
 
@@ -156,10 +157,10 @@ forumRouter.get("/agenda/:id/comments", (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
-  const comments = getCommentsForAgenda(id);
+  const comments = getCommentsForAgenda(agenda.id);
   return c.json({ comments, count: comments.length });
 });
 
@@ -167,7 +168,7 @@ forumRouter.post("/agenda/:id/comment", async (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
   const body = await c.req.json();
@@ -175,7 +176,7 @@ forumRouter.post("/agenda/:id/comment", async (c) => {
   if (error) return c.json({ error }, 400);
 
   const comment = createComment({
-    agendaId: id,
+    agendaId: agenda.id,
     walletAddress: body.walletAddress,
     content: body.content,
   });
@@ -226,10 +227,10 @@ forumRouter.get("/agenda/:id/validations", (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
-  const validations = getValidationsForAgenda(id);
+  const validations = getValidationsForAgenda(agenda.id);
   const allPass =
     validations.length === 3 && validations.every((v) => v.status === "pass");
 
@@ -240,7 +241,7 @@ forumRouter.patch("/agenda/:id", async (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
   if (agenda.status !== "draft" && agenda.status !== "rejected") {
@@ -280,12 +281,12 @@ forumRouter.patch("/agenda/:id", async (c) => {
   }
 
   // Update fields, reset status, and trigger QOC evaluation directly
-  updateAgenda(id, fields);
-  clearValidationsForAgenda(id);
-  const updated = updateAgendaStatus(id, "open")!;
+  updateAgenda(agenda.id, fields);
+  clearValidationsForAgenda(agenda.id);
+  const updated = updateAgendaStatus(agenda.id, "open")!;
 
   // Fire-and-forget QOC evaluation + agent opinions
-  const freshAgenda = getAgenda(id);
+  const freshAgenda = getAgenda(agenda.id);
   if (freshAgenda) {
     runQocEvaluation(freshAgenda).catch((err) =>
       console.error("[forum] QOC evaluation error:", err),
@@ -306,7 +307,7 @@ forumRouter.post("/agenda/:id/opinion/request", async (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
   if (agenda.status !== "open") {
@@ -320,7 +321,7 @@ forumRouter.post("/agenda/:id/opinion/request", async (c) => {
   }
 
   // Check if opinion already exists
-  const existingOpinions = getOpinionsForAgenda(id);
+  const existingOpinions = getOpinionsForAgenda(agenda.id);
   if (existingOpinions.some((o) => o.agentName === agentName)) {
     return c.json({ error: "Opinion already exists for this agent" }, 409);
   }
@@ -333,7 +334,7 @@ forumRouter.post("/agenda/:id/opinion/request", async (c) => {
     }
 
     // Fetch the newly created opinion
-    const opinions = getOpinionsForAgenda(id);
+    const opinions = getOpinionsForAgenda(agenda.id);
     const newOpinion = opinions.find((o) => o.agentName === agentName);
     return c.json({ status: "completed", opinion: newOpinion }, 201);
   } catch (err) {
@@ -351,7 +352,7 @@ forumRouter.post("/agenda/:id/opinion", async (c) => {
   const agendaId = Number(c.req.param("id"));
   if (isNaN(agendaId)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(agendaId);
+  const agenda = resolveAgenda(agendaId);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
   if (agenda.status !== "open") {
@@ -367,7 +368,7 @@ forumRouter.post("/agenda/:id/opinion", async (c) => {
   if (error) return c.json({ error }, 400);
 
   const opinion = createOpinion({
-    agendaId,
+    agendaId: agenda.id,
     agentName: body.agentName,
     stakeholderType: body.stakeholderType,
     personality: body.personality,
@@ -384,10 +385,10 @@ forumRouter.get("/agenda/:id/opinions", (c) => {
   const agendaId = Number(c.req.param("id"));
   if (isNaN(agendaId)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(agendaId);
+  const agenda = resolveAgenda(agendaId);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
-  const opinions = getOpinionsForAgenda(agendaId);
+  const opinions = getOpinionsForAgenda(agenda.id);
   return c.json({ opinions, count: opinions.length });
 });
 
@@ -397,10 +398,10 @@ forumRouter.get("/agenda/:id/summary", async (c) => {
   const agendaId = Number(c.req.param("id"));
   if (isNaN(agendaId)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(agendaId);
+  const agenda = resolveAgenda(agendaId);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
-  const opinions = getOpinionsForAgenda(agendaId);
+  const opinions = getOpinionsForAgenda(agenda.id);
 
   try {
     const summary = await generateSummary(agenda, opinions);
@@ -476,7 +477,7 @@ forumRouter.post("/agenda/:id/qoc/evaluate", async (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
   if (agenda.status !== "open") {
@@ -501,7 +502,7 @@ forumRouter.post("/agenda/:id/qoc/evaluate/:criterionId", async (c) => {
 
   const criterionId = decodeURIComponent(c.req.param("criterionId"));
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
   if (agenda.status !== "open") {
@@ -527,10 +528,10 @@ forumRouter.get("/agenda/:id/qoc/evaluations", (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
-  const evaluations = getCriterionEvaluationsForAgenda(id);
+  const evaluations = getCriterionEvaluationsForAgenda(agenda.id);
   return c.json({ evaluations, count: evaluations.length });
 });
 
@@ -538,10 +539,10 @@ forumRouter.get("/agenda/:id/qoc/result", (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
-  const result = getQocResult(id);
+  const result = getQocResult(agenda.id);
   if (!result) {
     return c.json({ error: "No QOC result found. Run evaluation first." }, 404);
   }
@@ -554,7 +555,7 @@ forumRouter.post("/agenda/:id/deliberate", async (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
   if (agenda.status !== "open") {
@@ -588,11 +589,11 @@ forumRouter.get("/agenda/:id/deliberation", (c) => {
   const id = Number(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid agenda ID" }, 400);
 
-  const agenda = getAgenda(id);
+  const agenda = resolveAgenda(id);
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
-  const phases = getDeliberationRounds(id);
-  const result = getQocResult(id);
+  const phases = getDeliberationRounds(agenda.id);
+  const result = getQocResult(agenda.id);
   return c.json({ phases, result, phaseCount: phases.length });
 });
 
@@ -705,7 +706,7 @@ forumRouter.post("/webhook/new-agenda", async (c) => {
   const agendaId = body.agendaId;
   if (!agendaId) return c.json({ error: "agendaId is required" }, 400);
 
-  const agenda = getAgenda(Number(agendaId));
+  const agenda = resolveAgenda(Number(agendaId));
   if (!agenda) return c.json({ error: "Agenda not found" }, 404);
 
   const count = await notifySubscribers("new_agenda", agenda);

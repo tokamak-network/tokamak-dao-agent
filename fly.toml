@@ -8,6 +8,7 @@ primary_region = 'nrt'
 [env]
   ELIZAOS_URL = "https://tokamak-dao-agent-elizaos.fly.dev"
   ALLOWED_ORIGINS = "https://tokamak-dao-agent.fly.dev"
+  DB_PATH = "/data/forum.db"
 
 [http_service]
   internal_port = 3333

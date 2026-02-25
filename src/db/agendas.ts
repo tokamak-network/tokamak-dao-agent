@@ -89,6 +89,26 @@ export function getAgenda(id: number): ForumAgenda | null {
   return row ? rowToAgenda(row) : null;
 }
 
+/** Look up an agenda by its on-chain agenda ID (from DAOAgendaManager). */
+export function getAgendaByOnChainId(onChainId: number): ForumAgenda | null {
+  const db = getDb();
+  const row = db
+    .query(
+      `SELECT a.*, COUNT(o.id) as opinion_count
+       FROM agendas a
+       LEFT JOIN opinions o ON o.agenda_id = a.id
+       WHERE a.on_chain_agenda_id = ?
+       GROUP BY a.id`,
+    )
+    .get(onChainId);
+  return row ? rowToAgenda(row) : null;
+}
+
+/** Resolve an agenda by DB ID first, then fall back to on-chain agenda ID. */
+export function resolveAgenda(id: number): ForumAgenda | null {
+  return getAgenda(id) ?? getAgendaByOnChainId(id);
+}
+
 export function listAgendas(opts: ListAgendaOptions = {}): ForumAgenda[] {
   const db = getDb();
   const conditions: string[] = [];

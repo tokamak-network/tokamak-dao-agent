@@ -3,6 +3,8 @@ pragma solidity ^0.8.24;
 
 import {ICredibilityRegistry} from "./ICredibilityRegistry.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /// @title CredibilityRegistry
 /// @notice Reference implementation of ICredibilityRegistry.
@@ -17,10 +19,10 @@ import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 ///
 ///      Verdict values are not restricted to a fixed range. The implementation treats
 ///      verdict >= verdictPositiveThreshold as "positive direction" for correctness checks.
-contract CredibilityRegistry is ICredibilityRegistry {
+contract CredibilityRegistry is ICredibilityRegistry, ERC165 {
     struct Prediction {
         uint8 verdict;
-        uint256 score;
+        uint8 score;
         bool exists;
         bool resolved;
         int8 delta;
@@ -42,7 +44,7 @@ contract CredibilityRegistry is ICredibilityRegistry {
     address public immutable resolver;
 
     /// @notice Confidence threshold: score >= highConfThreshold is high confidence
-    uint256 public immutable highConfThreshold;
+    uint8 public immutable highConfThreshold;
 
     /// @notice Verdict threshold: verdict >= this value is considered "positive direction"
     uint8 public immutable verdictPositiveThreshold;
@@ -62,7 +64,7 @@ contract CredibilityRegistry is ICredibilityRegistry {
     error PredictionExists(bytes32 agentId, uint256 proposalId);
     error PredictionNotFound(bytes32 agentId, uint256 proposalId);
     error AlreadyResolved(bytes32 agentId, uint256 proposalId);
-    error InvalidScore(uint256 score);
+    error InvalidScore(uint8 score);
     error InvalidOutcome(uint8 outcome);
     error InvalidDeltaConfig();
 
@@ -74,7 +76,7 @@ contract CredibilityRegistry is ICredibilityRegistry {
     constructor(
         address _registry,
         address _resolver,
-        uint256 _highConfThreshold,
+        uint8 _highConfThreshold,
         uint8 _verdictPositiveThreshold,
         int8[4] memory _deltas
     ) {
@@ -109,7 +111,7 @@ contract CredibilityRegistry is ICredibilityRegistry {
         bytes32 agentId,
         uint256 proposalId,
         uint8 verdict,
-        uint256 score
+        uint8 score
     ) external onlyAgentOperator(agentId) {
         if (!registry.isActiveAgent(agentId)) revert AgentNotActive(agentId);
         if (score > 100) revert InvalidScore(score);
@@ -159,7 +161,7 @@ contract CredibilityRegistry is ICredibilityRegistry {
 
     /// @inheritdoc ICredibilityRegistry
     function getPrediction(bytes32 agentId, uint256 proposalId)
-        external view returns (uint8 verdict, uint256 score, bool resolved, int8 delta)
+        external view returns (uint8 verdict, uint8 score, bool resolved, int8 delta)
     {
         Prediction storage p = _predictions[agentId][proposalId];
         return (p.verdict, p.score, p.resolved, p.delta);
@@ -168,7 +170,7 @@ contract CredibilityRegistry is ICredibilityRegistry {
     /// @dev Compute credibility delta using configurable parameters
     ///      High confidence: score >= highConfThreshold OR score <= (100 - highConfThreshold)
     ///      Verdict direction: verdict >= verdictPositiveThreshold → positive
-    function _computeDelta(uint8 verdict, uint256 score, uint8 actualOutcome) internal view returns (int8) {
+    function _computeDelta(uint8 verdict, uint8 score, uint8 actualOutcome) internal view returns (int8) {
         bool highConf = score >= highConfThreshold || score <= (100 - highConfThreshold);
 
         bool predictedPositive = verdict >= verdictPositiveThreshold;
@@ -181,5 +183,10 @@ contract CredibilityRegistry is ICredibilityRegistry {
         if (correct && !highConf) return d.lowConfCorrect;
         if (!correct && highConf) return d.highConfWrong;
         return d.lowConfWrong;
+    }
+
+    /// @inheritdoc ERC165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return interfaceId == type(ICredibilityRegistry).interfaceId || super.supportsInterface(interfaceId);
     }
 }

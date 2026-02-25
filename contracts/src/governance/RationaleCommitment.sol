@@ -3,6 +3,8 @@ pragma solidity ^0.8.24;
 
 import {IRationaleCommitment} from "./IRationaleCommitment.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /// @title RationaleCommitment
 /// @notice Reference implementation of IRationaleCommitment.
@@ -10,7 +12,7 @@ import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 ///      1. Agent commits keccak256(rationaleURI, salt) during voting
 ///      2. Agent reveals rationaleURI + salt after voting ends
 ///      3. Contract verifies hash match
-contract RationaleCommitment is IRationaleCommitment {
+contract RationaleCommitment is IRationaleCommitment, ERC165 {
     struct Commitment {
         bytes32 commitHash;
         uint256 timestamp;
@@ -92,5 +94,10 @@ contract RationaleCommitment is IRationaleCommitment {
     /// @inheritdoc IRationaleCommitment
     function isRevealed(bytes32 agentId, uint256 proposalId) external view returns (bool) {
         return _commitments[agentId][proposalId].revealed;
+    }
+
+    /// @inheritdoc ERC165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return interfaceId == type(IRationaleCommitment).interfaceId || super.supportsInterface(interfaceId);
     }
 }

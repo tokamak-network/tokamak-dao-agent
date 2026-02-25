@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import "forge-std/Test.sol";
 import {AIAgentRegistry} from "../../src/governance/AIAgentRegistry.sol";
 import {IAIAgentRegistry} from "../../src/governance/IAIAgentRegistry.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
  * @title AIAgentRegistryTest
@@ -187,5 +188,19 @@ contract AIAgentRegistryTest is Test {
         assertTrue(agent1 != agent2);
         assertEq(registry.agentOperator(agent1), operator1);
         assertEq(registry.agentOperator(agent2), operator2);
+    }
+
+    // ─── ERC-165 ───
+
+    function test_supportsInterface_ownInterface() public view {
+        assertTrue(registry.supportsInterface(type(IAIAgentRegistry).interfaceId));
+    }
+
+    function test_supportsInterface_IERC165() public view {
+        assertTrue(registry.supportsInterface(type(IERC165).interfaceId));
+    }
+
+    function test_supportsInterface_returnsFalseForRandom() public view {
+        assertFalse(registry.supportsInterface(0xdeadbeef));
     }
 }

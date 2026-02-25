@@ -3,13 +3,15 @@ pragma solidity ^0.8.24;
 
 import {IAIDelegation} from "./IAIDelegation.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /// @title AIDelegation
 /// @notice Reference implementation of IAIDelegation.
 /// @dev Each account can have at most one active AI delegation at a time.
 ///      Delegations expire automatically and can be revoked by the delegator.
 ///      Only the agent's operator can call escalate().
-contract AIDelegation is IAIDelegation {
+contract AIDelegation is IAIDelegation, ERC165 {
     struct Delegation {
         address delegator;
         bytes32 agentId;
@@ -88,17 +90,18 @@ contract AIDelegation is IAIDelegation {
 
     /// @inheritdoc IAIDelegation
     function getAIDelegation(address account) external view returns (
+        bytes32 delegationId,
         bytes32 agentId,
         uint256 expiry,
         string memory preferencesURI
     ) {
-        bytes32 delegationId = activeDelegation[account];
-        if (delegationId == bytes32(0)) return (bytes32(0), 0, "");
+        delegationId = activeDelegation[account];
+        if (delegationId == bytes32(0)) return (bytes32(0), bytes32(0), 0, "");
 
         Delegation storage d = _delegations[delegationId];
-        if (!d.active || d.expiry <= block.timestamp) return (bytes32(0), 0, "");
+        if (!d.active || d.expiry <= block.timestamp) return (bytes32(0), bytes32(0), 0, "");
 
-        return (d.agentId, d.expiry, d.preferencesURI);
+        return (delegationId, d.agentId, d.expiry, d.preferencesURI);
     }
 
     /// @inheritdoc IAIDelegation
@@ -112,5 +115,10 @@ contract AIDelegation is IAIDelegation {
         if (msg.sender != operator) revert NotAgentOperator(delegationId, msg.sender);
 
         emit Escalated(delegationId, proposalId, reasonURI);
+    }
+
+    /// @inheritdoc ERC165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return interfaceId == type(IAIDelegation).interfaceId || super.supportsInterface(interfaceId);
     }
 }

@@ -4,6 +4,8 @@ pragma solidity ^0.8.24;
 import "forge-std/Test.sol";
 import {AIAgentRegistry} from "../../src/governance/AIAgentRegistry.sol";
 import {CredibilityRegistry} from "../../src/governance/CredibilityRegistry.sol";
+import {ICredibilityRegistry} from "../../src/governance/ICredibilityRegistry.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
  * @title CredibilityRegistryTest
@@ -32,7 +34,7 @@ contract CredibilityRegistryTest is Test {
     // Default delta config: [+3, +1, -2, -1]
     int8[4] defaultDeltas = [int8(3), int8(1), int8(-2), int8(-1)];
 
-    event PredictionRecorded(bytes32 indexed agentId, uint256 indexed proposalId, uint8 verdict, uint256 score);
+    event PredictionRecorded(bytes32 indexed agentId, uint256 indexed proposalId, uint8 verdict, uint8 score);
     event PredictionResolved(bytes32 indexed agentId, uint256 indexed proposalId, int8 delta);
 
     function setUp() public {
@@ -56,7 +58,7 @@ contract CredibilityRegistryTest is Test {
         vm.prank(operator);
         credibility.recordPrediction(agentId, 1, FOR, 85);
 
-        (uint8 verdict, uint256 score, bool resolved, int8 delta) = credibility.getPrediction(agentId, 1);
+        (uint8 verdict, uint8 score, bool resolved, int8 delta) = credibility.getPrediction(agentId, 1);
         assertEq(verdict, FOR);
         assertEq(score, 85);
         assertFalse(resolved);
@@ -97,7 +99,7 @@ contract CredibilityRegistryTest is Test {
 
     function test_recordPrediction_revertInvalidScore() public {
         vm.prank(operator);
-        vm.expectRevert(abi.encodeWithSelector(CredibilityRegistry.InvalidScore.selector, 101));
+        vm.expectRevert(abi.encodeWithSelector(CredibilityRegistry.InvalidScore.selector, uint8(101)));
         credibility.recordPrediction(agentId, 1, FOR, 101);
     }
 
@@ -385,5 +387,29 @@ contract CredibilityRegistryTest is Test {
         int8[4] memory badDeltas2 = [int8(3), int8(1), int8(0), int8(-1)];
         vm.expectRevert(abi.encodeWithSelector(CredibilityRegistry.InvalidDeltaConfig.selector));
         new CredibilityRegistry(address(agentRegistry), resolverAddr, 70, 1, badDeltas2);
+    }
+
+    // ─── View functions ───
+
+    function test_registry_returnsCorrectAddress() public view {
+        assertEq(address(credibility.registry()), address(agentRegistry));
+    }
+
+    function test_resolver_returnsCorrectAddress() public view {
+        assertEq(credibility.resolver(), resolverAddr);
+    }
+
+    // ─── ERC-165 ───
+
+    function test_supportsInterface_ownInterface() public view {
+        assertTrue(credibility.supportsInterface(type(ICredibilityRegistry).interfaceId));
+    }
+
+    function test_supportsInterface_IERC165() public view {
+        assertTrue(credibility.supportsInterface(type(IERC165).interfaceId));
+    }
+
+    function test_supportsInterface_returnsFalseForRandom() public view {
+        assertFalse(credibility.supportsInterface(0xdeadbeef));
     }
 }

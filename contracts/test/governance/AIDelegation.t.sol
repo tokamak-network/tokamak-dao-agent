@@ -4,6 +4,8 @@ pragma solidity ^0.8.24;
 import "forge-std/Test.sol";
 import {AIAgentRegistry} from "../../src/governance/AIAgentRegistry.sol";
 import {AIDelegation} from "../../src/governance/AIDelegation.sol";
+import {IAIDelegation} from "../../src/governance/IAIDelegation.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
  * @title AIDelegationTest
@@ -45,7 +47,8 @@ contract AIDelegationTest is Test {
         vm.prank(delegator1);
         bytes32 delegationId = delegation.delegateToAgent(agentId, expiry, PREFS_URI);
 
-        (bytes32 retAgent, uint256 retExpiry, string memory retPrefs) = delegation.getAIDelegation(delegator1);
+        (bytes32 retDelegationId, bytes32 retAgent, uint256 retExpiry, string memory retPrefs) = delegation.getAIDelegation(delegator1);
+        assertEq(retDelegationId, delegationId);
         assertEq(retAgent, agentId);
         assertEq(retExpiry, expiry);
         assertEq(retPrefs, PREFS_URI);
@@ -86,7 +89,7 @@ contract AIDelegationTest is Test {
         assertTrue(id1 != id2);
         assertEq(delegation.activeDelegation(delegator1), id2);
 
-        (bytes32 retAgent,, string memory retPrefs) = delegation.getAIDelegation(delegator1);
+        (, bytes32 retAgent,, string memory retPrefs) = delegation.getAIDelegation(delegator1);
         assertEq(retAgent, agentId);
         assertEq(retPrefs, "ipfs://QmPrefs2");
     }
@@ -102,7 +105,7 @@ contract AIDelegationTest is Test {
 
         assertEq(delegation.activeDelegation(delegator1), bytes32(0));
 
-        (bytes32 retAgent,,) = delegation.getAIDelegation(delegator1);
+        (, bytes32 retAgent,,) = delegation.getAIDelegation(delegator1);
         assertEq(retAgent, bytes32(0));
     }
 
@@ -142,7 +145,7 @@ contract AIDelegationTest is Test {
         // Warp past expiry
         vm.warp(expiry + 1);
 
-        (bytes32 retAgent,,) = delegation.getAIDelegation(delegator1);
+        (, bytes32 retAgent,,) = delegation.getAIDelegation(delegator1);
         assertEq(retAgent, bytes32(0));
     }
 
@@ -192,9 +195,29 @@ contract AIDelegationTest is Test {
 
         assertTrue(id1 != id2);
 
-        (bytes32 agent1,,) = delegation.getAIDelegation(delegator1);
-        (bytes32 agent2,,) = delegation.getAIDelegation(delegator2);
+        (, bytes32 agent1,,) = delegation.getAIDelegation(delegator1);
+        (, bytes32 agent2,,) = delegation.getAIDelegation(delegator2);
         assertEq(agent1, agentId);
         assertEq(agent2, agentId);
+    }
+
+    // ─── View functions ───
+
+    function test_registry_returnsCorrectAddress() public view {
+        assertEq(address(delegation.registry()), address(registry));
+    }
+
+    // ─── ERC-165 ───
+
+    function test_supportsInterface_ownInterface() public view {
+        assertTrue(delegation.supportsInterface(type(IAIDelegation).interfaceId));
+    }
+
+    function test_supportsInterface_IERC165() public view {
+        assertTrue(delegation.supportsInterface(type(IERC165).interfaceId));
+    }
+
+    function test_supportsInterface_returnsFalseForRandom() public view {
+        assertFalse(delegation.supportsInterface(0xdeadbeef));
     }
 }

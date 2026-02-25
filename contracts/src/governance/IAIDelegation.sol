@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+
 /// @title IAIDelegation
 /// @notice Preference-based delegation of voting power to AI agents.
 /// @dev Extends the concept of ERC-5805 delegation with:
@@ -12,7 +15,7 @@ pragma solidity ^0.8.24;
 ///      - Implementations MAY bridge to IVotes.delegate() internally
 ///      - The agent's operator address SHOULD be usable as an IVotes delegatee
 ///      - Existing Governor contracts require no modification
-interface IAIDelegation {
+interface IAIDelegation is IERC165 {
     /// @notice Emitted when a delegation to an AI agent is created
     event AIDelegationCreated(
         address indexed delegator,
@@ -31,6 +34,10 @@ interface IAIDelegation {
     ///      previously cast vote. Off-chain systems SHOULD notify the delegator.
     event Escalated(bytes32 indexed delegationId, uint256 indexed proposalId, string reasonURI);
 
+    /// @notice Get the registry contract
+    /// @return The IAIAgentRegistry contract
+    function registry() external view returns (IAIAgentRegistry);
+
     /// @notice Delegate voting power to an AI agent with constraints
     /// @param agentId Registered agent from IAIAgentRegistry
     /// @param expiry Delegation expiry timestamp (MUST be > block.timestamp)
@@ -48,10 +55,12 @@ interface IAIDelegation {
 
     /// @notice Get active delegation for an account
     /// @param account The delegator address
+    /// @return delegationId The active delegation identifier (bytes32(0) if none)
     /// @return agentId The delegated agent
     /// @return expiry Delegation expiry timestamp
     /// @return preferencesURI URI to preferences JSON
     function getAIDelegation(address account) external view returns (
+        bytes32 delegationId,
         bytes32 agentId,
         uint256 expiry,
         string memory preferencesURI

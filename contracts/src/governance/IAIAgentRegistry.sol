@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+
 /// @title IAIAgentRegistry
 /// @notice On-chain registry for AI agents participating in DAO governance.
 /// @dev Each agent is identified by a deterministic bytes32 ID derived from operator + nonce.
 ///      The metadataURI points to an off-chain AgentProfile JSON (model, criteria, stakeholder type).
-interface IAIAgentRegistry {
+interface IAIAgentRegistry is IERC165 {
     /// @notice Emitted when a new agent is registered
     event AgentRegistered(bytes32 indexed agentId, address indexed operator, string metadataURI);
 

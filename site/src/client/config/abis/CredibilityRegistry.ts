@@ -15,8 +15,8 @@ export const credibilityAbi = [
       },
       {
         "name": "_highConfThreshold",
-        "type": "uint256",
-        "internalType": "uint256"
+        "type": "uint8",
+        "internalType": "uint8"
       },
       {
         "name": "_verdictPositiveThreshold",
@@ -106,8 +106,8 @@ export const credibilityAbi = [
       },
       {
         "name": "score",
-        "type": "uint256",
-        "internalType": "uint256"
+        "type": "uint8",
+        "internalType": "uint8"
       },
       {
         "name": "resolved",
@@ -129,8 +129,8 @@ export const credibilityAbi = [
     "outputs": [
       {
         "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
+        "type": "uint8",
+        "internalType": "uint8"
       }
     ],
     "stateMutability": "view"
@@ -156,8 +156,8 @@ export const credibilityAbi = [
       },
       {
         "name": "score",
-        "type": "uint256",
-        "internalType": "uint256"
+        "type": "uint8",
+        "internalType": "uint8"
       }
     ],
     "outputs": [],
@@ -214,6 +214,25 @@ export const credibilityAbi = [
   },
   {
     "type": "function",
+    "name": "supportsInterface",
+    "inputs": [
+      {
+        "name": "interfaceId",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "verdictPositiveThreshold",
     "inputs": [],
     "outputs": [
@@ -249,9 +268,9 @@ export const credibilityAbi = [
       },
       {
         "name": "score",
-        "type": "uint256",
+        "type": "uint8",
         "indexed": false,
-        "internalType": "uint256"
+        "internalType": "uint8"
       }
     ],
     "anonymous": false
@@ -330,8 +349,8 @@ export const credibilityAbi = [
     "inputs": [
       {
         "name": "score",
-        "type": "uint256",
-        "internalType": "uint256"
+        "type": "uint8",
+        "internalType": "uint8"
       }
     ]
   },

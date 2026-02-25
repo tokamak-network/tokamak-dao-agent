@@ -2,12 +2,14 @@
 pragma solidity ^0.8.24;
 
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /// @title AIAgentRegistry
 /// @notice Reference implementation of IAIAgentRegistry.
 /// @dev Agent IDs are deterministic: keccak256(abi.encodePacked(operator, nonce)).
 ///      Only the operator can update or deactivate their agent.
-contract AIAgentRegistry is IAIAgentRegistry {
+contract AIAgentRegistry is IAIAgentRegistry, ERC165 {
     struct Agent {
         address operator;
         string metadataURI;
@@ -81,5 +83,10 @@ contract AIAgentRegistry is IAIAgentRegistry {
     /// @inheritdoc IAIAgentRegistry
     function isActiveAgent(bytes32 agentId) external view returns (bool) {
         return _agents[agentId].active;
+    }
+
+    /// @inheritdoc ERC165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return interfaceId == type(IAIAgentRegistry).interfaceId || super.supportsInterface(interfaceId);
     }
 }

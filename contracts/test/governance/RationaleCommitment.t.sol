@@ -4,6 +4,8 @@ pragma solidity ^0.8.24;
 import "forge-std/Test.sol";
 import {AIAgentRegistry} from "../../src/governance/AIAgentRegistry.sol";
 import {RationaleCommitment} from "../../src/governance/RationaleCommitment.sol";
+import {IRationaleCommitment} from "../../src/governance/IRationaleCommitment.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
  * @title RationaleCommitmentTest
@@ -157,6 +159,10 @@ contract RationaleCommitmentTest is Test {
         assertEq(retTimestamp, 0);
     }
 
+    function test_registry_returnsCorrectAddress() public view {
+        assertEq(address(commitment.registry()), address(registry));
+    }
+
     // ─── Multiple proposals ───
 
     function test_multipleProposals_independent() public {
@@ -172,5 +178,19 @@ contract RationaleCommitmentTest is Test {
         (bytes32 retHash2,) = commitment.getCommitment(agentId, 2);
         assertEq(retHash1, hash1);
         assertEq(retHash2, hash2);
+    }
+
+    // ─── ERC-165 ───
+
+    function test_supportsInterface_ownInterface() public view {
+        assertTrue(commitment.supportsInterface(type(IRationaleCommitment).interfaceId));
+    }
+
+    function test_supportsInterface_IERC165() public view {
+        assertTrue(commitment.supportsInterface(type(IERC165).interfaceId));
+    }
+
+    function test_supportsInterface_returnsFalseForRandom() public view {
+        assertFalse(commitment.supportsInterface(0xdeadbeef));
     }
 }

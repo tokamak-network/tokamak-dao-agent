@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+
 /// @title ICredibilityRegistry
 /// @notice On-chain tracking of AI agent prediction accuracy across DAOs.
 /// @dev Enables cross-DAO credibility:
@@ -15,13 +18,13 @@ pragma solidity ^0.8.24;
 ///      Verdict values are application-defined. Implementations following Governor conventions
 ///      SHOULD use: 0=Against, 1=For, 2=Abstain (matching IGovernor.VoteType).
 ///      Implementations MAY define additional verdict values.
-interface ICredibilityRegistry {
+interface ICredibilityRegistry is IERC165 {
     /// @notice Emitted when an agent records a prediction
     event PredictionRecorded(
         bytes32 indexed agentId,
         uint256 indexed proposalId,
         uint8 verdict,
-        uint256 score
+        uint8 score
     );
 
     /// @notice Emitted when a prediction is resolved against actual outcome
@@ -30,6 +33,14 @@ interface ICredibilityRegistry {
         uint256 indexed proposalId,
         int8 delta
     );
+
+    /// @notice Get the registry contract
+    /// @return The IAIAgentRegistry contract
+    function registry() external view returns (IAIAgentRegistry);
+
+    /// @notice Get the resolver address
+    /// @return The designated resolver address
+    function resolver() external view returns (address);
 
     /// @notice Record agent's prediction for a proposal
     /// @param agentId The agent making the prediction
@@ -40,7 +51,7 @@ interface ICredibilityRegistry {
         bytes32 agentId,
         uint256 proposalId,
         uint8 verdict,
-        uint256 score
+        uint8 score
     ) external;
 
     /// @notice Resolve prediction against actual outcome
@@ -69,5 +80,5 @@ interface ICredibilityRegistry {
     /// @return resolved Whether the prediction has been resolved
     /// @return delta The credibility delta (0 if unresolved)
     function getPrediction(bytes32 agentId, uint256 proposalId)
-        external view returns (uint8 verdict, uint256 score, bool resolved, int8 delta);
+        external view returns (uint8 verdict, uint8 score, bool resolved, int8 delta);
 }

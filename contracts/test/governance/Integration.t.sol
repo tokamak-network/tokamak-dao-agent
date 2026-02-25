@@ -91,7 +91,7 @@ contract IntegrationTest is Test {
         bytes32 delegationId = delegation.delegateToAgent(agentId, expiry, "ipfs://QmPrefs");
         assertTrue(delegationId != bytes32(0));
 
-        (bytes32 retAgent, uint256 retExpiry,) = delegation.getAIDelegation(delegator);
+        (, bytes32 retAgent, uint256 retExpiry,) = delegation.getAIDelegation(delegator);
         assertEq(retAgent, agentId);
         assertEq(retExpiry, expiry);
 
@@ -146,7 +146,7 @@ contract IntegrationTest is Test {
         assertEq(totalPredictions, 1);
 
         // Verify prediction record
-        (uint8 verdict, uint256 score, bool resolved, int8 delta) = credibility.getPrediction(agentId, proposalId);
+        (uint8 verdict, uint8 score, bool resolved, int8 delta) = credibility.getPrediction(agentId, proposalId);
         assertEq(verdict, 1);
         assertEq(score, 85);
         assertTrue(resolved);
@@ -198,14 +198,14 @@ contract IntegrationTest is Test {
         delegation.delegateToAgent(agentId, shortExpiry, "ipfs://QmPrefs");
 
         // Verify active
-        (bytes32 retAgent,,) = delegation.getAIDelegation(delegator);
+        (, bytes32 retAgent,,) = delegation.getAIDelegation(delegator);
         assertEq(retAgent, agentId);
 
         // Warp past expiry
         vm.warp(shortExpiry + 1);
 
         // Delegation returns zero values (expired)
-        (retAgent,,) = delegation.getAIDelegation(delegator);
+        (, retAgent,,) = delegation.getAIDelegation(delegator);
         assertEq(retAgent, bytes32(0));
 
         // New delegation can be created
@@ -213,7 +213,7 @@ contract IntegrationTest is Test {
         uint256 newExpiry = block.timestamp + 30 days;
         delegation.delegateToAgent(agentId, newExpiry, "ipfs://QmNewPrefs");
 
-        (retAgent,,) = delegation.getAIDelegation(delegator);
+        (, retAgent,,) = delegation.getAIDelegation(delegator);
         assertEq(retAgent, agentId);
     }
 

@@ -113,6 +113,11 @@ export const delegationAbi = [
     ],
     "outputs": [
       {
+        "name": "delegationId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
         "name": "agentId",
         "type": "bytes32",
         "internalType": "bytes32"
@@ -155,6 +160,25 @@ export const delegationAbi = [
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "supportsInterface",
+    "inputs": [
+      {
+        "name": "interfaceId",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "event",

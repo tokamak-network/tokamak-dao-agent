@@ -3,7 +3,6 @@ import { useI18n } from "../contexts/I18nContext";
 import type { Locale } from "../i18n/translations";
 import FrontmatterCard from "../components/spec/FrontmatterCard";
 import SpecRenderer from "../components/spec/SpecRenderer";
-import TableOfContents from "../components/spec/TableOfContents";
 
 import specEn from "../../../../docs/erc-ai-governance.md?raw";
 import specKo from "../../../../docs/erc-ai-governance.ko.md?raw";
@@ -40,9 +39,6 @@ export default function SpecPage() {
 
   return (
     <div style={{
-      display: "grid",
-      gridTemplateColumns: "1fr 220px",
-      gap: "2rem",
       maxWidth: "var(--max-width)",
       margin: "0 auto",
       padding: "2rem 1.5rem",
@@ -51,9 +47,6 @@ export default function SpecPage() {
         <FrontmatterCard data={data} />
         <SpecRenderer content={content} />
       </article>
-      <aside style={{ display: "block" }}>
-        <TableOfContents markdown={content} />
-      </aside>
     </div>
   );
 }

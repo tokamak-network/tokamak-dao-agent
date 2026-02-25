@@ -1,8 +1,12 @@
+import { useI18n } from "../../contexts/I18nContext";
+
 interface FrontmatterProps {
   data: Record<string, string>;
 }
 
 export default function FrontmatterCard({ data }: FrontmatterProps) {
+  const { t } = useI18n();
+
   if (!data.title) return null;
 
   return (
@@ -46,23 +50,23 @@ export default function FrontmatterCard({ data }: FrontmatterProps) {
         fontFamily: "var(--font-mono)",
       }}>
         {data.author && (
-          <MetaField label="Author" value={data.author} />
+          <MetaField label={t("meta.author")} value={data.author} />
         )}
         {data.type && (
-          <MetaField label="Type" value={`${data.type} / ${data.category || ""}`} />
+          <MetaField label={t("meta.type")} value={`${data.type} / ${data.category || ""}`} />
         )}
         {data.requires && (
-          <MetaField label="Requires" value={`EIP-${data.requires.replace(/, /g, ", EIP-")}`} />
+          <MetaField label={t("meta.requires")} value={`EIP-${data.requires.replace(/, /g, ", EIP-")}`} />
         )}
         {data.created && (
-          <MetaField label="Created" value={data.created} />
+          <MetaField label={t("meta.created")} value={data.created} />
         )}
         {data["discussions-to"] && (
           <MetaField
-            label="Discussion"
+            label={t("meta.discussion")}
             value={
               <a href={data["discussions-to"]} target="_blank" rel="noopener noreferrer">
-                Ethereum Magicians
+                {t("meta.ethereumMagicians")}
               </a>
             }
           />

@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { decodeEventLog, zeroAddress } from "viem";
 import { useDemo } from "../../../contexts/DemoContext";
+import { useI18n } from "../../../contexts/I18nContext";
 import { CONTRACTS } from "../../../config/contracts";
 import TxStatus from "../TxStatus";
 import { pushLog } from "../EventLog";
 
 export default function CreateProposalStep() {
   const { completeStep, update } = useDemo();
+  const { t } = useI18n();
   const [description, setDescription] = useState("Upgrade treasury allocation for Q3");
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
@@ -53,15 +55,14 @@ export default function CreateProposalStep() {
   return (
     <div>
       <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-        3. Create Proposal
+        {t("proposal.title")}
       </h3>
       <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: "1rem" }}>
-        Submit a governance proposal through the <code>MockGovernor</code>.
-        This creates an on-chain proposal that agents can analyze and vote on.
+        {t("proposal.desc")}
       </p>
 
       <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
-        Proposal Description
+        {t("proposal.description")}
       </label>
       <textarea
         className="input"
@@ -72,7 +73,7 @@ export default function CreateProposalStep() {
 
       <div style={{ marginTop: "1rem" }}>
         <button className="btn btn-primary" onClick={submit} disabled={isPending || isConfirming}>
-          {isPending ? "Signing..." : isConfirming ? "Confirming..." : "Submit Proposal"}
+          {isPending ? t("common.signing") : isConfirming ? t("common.confirming") : t("proposal.button")}
         </button>
       </div>
 

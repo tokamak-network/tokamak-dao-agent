@@ -1,9 +1,11 @@
 import { useReadContract } from "wagmi";
 import { useDemo } from "../../../contexts/DemoContext";
+import { useI18n } from "../../../contexts/I18nContext";
 import { CONTRACTS } from "../../../config/contracts";
 
 export default function CredibilityStep() {
   const { agentId, completeStep, update, completedSteps } = useDemo();
+  const { t } = useI18n();
 
   const { data, isLoading, refetch } = useReadContract({
     ...CONTRACTS.credibility,
@@ -31,11 +33,10 @@ export default function CredibilityStep() {
   return (
     <div>
       <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-        8. View Credibility
+        {t("credibility.title")}
       </h3>
       <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: "1rem" }}>
-        Read the agent's accumulated credibility score from the <code>CredibilityRegistry</code>.
-        This is a read-only call — no transaction needed.
+        {t("credibility.desc")}
       </p>
 
       {agentId && (
@@ -49,7 +50,7 @@ export default function CredibilityStep() {
         }}>
           {isLoading ? (
             <div style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
-              Loading...
+              {t("credibility.loading")}
             </div>
           ) : totalScore !== null ? (
             <>
@@ -71,7 +72,10 @@ export default function CredibilityStep() {
                 color: "var(--text-secondary)",
                 fontFamily: "var(--font-mono)",
               }}>
-                Total Score across {totalPredictions!.toString()} prediction{totalPredictions !== 1n ? "s" : ""}
+                {t("credibility.totalScore", {
+                  count: totalPredictions!.toString(),
+                  s: totalPredictions !== 1n ? "s" : "",
+                })}
               </div>
               <div style={{
                 marginTop: "1rem",
@@ -79,19 +83,19 @@ export default function CredibilityStep() {
                 color: "var(--text-muted)",
                 fontFamily: "var(--font-mono)",
               }}>
-                Delta applied: +3 (high confidence correct prediction)
+                {t("credibility.delta")}
               </div>
             </>
           ) : (
             <div style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
-              No data yet
+              {t("credibility.noData")}
             </div>
           )}
         </div>
       )}
 
       <button className="btn btn-primary" onClick={handleRefresh} disabled={!agentId || isLoading}>
-        {isLoading ? "Loading..." : "Fetch Credibility"}
+        {isLoading ? t("credibility.loading") : t("credibility.fetchButton")}
       </button>
 
       {completedSteps.includes(7) && (
@@ -106,7 +110,7 @@ export default function CredibilityStep() {
           fontFamily: "var(--font-mono)",
           textAlign: "center",
         }}>
-          Demo complete! Full AI agent governance lifecycle executed on Sepolia.
+          {t("credibility.demoComplete")}
         </div>
       )}
     </div>

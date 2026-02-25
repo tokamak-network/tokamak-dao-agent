@@ -17,19 +17,25 @@ const wagmiAdapter = new WagmiAdapter({
   connectors: [injected()],
 });
 
+let appKitInstance: ReturnType<typeof createAppKit> | null = null;
+
+const initialTheme = (typeof window !== "undefined" && localStorage.getItem("theme") === "light")
+  ? "light" as const
+  : "dark" as const;
+
 if (projectId) {
-  createAppKit({
+  appKitInstance = createAppKit({
     adapters: [wagmiAdapter],
     projectId,
     networks: [sepolia],
     defaultNetwork: sepolia,
     enableInjected: true,
     enableEIP6963: true,
-    themeMode: "dark",
+    themeMode: initialTheme,
     themeVariables: {
-      "--w3m-color-mix": "#0a0a0f",
+      "--w3m-color-mix": initialTheme === "dark" ? "#0a0a0f" : "#f5f5f7",
       "--w3m-color-mix-strength": 40,
-      "--w3m-accent": "#4a9eff",
+      "--w3m-accent": initialTheme === "dark" ? "#4a9eff" : "#2563eb",
       "--w3m-border-radius-master": "1px",
     },
     metadata: {
@@ -41,6 +47,15 @@ if (projectId) {
     features: {
       analytics: false,
     },
+  });
+}
+
+export function setAppKitTheme(theme: "dark" | "light") {
+  if (!appKitInstance) return;
+  appKitInstance.setThemeMode(theme);
+  appKitInstance.setThemeVariables({
+    "--w3m-color-mix": theme === "dark" ? "#0a0a0f" : "#f5f5f7",
+    "--w3m-accent": theme === "dark" ? "#4a9eff" : "#2563eb",
   });
 }
 

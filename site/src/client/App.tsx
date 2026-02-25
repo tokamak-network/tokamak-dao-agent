@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { wagmiConfig, isWalletConfigured } from "./config/wagmi";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { I18nProvider } from "./contexts/I18nContext";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import SpecPage from "./pages/SpecPage";
@@ -35,25 +37,33 @@ export default function App() {
 
   if (!isWalletConfigured) {
     return (
-      <QueryClientProvider client={queryClient}>
-        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-          <Header currentView={view} />
-          <main style={{ flex: 1 }}>{content}</main>
-          <Footer />
-        </div>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <I18nProvider>
+          <QueryClientProvider client={queryClient}>
+            <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+              <Header currentView={view} />
+              <main style={{ flex: 1 }}>{content}</main>
+              <Footer />
+            </div>
+          </QueryClientProvider>
+        </I18nProvider>
+      </ThemeProvider>
     );
   }
 
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-          <Header currentView={view} />
-          <main style={{ flex: 1 }}>{content}</main>
-          <Footer />
-        </div>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <ThemeProvider>
+      <I18nProvider>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+              <Header currentView={view} />
+              <main style={{ flex: 1 }}>{content}</main>
+              <Footer />
+            </div>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </I18nProvider>
+    </ThemeProvider>
   );
 }

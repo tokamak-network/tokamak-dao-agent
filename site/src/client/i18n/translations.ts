@@ -1,0 +1,470 @@
+export type Locale = "en" | "ko" | "zh" | "ja";
+
+export const LOCALE_LABELS: Record<Locale, string> = {
+  en: "EN",
+  ko: "\uD55C",
+  zh: "\u4E2D",
+  ja: "\u65E5",
+};
+
+type Translations = Record<string, string>;
+
+const en: Translations = {
+  // Header
+  "header.spec": "Spec",
+  "header.demo": "Demo",
+
+  // Footer
+  "footer.text": "ERC AI Agent Governance Interface \u2014 Draft Standard by Tokamak Network",
+
+  // Demo Page
+  "demo.title": "Interactive Demo",
+  "demo.subtitle": "Walk through the full AI agent governance lifecycle on Sepolia testnet. Each step executes a real on-chain transaction.",
+
+  // StepRail
+  "rail.lifecycleSteps": "Lifecycle Steps",
+  "rail.resetDemo": "Reset Demo",
+  "rail.step0": "Register Agent",
+  "rail.step1": "Delegate",
+  "rail.step2": "Create Proposal",
+  "rail.step3": "Commit Rationale",
+  "rail.step4": "Vote",
+  "rail.step5": "Reveal Rationale",
+  "rail.step6": "Resolve",
+  "rail.step7": "View Credibility",
+  "rail.step0Desc": "Register an AI agent on-chain",
+  "rail.step1Desc": "Delegate voting to the agent",
+  "rail.step2Desc": "Submit a governance proposal",
+  "rail.step3Desc": "Commit reasoning hash + predict",
+  "rail.step4Desc": "Cast a vote on the proposal",
+  "rail.step5Desc": "Reveal the committed rationale",
+  "rail.step6Desc": "Resolve credibility prediction",
+  "rail.step7Desc": "Check final credibility score",
+
+  // StepContainer
+  "wallet.notConfigured": "Wallet Not Configured",
+  "wallet.notConfiguredDesc": "Set VITE_REOWN_PROJECT_ID in your environment to enable wallet connection and interact with the demo contracts on Sepolia.",
+
+  // Step 1: Register Agent
+  "register.title": "1. Register AI Agent",
+  "register.desc": "Register an AI agent on the AIAgentRegistry. The agent ID is deterministically derived from your address and a nonce.",
+  "register.metadataURI": "Metadata URI",
+  "register.button": "Register Agent",
+
+  // Step 2: Delegate
+  "delegate.title": "2. Delegate to Agent",
+  "delegate.desc": "Delegate your voting preferences to the registered agent. The delegation has an expiry and preferences URI describing your risk tolerance and values.",
+  "delegate.agentId": "Agent ID",
+  "delegate.expiryDays": "Expiry (days)",
+  "delegate.prefsURI": "Preferences URI",
+  "delegate.button": "Delegate",
+
+  // Step 3: Create Proposal
+  "proposal.title": "3. Create Proposal",
+  "proposal.desc": "Submit a governance proposal through the MockGovernor. This creates an on-chain proposal that agents can analyze and vote on.",
+  "proposal.description": "Proposal Description",
+  "proposal.button": "Submit Proposal",
+
+  // Step 4: Commit Rationale
+  "commit.title": "4. Commit Rationale + Predict",
+  "commit.desc": "Two transactions: (1) commit a hash of the rationale URI for tamper-proof integrity, then (2) record a prediction with confidence score for credibility tracking.",
+  "commit.rationaleURI": "Rationale URI",
+  "commit.confidence": "Confidence (0-100)",
+  "commit.hashLabel": "keccak256(rationaleURI || salt):",
+  "commit.salt": "Salt:",
+  "commit.commitButton": "1. Commit Hash",
+  "commit.predictButton": "2. Record Prediction",
+  "commit.bothConfirmed": "Both transactions confirmed",
+
+  // Step 5: Vote
+  "vote.title": "5. Vote on Proposal",
+  "vote.desc": "Cast a vote through the Governor. Voting is active after the voting delay",
+  "vote.currentBlock": "Current block:",
+  "vote.against": "Against",
+  "vote.for": "For",
+  "vote.abstain": "Abstain",
+  "vote.button": "Cast Vote",
+  "vote.votingDelay": "Voting Delay",
+  "vote.waitForVoting": "Wait for voting to become active",
+
+  // Step 6: Reveal Rationale
+  "reveal.title": "6. Reveal Rationale",
+  "reveal.desc": "Reveal the rationale URI and salt. The contract verifies that keccak256(rationaleURI || salt) matches the committed hash.",
+  "reveal.committedHash": "Committed hash:",
+  "reveal.rationaleURI": "Rationale URI:",
+  "reveal.salt": "Salt:",
+  "reveal.button": "Reveal Rationale",
+
+  // Step 7: Resolve
+  "resolve.title": "7. Resolve Prediction",
+  "resolve.desc": "After the voting period ends, the GovernorResolver reads the proposal outcome from the Governor and resolves the credibility prediction. This is permissionless \u2014 anyone can call it.",
+  "resolve.votingPeriod": "Voting Period",
+  "resolve.waitForVoting": "Wait for voting period to end before resolving",
+  "resolve.button": "Resolve",
+
+  // Step 8: Credibility
+  "credibility.title": "8. View Credibility",
+  "credibility.desc": "Read the agent's accumulated credibility score from the CredibilityRegistry. This is a read-only call \u2014 no transaction needed.",
+  "credibility.loading": "Loading...",
+  "credibility.totalScore": "Total Score across {count} prediction{s}",
+  "credibility.delta": "Delta applied: +3 (high confidence correct prediction)",
+  "credibility.noData": "No data yet",
+  "credibility.fetchButton": "Fetch Credibility",
+  "credibility.demoComplete": "Demo complete! Full AI agent governance lifecycle executed on Sepolia.",
+
+  // TxStatus
+  "tx.awaitingSignature": "Awaiting signature...",
+  "tx.confirming": "Confirming...",
+  "tx.confirmed": "Confirmed",
+  "tx.failed": "Failed",
+
+  // Common
+  "common.signing": "Signing...",
+  "common.confirming": "Confirming...",
+
+  // EventLog
+  "eventLog.title": "Event Log",
+
+  // TOC
+  "toc.onThisPage": "On this page",
+
+  // Frontmatter
+  "meta.author": "Author",
+  "meta.type": "Type",
+  "meta.requires": "Requires",
+  "meta.created": "Created",
+  "meta.discussion": "Discussion",
+  "meta.ethereumMagicians": "Ethereum Magicians",
+};
+
+const ko: Translations = {
+  "header.spec": "Spec",
+  "header.demo": "Demo",
+
+  "footer.text": "ERC AI \uC5D0\uC774\uC804\uD2B8 \uAC70\uBC84\uB10C\uC2A4 \uC778\uD130\uD398\uC774\uC2A4 \u2014 Tokamak Network \uCD08\uC548 \uD45C\uC900",
+
+  "demo.title": "\uC778\uD130\uB799\uD2F0\uBE0C \uB370\uBAA8",
+  "demo.subtitle": "Sepolia \uD14C\uC2A4\uD2B8\uB137\uC5D0\uC11C AI \uC5D0\uC774\uC804\uD2B8 \uAC70\uBC84\uB10C\uC2A4\uC758 \uC804\uCCB4 \uB77C\uC774\uD504\uC0AC\uC774\uD074\uC744 \uCCB4\uD5D8\uD569\uB2C8\uB2E4. \uAC01 \uB2E8\uACC4\uB294 \uC2E4\uC81C \uC628\uCCB4\uC778 \uD2B8\uB79C\uC7AD\uC158\uC744 \uC2E4\uD589\uD569\uB2C8\uB2E4.",
+
+  "rail.lifecycleSteps": "\uB77C\uC774\uD504\uC0AC\uC774\uD074 \uB2E8\uACC4",
+  "rail.resetDemo": "\uB370\uBAA8 \uCD08\uAE30\uD654",
+  "rail.step0": "\uC5D0\uC774\uC804\uD2B8 \uB4F1\uB85D",
+  "rail.step1": "\uC704\uC784",
+  "rail.step2": "\uC81C\uC548 \uC0DD\uC131",
+  "rail.step3": "\uADFC\uAC70 \uCEE4\uBC0B",
+  "rail.step4": "\uD22C\uD45C",
+  "rail.step5": "\uADFC\uAC70 \uACF5\uAC1C",
+  "rail.step6": "\uACB0\uACFC \uD655\uC815",
+  "rail.step7": "\uC2E0\uB8B0\uB3C4 \uD655\uC778",
+  "rail.step0Desc": "\uC628\uCCB4\uC778\uC5D0 AI \uC5D0\uC774\uC804\uD2B8 \uB4F1\uB85D",
+  "rail.step1Desc": "\uC5D0\uC774\uC804\uD2B8\uC5D0\uAC8C \uD22C\uD45C\uAD8C \uC704\uC784",
+  "rail.step2Desc": "\uAC70\uBC84\uB10C\uC2A4 \uC81C\uC548 \uC81C\uCD9C",
+  "rail.step3Desc": "\uADFC\uAC70 \uD574\uC2DC \uCEE4\uBC0B + \uC608\uCE21",
+  "rail.step4Desc": "\uC81C\uC548\uC5D0 \uB300\uD55C \uD22C\uD45C",
+  "rail.step5Desc": "\uCEE4\uBC0B\uB41C \uADFC\uAC70 \uACF5\uAC1C",
+  "rail.step6Desc": "\uC2E0\uB8B0\uB3C4 \uC608\uCE21 \uACB0\uACFC \uD655\uC815",
+  "rail.step7Desc": "\uCD5C\uC885 \uC2E0\uB8B0\uB3C4 \uC810\uC218 \uD655\uC778",
+
+  "wallet.notConfigured": "\uC9C0\uAC11 \uBBF8\uC124\uC815",
+  "wallet.notConfiguredDesc": "\uD658\uACBD\uC5D0 VITE_REOWN_PROJECT_ID\uB97C \uC124\uC815\uD558\uC5EC \uC9C0\uAC11 \uC5F0\uACB0\uC744 \uD65C\uC131\uD654\uD558\uACE0 Sepolia\uC758 \uB370\uBAA8 \uCEE8\uD2B8\uB799\uD2B8\uC640 \uC0C1\uD638\uC791\uC6A9\uD558\uC138\uC694.",
+
+  "register.title": "1. AI \uC5D0\uC774\uC804\uD2B8 \uB4F1\uB85D",
+  "register.desc": "AIAgentRegistry\uC5D0 AI \uC5D0\uC774\uC804\uD2B8\uB97C \uB4F1\uB85D\uD569\uB2C8\uB2E4. \uC5D0\uC774\uC804\uD2B8 ID\uB294 \uC8FC\uC18C\uC640 \uB17C\uC2A4\uB85C\uBD80\uD130 \uACB0\uC815\uC801\uC73C\uB85C \uC0DD\uC131\uB429\uB2C8\uB2E4.",
+  "register.metadataURI": "\uBA54\uD0C0\uB370\uC774\uD130 URI",
+  "register.button": "\uC5D0\uC774\uC804\uD2B8 \uB4F1\uB85D",
+
+  "delegate.title": "2. \uC5D0\uC774\uC804\uD2B8\uC5D0\uAC8C \uC704\uC784",
+  "delegate.desc": "\uB4F1\uB85D\uB41C \uC5D0\uC774\uC804\uD2B8\uC5D0\uAC8C \uD22C\uD45C \uC120\uD638\uB3C4\uB97C \uC704\uC784\uD569\uB2C8\uB2E4. \uC704\uC784\uC5D0\uB294 \uB9CC\uB8CC\uC77C\uACFC \uC704\uD5D8 \uD5C8\uC6A9 \uBC94\uC704 \uBC0F \uAC00\uCE58\uB97C \uC124\uBA85\uD558\uB294 \uC120\uD638\uB3C4 URI\uAC00 \uD3EC\uD568\uB429\uB2C8\uB2E4.",
+  "delegate.agentId": "\uC5D0\uC774\uC804\uD2B8 ID",
+  "delegate.expiryDays": "\uB9CC\uB8CC\uC77C (\uC77C)",
+  "delegate.prefsURI": "\uC120\uD638\uB3C4 URI",
+  "delegate.button": "\uC704\uC784",
+
+  "proposal.title": "3. \uC81C\uC548 \uC0DD\uC131",
+  "proposal.desc": "MockGovernor\uB97C \uD1B5\uD574 \uAC70\uBC84\uB10C\uC2A4 \uC81C\uC548\uC744 \uC81C\uCD9C\uD569\uB2C8\uB2E4. \uC5D0\uC774\uC804\uD2B8\uAC00 \uBD84\uC11D\uD558\uACE0 \uD22C\uD45C\uD560 \uC218 \uC788\uB294 \uC628\uCCB4\uC778 \uC81C\uC548\uC774 \uC0DD\uC131\uB429\uB2C8\uB2E4.",
+  "proposal.description": "\uC81C\uC548 \uC124\uBA85",
+  "proposal.button": "\uC81C\uC548 \uC81C\uCD9C",
+
+  "commit.title": "4. \uADFC\uAC70 \uCEE4\uBC0B + \uC608\uCE21",
+  "commit.desc": "\uB450 \uAC1C\uC758 \uD2B8\uB79C\uC7AD\uC158: (1) \uC704\uBCC0\uBC29\uC9C0 \uBB34\uACB0\uC131\uC744 \uC704\uD574 \uADFC\uAC70 URI\uC758 \uD574\uC2DC\uB97C \uCEE4\uBC0B\uD55C \uB4A4, (2) \uC2E0\uB8B0\uB3C4 \uCD94\uC801\uC744 \uC704\uD55C \uC2E0\uB8B0\uB3C4 \uC810\uC218\uC640 \uD568\uAED8 \uC608\uCE21\uC744 \uAE30\uB85D\uD569\uB2C8\uB2E4.",
+  "commit.rationaleURI": "\uADFC\uAC70 URI",
+  "commit.confidence": "\uC2E0\uB8B0\uB3C4 (0-100)",
+  "commit.hashLabel": "keccak256(rationaleURI || salt):",
+  "commit.salt": "Salt:",
+  "commit.commitButton": "1. \uD574\uC2DC \uCEE4\uBC0B",
+  "commit.predictButton": "2. \uC608\uCE21 \uAE30\uB85D",
+  "commit.bothConfirmed": "\uB450 \uD2B8\uB79C\uC7AD\uC158 \uBAA8\uB450 \uD655\uC778\uB428",
+
+  "vote.title": "5. \uC81C\uC548\uC5D0 \uD22C\uD45C",
+  "vote.desc": "Governor\uB97C \uD1B5\uD574 \uD22C\uD45C\uD569\uB2C8\uB2E4. \uD22C\uD45C \uC9C0\uC5F0 \uD6C4 \uD22C\uD45C\uAC00 \uD65C\uC131\uD654\uB429\uB2C8\uB2E4.",
+  "vote.currentBlock": "\uD604\uC7AC \uBE14\uB85D:",
+  "vote.against": "\uBC18\uB300",
+  "vote.for": "\uCC2C\uC131",
+  "vote.abstain": "\uAE30\uAD8C",
+  "vote.button": "\uD22C\uD45C",
+  "vote.votingDelay": "\uD22C\uD45C \uC9C0\uC5F0",
+  "vote.waitForVoting": "\uD22C\uD45C\uAC00 \uD65C\uC131\uD654\uB420 \uB54C\uAE4C\uC9C0 \uB300\uAE30",
+
+  "reveal.title": "6. \uADFC\uAC70 \uACF5\uAC1C",
+  "reveal.desc": "\uADFC\uAC70 URI\uC640 salt\uB97C \uACF5\uAC1C\uD569\uB2C8\uB2E4. \uCEE8\uD2B8\uB799\uD2B8\uAC00 keccak256(rationaleURI || salt)\uC774 \uCEE4\uBC0B\uB41C \uD574\uC2DC\uC640 \uC77C\uCE58\uD558\uB294\uC9C0 \uAC80\uC99D\uD569\uB2C8\uB2E4.",
+  "reveal.committedHash": "\uCEE4\uBC0B\uB41C \uD574\uC2DC:",
+  "reveal.rationaleURI": "\uADFC\uAC70 URI:",
+  "reveal.salt": "Salt:",
+  "reveal.button": "\uADFC\uAC70 \uACF5\uAC1C",
+
+  "resolve.title": "7. \uC608\uCE21 \uACB0\uACFC \uD655\uC815",
+  "resolve.desc": "\uD22C\uD45C \uAE30\uAC04\uC774 \uC885\uB8CC\uB41C \uD6C4, GovernorResolver\uAC00 Governor\uC5D0\uC11C \uC81C\uC548 \uACB0\uACFC\uB97C \uC77D\uACE0 \uC2E0\uB8B0\uB3C4 \uC608\uCE21\uC744 \uD655\uC815\uD569\uB2C8\uB2E4. \uB204\uAD6C\uB098 \uD638\uCD9C \uAC00\uB2A5\uD569\uB2C8\uB2E4.",
+  "resolve.votingPeriod": "\uD22C\uD45C \uAE30\uAC04",
+  "resolve.waitForVoting": "\uACB0\uACFC \uD655\uC815 \uC804 \uD22C\uD45C \uAE30\uAC04 \uC885\uB8CC \uB300\uAE30",
+  "resolve.button": "\uACB0\uACFC \uD655\uC815",
+
+  "credibility.title": "8. \uC2E0\uB8B0\uB3C4 \uD655\uC778",
+  "credibility.desc": "CredibilityRegistry\uC5D0\uC11C \uC5D0\uC774\uC804\uD2B8\uC758 \uB204\uC801 \uC2E0\uB8B0\uB3C4 \uC810\uC218\uB97C \uC77D\uC2B5\uB2C8\uB2E4. \uC77D\uAE30 \uC804\uC6A9 \uD638\uCD9C\uC774\uBA70 \uD2B8\uB79C\uC7AD\uC158\uC774 \uD544\uC694\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "credibility.loading": "\uB85C\uB529 \uC911...",
+  "credibility.totalScore": "\uCD1D {count}\uAC1C \uC608\uCE21\uC758 \uC885\uD569 \uC810\uC218",
+  "credibility.delta": "\uC801\uC6A9\uB41C \uBCC0\uD654: +3 (\uB192\uC740 \uC2E0\uB8B0\uB3C4 \uC815\uD655 \uC608\uCE21)",
+  "credibility.noData": "\uB370\uC774\uD130 \uC5C6\uC74C",
+  "credibility.fetchButton": "\uC2E0\uB8B0\uB3C4 \uC870\uD68C",
+  "credibility.demoComplete": "\uB370\uBAA8 \uC644\uB8CC! Sepolia\uC5D0\uC11C \uC804\uCCB4 AI \uC5D0\uC774\uC804\uD2B8 \uAC70\uBC84\uB10C\uC2A4 \uB77C\uC774\uD504\uC0AC\uC774\uD074\uC774 \uC2E4\uD589\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
+
+  "tx.awaitingSignature": "\uC11C\uBA85 \uB300\uAE30 \uC911...",
+  "tx.confirming": "\uD655\uC778 \uC911...",
+  "tx.confirmed": "\uD655\uC778\uB428",
+  "tx.failed": "\uC2E4\uD328",
+
+  "common.signing": "\uC11C\uBA85 \uC911...",
+  "common.confirming": "\uD655\uC778 \uC911...",
+
+  "eventLog.title": "\uC774\uBCA4\uD2B8 \uB85C\uADF8",
+
+  "toc.onThisPage": "\uBAA9\uCC28",
+
+  "meta.author": "\uC800\uC790",
+  "meta.type": "\uC720\uD615",
+  "meta.requires": "\uC694\uAD6C\uC0AC\uD56D",
+  "meta.created": "\uC0DD\uC131\uC77C",
+  "meta.discussion": "\uD1A0\uB860",
+  "meta.ethereumMagicians": "Ethereum Magicians",
+};
+
+const zh: Translations = {
+  "header.spec": "Spec",
+  "header.demo": "Demo",
+
+  "footer.text": "ERC AI \u4EE3\u7406\u6CBB\u7406\u63A5\u53E3 \u2014 Tokamak Network \u8349\u6848\u6807\u51C6",
+
+  "demo.title": "\u4EA4\u4E92\u6F14\u793A",
+  "demo.subtitle": "\u5728 Sepolia \u6D4B\u8BD5\u7F51\u4E0A\u4F53\u9A8C AI \u4EE3\u7406\u6CBB\u7406\u7684\u5B8C\u6574\u751F\u547D\u5468\u671F\u3002\u6BCF\u4E2A\u6B65\u9AA4\u90FD\u6267\u884C\u771F\u5B9E\u7684\u94FE\u4E0A\u4EA4\u6613\u3002",
+
+  "rail.lifecycleSteps": "\u751F\u547D\u5468\u671F\u6B65\u9AA4",
+  "rail.resetDemo": "\u91CD\u7F6E\u6F14\u793A",
+  "rail.step0": "\u6CE8\u518C\u4EE3\u7406",
+  "rail.step1": "\u59D4\u6258",
+  "rail.step2": "\u521B\u5EFA\u63D0\u6848",
+  "rail.step3": "\u63D0\u4EA4\u7406\u7531",
+  "rail.step4": "\u6295\u7968",
+  "rail.step5": "\u63ED\u793A\u7406\u7531",
+  "rail.step6": "\u786E\u8BA4\u7ED3\u679C",
+  "rail.step7": "\u67E5\u770B\u4FE1\u8A89",
+  "rail.step0Desc": "\u5728\u94FE\u4E0A\u6CE8\u518C AI \u4EE3\u7406",
+  "rail.step1Desc": "\u5C06\u6295\u7968\u6743\u59D4\u6258\u7ED9\u4EE3\u7406",
+  "rail.step2Desc": "\u63D0\u4EA4\u6CBB\u7406\u63D0\u6848",
+  "rail.step3Desc": "\u63D0\u4EA4\u7406\u7531\u54C8\u5E0C + \u9884\u6D4B",
+  "rail.step4Desc": "\u5BF9\u63D0\u6848\u8FDB\u884C\u6295\u7968",
+  "rail.step5Desc": "\u63ED\u793A\u5DF2\u63D0\u4EA4\u7684\u7406\u7531",
+  "rail.step6Desc": "\u786E\u8BA4\u4FE1\u8A89\u9884\u6D4B\u7ED3\u679C",
+  "rail.step7Desc": "\u67E5\u770B\u6700\u7EC8\u4FE1\u8A89\u5206\u6570",
+
+  "wallet.notConfigured": "\u94B1\u5305\u672A\u914D\u7F6E",
+  "wallet.notConfiguredDesc": "\u5728\u73AF\u5883\u53D8\u91CF\u4E2D\u8BBE\u7F6E VITE_REOWN_PROJECT_ID \u4EE5\u542F\u7528\u94B1\u5305\u8FDE\u63A5\uFF0C\u5E76\u4E0E Sepolia \u4E0A\u7684\u6F14\u793A\u5408\u7EA6\u8FDB\u884C\u4EA4\u4E92\u3002",
+
+  "register.title": "1. \u6CE8\u518C AI \u4EE3\u7406",
+  "register.desc": "\u5728 AIAgentRegistry \u4E0A\u6CE8\u518C AI \u4EE3\u7406\u3002\u4EE3\u7406 ID \u7531\u60A8\u7684\u5730\u5740\u548C\u968F\u673A\u6570\u786E\u5B9A\u6027\u751F\u6210\u3002",
+  "register.metadataURI": "\u5143\u6570\u636E URI",
+  "register.button": "\u6CE8\u518C\u4EE3\u7406",
+
+  "delegate.title": "2. \u59D4\u6258\u7ED9\u4EE3\u7406",
+  "delegate.desc": "\u5C06\u60A8\u7684\u6295\u7968\u504F\u597D\u59D4\u6258\u7ED9\u5DF2\u6CE8\u518C\u7684\u4EE3\u7406\u3002\u59D4\u6258\u5305\u542B\u5230\u671F\u65E5\u548C\u63CF\u8FF0\u60A8\u98CE\u9669\u627F\u53D7\u80FD\u529B\u548C\u4EF7\u503C\u89C2\u7684\u504F\u597D URI\u3002",
+  "delegate.agentId": "\u4EE3\u7406 ID",
+  "delegate.expiryDays": "\u5230\u671F (\u5929)",
+  "delegate.prefsURI": "\u504F\u597D URI",
+  "delegate.button": "\u59D4\u6258",
+
+  "proposal.title": "3. \u521B\u5EFA\u63D0\u6848",
+  "proposal.desc": "\u901A\u8FC7 MockGovernor \u63D0\u4EA4\u6CBB\u7406\u63D0\u6848\u3002\u8FD9\u4F1A\u521B\u5EFA\u4E00\u4E2A\u4EE3\u7406\u53EF\u4EE5\u5206\u6790\u548C\u6295\u7968\u7684\u94FE\u4E0A\u63D0\u6848\u3002",
+  "proposal.description": "\u63D0\u6848\u63CF\u8FF0",
+  "proposal.button": "\u63D0\u4EA4\u63D0\u6848",
+
+  "commit.title": "4. \u63D0\u4EA4\u7406\u7531 + \u9884\u6D4B",
+  "commit.desc": "\u4E24\u7B14\u4EA4\u6613: (1) \u63D0\u4EA4\u7406\u7531 URI \u7684\u54C8\u5E0C\u4EE5\u786E\u4FDD\u9632\u7BE1\u6539\u5B8C\u6574\u6027\uFF0C\u7136\u540E (2) \u8BB0\u5F55\u5E26\u7F6E\u4FE1\u5EA6\u7684\u9884\u6D4B\u4EE5\u8FFD\u8E2A\u4FE1\u8A89\u3002",
+  "commit.rationaleURI": "\u7406\u7531 URI",
+  "commit.confidence": "\u7F6E\u4FE1\u5EA6 (0-100)",
+  "commit.hashLabel": "keccak256(rationaleURI || salt):",
+  "commit.salt": "Salt:",
+  "commit.commitButton": "1. \u63D0\u4EA4\u54C8\u5E0C",
+  "commit.predictButton": "2. \u8BB0\u5F55\u9884\u6D4B",
+  "commit.bothConfirmed": "\u4E24\u7B14\u4EA4\u6613\u5747\u5DF2\u786E\u8BA4",
+
+  "vote.title": "5. \u5BF9\u63D0\u6848\u6295\u7968",
+  "vote.desc": "\u901A\u8FC7 Governor \u8FDB\u884C\u6295\u7968\u3002\u6295\u7968\u5EF6\u8FDF\u540E\u6295\u7968\u53D8\u4E3A\u6D3B\u8DC3\u72B6\u6001\u3002",
+  "vote.currentBlock": "\u5F53\u524D\u533A\u5757:",
+  "vote.against": "\u53CD\u5BF9",
+  "vote.for": "\u8D5E\u6210",
+  "vote.abstain": "\u5F03\u6743",
+  "vote.button": "\u6295\u7968",
+  "vote.votingDelay": "\u6295\u7968\u5EF6\u8FDF",
+  "vote.waitForVoting": "\u7B49\u5F85\u6295\u7968\u53D8\u4E3A\u6D3B\u8DC3\u72B6\u6001",
+
+  "reveal.title": "6. \u63ED\u793A\u7406\u7531",
+  "reveal.desc": "\u63ED\u793A\u7406\u7531 URI \u548C salt\u3002\u5408\u7EA6\u9A8C\u8BC1 keccak256(rationaleURI || salt) \u662F\u5426\u4E0E\u63D0\u4EA4\u7684\u54C8\u5E0C\u5339\u914D\u3002",
+  "reveal.committedHash": "\u5DF2\u63D0\u4EA4\u54C8\u5E0C:",
+  "reveal.rationaleURI": "\u7406\u7531 URI:",
+  "reveal.salt": "Salt:",
+  "reveal.button": "\u63ED\u793A\u7406\u7531",
+
+  "resolve.title": "7. \u786E\u8BA4\u9884\u6D4B\u7ED3\u679C",
+  "resolve.desc": "\u6295\u7968\u671F\u7ED3\u675F\u540E\uFF0CGovernorResolver \u4ECE Governor \u8BFB\u53D6\u63D0\u6848\u7ED3\u679C\u5E76\u786E\u8BA4\u4FE1\u8A89\u9884\u6D4B\u3002\u4EFB\u4F55\u4EBA\u90FD\u53EF\u4EE5\u8C03\u7528\u3002",
+  "resolve.votingPeriod": "\u6295\u7968\u671F",
+  "resolve.waitForVoting": "\u786E\u8BA4\u7ED3\u679C\u524D\u7B49\u5F85\u6295\u7968\u671F\u7ED3\u675F",
+  "resolve.button": "\u786E\u8BA4\u7ED3\u679C",
+
+  "credibility.title": "8. \u67E5\u770B\u4FE1\u8A89",
+  "credibility.desc": "\u4ECE CredibilityRegistry \u8BFB\u53D6\u4EE3\u7406\u7684\u7D2F\u8BA1\u4FE1\u8A89\u5206\u6570\u3002\u8FD9\u662F\u53EA\u8BFB\u8C03\u7528 \u2014 \u4E0D\u9700\u8981\u4EA4\u6613\u3002",
+  "credibility.loading": "\u52A0\u8F7D\u4E2D...",
+  "credibility.totalScore": "\u5171 {count} \u4E2A\u9884\u6D4B\u7684\u603B\u5206",
+  "credibility.delta": "\u5E94\u7528\u53D8\u5316: +3 (\u9AD8\u7F6E\u4FE1\u5EA6\u6B63\u786E\u9884\u6D4B)",
+  "credibility.noData": "\u6682\u65E0\u6570\u636E",
+  "credibility.fetchButton": "\u67E5\u8BE2\u4FE1\u8A89",
+  "credibility.demoComplete": "\u6F14\u793A\u5B8C\u6210\uFF01\u5DF2\u5728 Sepolia \u4E0A\u6267\u884C\u5B8C\u6574\u7684 AI \u4EE3\u7406\u6CBB\u7406\u751F\u547D\u5468\u671F\u3002",
+
+  "tx.awaitingSignature": "\u7B49\u5F85\u7B7E\u540D...",
+  "tx.confirming": "\u786E\u8BA4\u4E2D...",
+  "tx.confirmed": "\u5DF2\u786E\u8BA4",
+  "tx.failed": "\u5931\u8D25",
+
+  "common.signing": "\u7B7E\u540D\u4E2D...",
+  "common.confirming": "\u786E\u8BA4\u4E2D...",
+
+  "eventLog.title": "\u4E8B\u4EF6\u65E5\u5FD7",
+
+  "toc.onThisPage": "\u672C\u9875\u76EE\u5F55",
+
+  "meta.author": "\u4F5C\u8005",
+  "meta.type": "\u7C7B\u578B",
+  "meta.requires": "\u4F9D\u8D56",
+  "meta.created": "\u521B\u5EFA\u65E5\u671F",
+  "meta.discussion": "\u8BA8\u8BBA",
+  "meta.ethereumMagicians": "Ethereum Magicians",
+};
+
+const ja: Translations = {
+  "header.spec": "Spec",
+  "header.demo": "Demo",
+
+  "footer.text": "ERC AI \u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u30AC\u30D0\u30CA\u30F3\u30B9\u30A4\u30F3\u30BF\u30FC\u30D5\u30A7\u30FC\u30B9 \u2014 Tokamak Network \u30C9\u30E9\u30D5\u30C8\u6A19\u6E96",
+
+  "demo.title": "\u30A4\u30F3\u30BF\u30E9\u30AF\u30C6\u30A3\u30D6\u30C7\u30E2",
+  "demo.subtitle": "Sepolia \u30C6\u30B9\u30C8\u30CD\u30C3\u30C8\u3067 AI \u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u30AC\u30D0\u30CA\u30F3\u30B9\u306E\u30E9\u30A4\u30D5\u30B5\u30A4\u30AF\u30EB\u5168\u4F53\u3092\u4F53\u9A13\u3057\u307E\u3059\u3002\u5404\u30B9\u30C6\u30C3\u30D7\u3067\u5B9F\u969B\u306E\u30AA\u30F3\u30C1\u30A7\u30FC\u30F3\u30C8\u30E9\u30F3\u30B6\u30AF\u30B7\u30E7\u30F3\u3092\u5B9F\u884C\u3057\u307E\u3059\u3002",
+
+  "rail.lifecycleSteps": "\u30E9\u30A4\u30D5\u30B5\u30A4\u30AF\u30EB",
+  "rail.resetDemo": "\u30C7\u30E2\u30EA\u30BB\u30C3\u30C8",
+  "rail.step0": "\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u767B\u9332",
+  "rail.step1": "\u59D4\u4EFB",
+  "rail.step2": "\u63D0\u6848\u4F5C\u6210",
+  "rail.step3": "\u6839\u62E0\u30B3\u30DF\u30C3\u30C8",
+  "rail.step4": "\u6295\u7968",
+  "rail.step5": "\u6839\u62E0\u516C\u958B",
+  "rail.step6": "\u7D50\u679C\u78BA\u5B9A",
+  "rail.step7": "\u4FE1\u983C\u5EA6\u78BA\u8A8D",
+  "rail.step0Desc": "\u30AA\u30F3\u30C1\u30A7\u30FC\u30F3\u306B AI \u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u3092\u767B\u9332",
+  "rail.step1Desc": "\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u306B\u6295\u7968\u6A29\u3092\u59D4\u4EFB",
+  "rail.step2Desc": "\u30AC\u30D0\u30CA\u30F3\u30B9\u63D0\u6848\u3092\u63D0\u51FA",
+  "rail.step3Desc": "\u6839\u62E0\u30CF\u30C3\u30B7\u30E5\u30B3\u30DF\u30C3\u30C8 + \u4E88\u6E2C",
+  "rail.step4Desc": "\u63D0\u6848\u306B\u6295\u7968",
+  "rail.step5Desc": "\u30B3\u30DF\u30C3\u30C8\u3057\u305F\u6839\u62E0\u3092\u516C\u958B",
+  "rail.step6Desc": "\u4FE1\u983C\u5EA6\u4E88\u6E2C\u7D50\u679C\u3092\u78BA\u5B9A",
+  "rail.step7Desc": "\u6700\u7D42\u4FE1\u983C\u5EA6\u30B9\u30B3\u30A2\u3092\u78BA\u8A8D",
+
+  "wallet.notConfigured": "\u30A6\u30A9\u30EC\u30C3\u30C8\u672A\u8A2D\u5B9A",
+  "wallet.notConfiguredDesc": "\u74B0\u5883\u5909\u6570\u306B VITE_REOWN_PROJECT_ID \u3092\u8A2D\u5B9A\u3057\u3066\u30A6\u30A9\u30EC\u30C3\u30C8\u63A5\u7D9A\u3092\u6709\u52B9\u306B\u3057\u3001Sepolia \u306E\u30C7\u30E2\u30B3\u30F3\u30C8\u30E9\u30AF\u30C8\u3068\u5BFE\u8A71\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+
+  "register.title": "1. AI \u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u767B\u9332",
+  "register.desc": "AIAgentRegistry \u306B AI \u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u3092\u767B\u9332\u3057\u307E\u3059\u3002\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8 ID \u306F\u30A2\u30C9\u30EC\u30B9\u3068\u30CE\u30F3\u30B9\u304B\u3089\u6C7A\u5B9A\u7684\u306B\u751F\u6210\u3055\u308C\u307E\u3059\u3002",
+  "register.metadataURI": "\u30E1\u30BF\u30C7\u30FC\u30BF URI",
+  "register.button": "\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u767B\u9332",
+
+  "delegate.title": "2. \u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u306B\u59D4\u4EFB",
+  "delegate.desc": "\u767B\u9332\u6E08\u307F\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u306B\u6295\u7968\u306E\u597D\u307F\u3092\u59D4\u4EFB\u3057\u307E\u3059\u3002\u59D4\u4EFB\u306B\u306F\u6709\u52B9\u671F\u9650\u3068\u30EA\u30B9\u30AF\u8A31\u5BB9\u5EA6\u3084\u4FA1\u5024\u89B3\u3092\u8A18\u8FF0\u3059\u308B\u597D\u307F URI \u304C\u542B\u307E\u308C\u307E\u3059\u3002",
+  "delegate.agentId": "\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8 ID",
+  "delegate.expiryDays": "\u6709\u52B9\u671F\u9650 (\u65E5)",
+  "delegate.prefsURI": "\u597D\u307F URI",
+  "delegate.button": "\u59D4\u4EFB",
+
+  "proposal.title": "3. \u63D0\u6848\u4F5C\u6210",
+  "proposal.desc": "MockGovernor \u3092\u901A\u3058\u3066\u30AC\u30D0\u30CA\u30F3\u30B9\u63D0\u6848\u3092\u63D0\u51FA\u3057\u307E\u3059\u3002\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u304C\u5206\u6790\u30FB\u6295\u7968\u3067\u304D\u308B\u30AA\u30F3\u30C1\u30A7\u30FC\u30F3\u63D0\u6848\u304C\u4F5C\u6210\u3055\u308C\u307E\u3059\u3002",
+  "proposal.description": "\u63D0\u6848\u8AAC\u660E",
+  "proposal.button": "\u63D0\u6848\u63D0\u51FA",
+
+  "commit.title": "4. \u6839\u62E0\u30B3\u30DF\u30C3\u30C8 + \u4E88\u6E2C",
+  "commit.desc": "2\u3064\u306E\u30C8\u30E9\u30F3\u30B6\u30AF\u30B7\u30E7\u30F3: (1) \u6539\u3056\u3093\u9632\u6B62\u306E\u305F\u3081\u306B\u6839\u62E0 URI \u306E\u30CF\u30C3\u30B7\u30E5\u3092\u30B3\u30DF\u30C3\u30C8\u3057\u3001(2) \u4FE1\u983C\u5EA6\u8FFD\u8DE1\u306E\u305F\u3081\u306B\u78BA\u4FE1\u5EA6\u30B9\u30B3\u30A2\u4ED8\u304D\u4E88\u6E2C\u3092\u8A18\u9332\u3057\u307E\u3059\u3002",
+  "commit.rationaleURI": "\u6839\u62E0 URI",
+  "commit.confidence": "\u78BA\u4FE1\u5EA6 (0-100)",
+  "commit.hashLabel": "keccak256(rationaleURI || salt):",
+  "commit.salt": "Salt:",
+  "commit.commitButton": "1. \u30CF\u30C3\u30B7\u30E5\u30B3\u30DF\u30C3\u30C8",
+  "commit.predictButton": "2. \u4E88\u6E2C\u8A18\u9332",
+  "commit.bothConfirmed": "\u4E21\u65B9\u306E\u30C8\u30E9\u30F3\u30B6\u30AF\u30B7\u30E7\u30F3\u304C\u78BA\u8A8D\u6E08\u307F",
+
+  "vote.title": "5. \u63D0\u6848\u306B\u6295\u7968",
+  "vote.desc": "Governor \u3092\u901A\u3058\u3066\u6295\u7968\u3057\u307E\u3059\u3002\u6295\u7968\u9045\u5EF6\u5F8C\u306B\u6295\u7968\u304C\u6709\u52B9\u306B\u306A\u308A\u307E\u3059\u3002",
+  "vote.currentBlock": "\u73FE\u5728\u30D6\u30ED\u30C3\u30AF:",
+  "vote.against": "\u53CD\u5BFE",
+  "vote.for": "\u8CDB\u6210",
+  "vote.abstain": "\u68C4\u6A29",
+  "vote.button": "\u6295\u7968",
+  "vote.votingDelay": "\u6295\u7968\u9045\u5EF6",
+  "vote.waitForVoting": "\u6295\u7968\u304C\u6709\u52B9\u306B\u306A\u308B\u307E\u3067\u5F85\u6A5F",
+
+  "reveal.title": "6. \u6839\u62E0\u516C\u958B",
+  "reveal.desc": "\u6839\u62E0 URI \u3068 salt \u3092\u516C\u958B\u3057\u307E\u3059\u3002\u30B3\u30F3\u30C8\u30E9\u30AF\u30C8\u304C keccak256(rationaleURI || salt) \u304C\u30B3\u30DF\u30C3\u30C8\u3055\u308C\u305F\u30CF\u30C3\u30B7\u30E5\u3068\u4E00\u81F4\u3059\u308B\u304B\u691C\u8A3C\u3057\u307E\u3059\u3002",
+  "reveal.committedHash": "\u30B3\u30DF\u30C3\u30C8\u6E08\u30CF\u30C3\u30B7\u30E5:",
+  "reveal.rationaleURI": "\u6839\u62E0 URI:",
+  "reveal.salt": "Salt:",
+  "reveal.button": "\u6839\u62E0\u516C\u958B",
+
+  "resolve.title": "7. \u4E88\u6E2C\u7D50\u679C\u78BA\u5B9A",
+  "resolve.desc": "\u6295\u7968\u671F\u9593\u7D42\u4E86\u5F8C\u3001GovernorResolver \u304C Governor \u304B\u3089\u63D0\u6848\u7D50\u679C\u3092\u8AAD\u307F\u53D6\u308A\u3001\u4FE1\u983C\u5EA6\u4E88\u6E2C\u3092\u78BA\u5B9A\u3057\u307E\u3059\u3002\u8AB0\u3067\u3082\u547C\u3073\u51FA\u3057\u53EF\u80FD\u3067\u3059\u3002",
+  "resolve.votingPeriod": "\u6295\u7968\u671F\u9593",
+  "resolve.waitForVoting": "\u7D50\u679C\u78BA\u5B9A\u524D\u306B\u6295\u7968\u671F\u9593\u7D42\u4E86\u3092\u5F85\u6A5F",
+  "resolve.button": "\u7D50\u679C\u78BA\u5B9A",
+
+  "credibility.title": "8. \u4FE1\u983C\u5EA6\u78BA\u8A8D",
+  "credibility.desc": "CredibilityRegistry \u304B\u3089\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u306E\u7D2F\u7A4D\u4FE1\u983C\u5EA6\u30B9\u30B3\u30A2\u3092\u8AAD\u307F\u53D6\u308A\u307E\u3059\u3002\u8AAD\u307F\u53D6\u308A\u5C02\u7528 \u2014 \u30C8\u30E9\u30F3\u30B6\u30AF\u30B7\u30E7\u30F3\u4E0D\u8981\u3067\u3059\u3002",
+  "credibility.loading": "\u8AAD\u307F\u8FBC\u307F\u4E2D...",
+  "credibility.totalScore": "\u5168 {count} \u4EF6\u306E\u4E88\u6E2C\u306E\u7DCF\u5408\u30B9\u30B3\u30A2",
+  "credibility.delta": "\u9069\u7528\u3055\u308C\u305F\u5909\u5316: +3 (\u9AD8\u78BA\u4FE1\u5EA6\u6B63\u78BA\u4E88\u6E2C)",
+  "credibility.noData": "\u30C7\u30FC\u30BF\u306A\u3057",
+  "credibility.fetchButton": "\u4FE1\u983C\u5EA6\u53D6\u5F97",
+  "credibility.demoComplete": "\u30C7\u30E2\u5B8C\u4E86\uFF01Sepolia \u3067 AI \u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u30AC\u30D0\u30CA\u30F3\u30B9\u306E\u30E9\u30A4\u30D5\u30B5\u30A4\u30AF\u30EB\u5168\u4F53\u304C\u5B9F\u884C\u3055\u308C\u307E\u3057\u305F\u3002",
+
+  "tx.awaitingSignature": "\u7F72\u540D\u5F85\u3061...",
+  "tx.confirming": "\u78BA\u8A8D\u4E2D...",
+  "tx.confirmed": "\u78BA\u8A8D\u6E08\u307F",
+  "tx.failed": "\u5931\u6557",
+
+  "common.signing": "\u7F72\u540D\u4E2D...",
+  "common.confirming": "\u78BA\u8A8D\u4E2D...",
+
+  "eventLog.title": "\u30A4\u30D9\u30F3\u30C8\u30ED\u30B0",
+
+  "toc.onThisPage": "\u76EE\u6B21",
+
+  "meta.author": "\u8457\u8005",
+  "meta.type": "\u30BF\u30A4\u30D7",
+  "meta.requires": "\u8981\u4EF6",
+  "meta.created": "\u4F5C\u6210\u65E5",
+  "meta.discussion": "\u8B70\u8AD6",
+  "meta.ethereumMagicians": "Ethereum Magicians",
+};
+
+export const translations: Record<Locale, Translations> = { en, ko, zh, ja };

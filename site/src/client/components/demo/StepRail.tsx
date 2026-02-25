@@ -1,18 +1,14 @@
 import { useDemo } from "../../contexts/DemoContext";
-
-export const STEPS = [
-  { label: "Register Agent", desc: "Register an AI agent on-chain" },
-  { label: "Delegate", desc: "Delegate voting to the agent" },
-  { label: "Create Proposal", desc: "Submit a governance proposal" },
-  { label: "Commit Rationale", desc: "Commit reasoning hash + predict" },
-  { label: "Vote", desc: "Cast a vote on the proposal" },
-  { label: "Reveal Rationale", desc: "Reveal the committed rationale" },
-  { label: "Resolve", desc: "Resolve credibility prediction" },
-  { label: "View Credibility", desc: "Check final credibility score" },
-] as const;
+import { useI18n } from "../../contexts/I18nContext";
 
 export default function StepRail() {
   const { currentStep, completedSteps, setStep, reset } = useDemo();
+  const { t } = useI18n();
+
+  const steps = Array.from({ length: 8 }, (_, i) => ({
+    label: t(`rail.step${i}`),
+    desc: t(`rail.step${i}Desc`),
+  }));
 
   return (
     <div style={{
@@ -33,11 +29,11 @@ export default function StepRail() {
         letterSpacing: "0.05em",
         marginBottom: "0.75rem",
       }}>
-        Lifecycle Steps
+        {t("rail.lifecycleSteps")}
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-        {STEPS.map((step, i) => {
+        {steps.map((step, i) => {
           const isCompleted = completedSteps.includes(i);
           const isActive = currentStep === i;
           const isLocked = i > 0 && !completedSteps.includes(i - 1) && !isCompleted;
@@ -78,7 +74,7 @@ export default function StepRail() {
                   : isActive
                   ? "var(--accent-blue)"
                   : "var(--bg-tertiary)",
-                color: isCompleted || isActive ? "#000" : "var(--text-muted)",
+                color: isCompleted || isActive ? "#fff" : "var(--text-muted)",
                 border: isCompleted || isActive ? "none" : "1px solid var(--border)",
               }}>
                 {isCompleted ? "\u2713" : i + 1}
@@ -113,7 +109,7 @@ export default function StepRail() {
           cursor: "pointer",
         }}
       >
-        Reset Demo
+        {t("rail.resetDemo")}
       </button>
     </div>
   );

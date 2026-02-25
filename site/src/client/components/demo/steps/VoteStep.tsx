@@ -1,20 +1,22 @@
 import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt, useBlockNumber } from "wagmi";
 import { useDemo } from "../../../contexts/DemoContext";
+import { useI18n } from "../../../contexts/I18nContext";
 import { CONTRACTS, CONFIG } from "../../../config/contracts";
 import TxStatus from "../TxStatus";
 import { pushLog } from "../EventLog";
 import BlockProgress from "../BlockProgress";
 
-const VOTE_OPTIONS = [
-  { value: 0, label: "Against" },
-  { value: 1, label: "For" },
-  { value: 2, label: "Abstain" },
-] as const;
-
 export default function VoteStep() {
   const { proposalId, completeStep, update } = useDemo();
+  const { t } = useI18n();
   const [support, setSupport] = useState(1);
+
+  const voteOptions = [
+    { value: 0, label: t("vote.against") },
+    { value: 1, label: t("vote.for") },
+    { value: 2, label: t("vote.abstain") },
+  ];
 
   const { data: blockNumber } = useBlockNumber({ watch: true });
 
@@ -27,7 +29,7 @@ export default function VoteStep() {
       completeStep(4);
       pushLog("VoteCast", {
         proposalId: proposalId!.toString(),
-        support: VOTE_OPTIONS.find((o) => o.value === support)?.label || String(support),
+        support: voteOptions.find((o) => o.value === support)?.label || String(support),
       }, hash);
     }
   }, [isSuccess]);
@@ -44,26 +46,25 @@ export default function VoteStep() {
   return (
     <div>
       <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-        5. Vote on Proposal
+        {t("vote.title")}
       </h3>
       <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: "1rem" }}>
-        Cast a vote through the Governor. Voting is active after the voting delay
-        ({CONFIG.votingDelay} block).
+        {t("vote.desc")} ({CONFIG.votingDelay} block).
         {blockNumber && (
           <span style={{ fontFamily: "var(--font-mono)", color: "var(--text-muted)" }}>
-            {" "}Current block: {blockNumber.toString()}
+            {" "}{t("vote.currentBlock")} {blockNumber.toString()}
           </span>
         )}
       </p>
 
       <BlockProgress
-        label="Voting Delay"
+        label={t("vote.votingDelay")}
         targetBlocks={CONFIG.votingDelay}
-        description="Wait for voting to become active"
+        description={t("vote.waitForVoting")}
       />
 
       <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-        {VOTE_OPTIONS.map((opt) => (
+        {voteOptions.map((opt) => (
           <button
             key={opt.value}
             className="btn"
@@ -85,7 +86,7 @@ export default function VoteStep() {
         onClick={submit}
         disabled={proposalId === null || isPending || isConfirming}
       >
-        {isPending ? "Signing..." : isConfirming ? "Confirming..." : "Cast Vote"}
+        {isPending ? t("common.signing") : isConfirming ? t("common.confirming") : t("vote.button")}
       </button>
 
       <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} />

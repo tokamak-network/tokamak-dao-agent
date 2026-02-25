@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useI18n } from "../../contexts/I18nContext";
 
 interface TocItem {
   id: string;
@@ -39,6 +40,7 @@ function extractHeadings(md: string): TocItem[] {
 export default function TableOfContents({ markdown }: Props) {
   const [activeId, setActiveId] = useState("");
   const headings = extractHeadings(markdown);
+  const { t } = useI18n();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -79,7 +81,7 @@ export default function TableOfContents({ markdown }: Props) {
         letterSpacing: "0.05em",
         marginBottom: "0.75rem",
       }}>
-        On this page
+        {t("toc.onThisPage")}
       </div>
       {headings.map((h) => (
         <a

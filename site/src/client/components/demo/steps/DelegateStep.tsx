@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { decodeEventLog } from "viem";
 import { useDemo } from "../../../contexts/DemoContext";
+import { useI18n } from "../../../contexts/I18nContext";
 import { CONTRACTS } from "../../../config/contracts";
 import TxStatus from "../TxStatus";
 import { pushLog } from "../EventLog";
 
 export default function DelegateStep() {
   const { agentId, completeStep, update } = useDemo();
+  const { t } = useI18n();
   const [days, setDays] = useState("30");
   const [prefsURI, setPrefsURI] = useState("ipfs://QmPreferences");
 
@@ -52,16 +54,15 @@ export default function DelegateStep() {
   return (
     <div>
       <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-        2. Delegate to Agent
+        {t("delegate.title")}
       </h3>
       <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: "1rem" }}>
-        Delegate your voting preferences to the registered agent. The delegation has an expiry
-        and preferences URI describing your risk tolerance and values.
+        {t("delegate.desc")}
       </p>
 
       {agentId && (
         <div style={{ marginBottom: "0.75rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)" }}>
-          <span style={{ color: "var(--text-muted)" }}>Agent ID: </span>
+          <span style={{ color: "var(--text-muted)" }}>{t("delegate.agentId")}: </span>
           <span style={{ color: "var(--accent-blue)", wordBreak: "break-all" }}>{agentId}</span>
         </div>
       )}
@@ -69,7 +70,7 @@ export default function DelegateStep() {
       <div style={{ display: "flex", gap: "1rem", marginBottom: "0.75rem" }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
-            Expiry (days)
+            {t("delegate.expiryDays")}
           </label>
           <input
             className="input"
@@ -80,7 +81,7 @@ export default function DelegateStep() {
         </div>
         <div style={{ flex: 2 }}>
           <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
-            Preferences URI
+            {t("delegate.prefsURI")}
           </label>
           <input
             className="input"
@@ -91,7 +92,7 @@ export default function DelegateStep() {
       </div>
 
       <button className="btn btn-primary" onClick={submit} disabled={!agentId || isPending || isConfirming}>
-        {isPending ? "Signing..." : isConfirming ? "Confirming..." : "Delegate"}
+        {isPending ? t("common.signing") : isConfirming ? t("common.confirming") : t("delegate.button")}
       </button>
 
       <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} />

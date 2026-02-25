@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useI18n } from "../../contexts/I18nContext";
 
 export interface LogEntry {
   id: number;
@@ -21,6 +22,7 @@ export function pushLog(event: string, args: Record<string, string>, txHash?: st
 export default function EventLog() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [expanded, setExpanded] = useState(false);
+  const { t } = useI18n();
 
   // Subscribe to global log pushes
   useState(() => {
@@ -57,7 +59,7 @@ export default function EventLog() {
           alignItems: "center",
         }}
       >
-        <span>Event Log ({logs.length})</span>
+        <span>{t("eventLog.title")} ({logs.length})</span>
         <span>{expanded ? "\u25B2" : "\u25BC"}</span>
       </button>
 

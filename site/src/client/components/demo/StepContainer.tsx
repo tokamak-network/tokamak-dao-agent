@@ -1,4 +1,5 @@
 import { useDemo } from "../../contexts/DemoContext";
+import { useI18n } from "../../contexts/I18nContext";
 import { isWalletConfigured } from "../../config/wagmi";
 import RegisterAgentStep from "./steps/RegisterAgentStep";
 import DelegateStep from "./steps/DelegateStep";
@@ -22,6 +23,7 @@ const STEP_COMPONENTS = [
 
 export default function StepContainer() {
   const { currentStep } = useDemo();
+  const { t } = useI18n();
 
   if (!isWalletConfigured) {
     return (
@@ -37,15 +39,14 @@ export default function StepContainer() {
             fontWeight: 600,
             marginBottom: "0.5rem",
           }}>
-            Wallet Not Configured
+            {t("wallet.notConfigured")}
           </div>
           <p style={{
             color: "var(--text-secondary)",
             fontSize: "0.85rem",
             maxWidth: "400px",
           }}>
-            Set <code>VITE_REOWN_PROJECT_ID</code> in your environment to enable
-            wallet connection and interact with the demo contracts on Sepolia.
+            {t("wallet.notConfiguredDesc")}
           </p>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { useDemo } from "../../../contexts/DemoContext";
+import { useI18n } from "../../../contexts/I18nContext";
 import { CONTRACTS, CONFIG } from "../../../config/contracts";
 import TxStatus from "../TxStatus";
 import { pushLog } from "../EventLog";
@@ -8,6 +9,7 @@ import BlockProgress from "../BlockProgress";
 
 export default function ResolveStep() {
   const { agentId, proposalId, completeStep, update } = useDemo();
+  const { t } = useI18n();
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -36,18 +38,16 @@ export default function ResolveStep() {
   return (
     <div>
       <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-        7. Resolve Prediction
+        {t("resolve.title")}
       </h3>
       <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: "1rem" }}>
-        After the voting period ends ({CONFIG.votingPeriod} blocks), the <code>GovernorResolver</code> reads
-        the proposal outcome from the Governor and resolves the credibility prediction.
-        This is permissionless — anyone can call it.
+        {t("resolve.desc")} ({CONFIG.votingPeriod} blocks)
       </p>
 
       <BlockProgress
-        label="Voting Period"
+        label={t("resolve.votingPeriod")}
         targetBlocks={CONFIG.votingPeriod}
-        description="Wait for voting period to end before resolving"
+        description={t("resolve.waitForVoting")}
       />
 
       <button
@@ -55,7 +55,7 @@ export default function ResolveStep() {
         onClick={submit}
         disabled={!agentId || proposalId === null || isPending || isConfirming}
       >
-        {isPending ? "Signing..." : isConfirming ? "Confirming..." : "Resolve"}
+        {isPending ? t("common.signing") : isConfirming ? t("common.confirming") : t("resolve.button")}
       </button>
 
       <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} />

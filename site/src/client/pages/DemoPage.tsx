@@ -1,9 +1,12 @@
 import { DemoProvider } from "../contexts/DemoContext";
+import { useI18n } from "../contexts/I18nContext";
 import StepRail from "../components/demo/StepRail";
 import StepContainer from "../components/demo/StepContainer";
 import EventLog from "../components/demo/EventLog";
 
 export default function DemoPage() {
+  const { t } = useI18n();
+
   return (
     <DemoProvider>
       <div style={{
@@ -13,11 +16,10 @@ export default function DemoPage() {
       }}>
         <div style={{ marginBottom: "1.5rem" }}>
           <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-            Interactive Demo
+            {t("demo.title")}
           </h1>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-            Walk through the full AI agent governance lifecycle on Sepolia testnet.
-            Each step executes a real on-chain transaction.
+            {t("demo.subtitle")}
           </p>
         </div>
 

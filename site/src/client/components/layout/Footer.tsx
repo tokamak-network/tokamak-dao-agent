@@ -1,4 +1,8 @@
+import { useI18n } from "../../contexts/I18nContext";
+
 export default function Footer() {
+  const { t } = useI18n();
+
   return (
     <footer style={{
       padding: "1.5rem",
@@ -8,7 +12,7 @@ export default function Footer() {
       fontSize: "0.75rem",
       color: "var(--text-muted)",
     }}>
-      ERC AI Agent Governance Interface — Draft Standard by Tokamak Network
+      {t("footer.text")}
     </footer>
   );
 }

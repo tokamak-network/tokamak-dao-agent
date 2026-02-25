@@ -1,3 +1,5 @@
+import { useI18n } from "../../contexts/I18nContext";
+
 interface TxStatusProps {
   hash?: `0x${string}`;
   isPending: boolean;
@@ -7,15 +9,17 @@ interface TxStatusProps {
 }
 
 export default function TxStatus({ hash, isPending, isConfirming, isSuccess, error }: TxStatusProps) {
+  const { t } = useI18n();
+
   if (!isPending && !isConfirming && !isSuccess && !error) return null;
 
   const status = isPending
-    ? { label: "Awaiting signature...", color: "var(--accent-yellow)" }
+    ? { label: t("tx.awaitingSignature"), color: "var(--accent-yellow)" }
     : isConfirming
-    ? { label: "Confirming...", color: "var(--accent-blue)" }
+    ? { label: t("tx.confirming"), color: "var(--accent-blue)" }
     : isSuccess
-    ? { label: "Confirmed", color: "var(--accent-green)" }
-    : { label: "Failed", color: "var(--accent-red)" };
+    ? { label: t("tx.confirmed"), color: "var(--accent-green)" }
+    : { label: t("tx.failed"), color: "var(--accent-red)" };
 
   return (
     <div style={{

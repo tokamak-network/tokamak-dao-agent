@@ -1,8 +1,21 @@
 import { useMemo } from "react";
-import specMd from "../../../../docs/erc-ai-governance.md?raw";
+import { useI18n } from "../contexts/I18nContext";
+import type { Locale } from "../i18n/translations";
 import FrontmatterCard from "../components/spec/FrontmatterCard";
 import SpecRenderer from "../components/spec/SpecRenderer";
 import TableOfContents from "../components/spec/TableOfContents";
+
+import specEn from "../../../../docs/erc-ai-governance.md?raw";
+import specKo from "../../../../docs/erc-ai-governance.ko.md?raw";
+import specZh from "../../../../docs/erc-ai-governance.zh.md?raw";
+import specJa from "../../../../docs/erc-ai-governance.ja.md?raw";
+
+const specByLocale: Record<Locale, string> = {
+  en: specEn,
+  ko: specKo,
+  zh: specZh,
+  ja: specJa,
+};
 
 function parseFrontmatter(raw: string): { data: Record<string, string>; content: string } {
   const match = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -21,7 +34,9 @@ function parseFrontmatter(raw: string): { data: Record<string, string>; content:
 }
 
 export default function SpecPage() {
-  const { data, content } = useMemo(() => parseFrontmatter(specMd), []);
+  const { locale } = useI18n();
+  const specMd = specByLocale[locale] || specEn;
+  const { data, content } = useMemo(() => parseFrontmatter(specMd), [specMd]);
 
   return (
     <div style={{

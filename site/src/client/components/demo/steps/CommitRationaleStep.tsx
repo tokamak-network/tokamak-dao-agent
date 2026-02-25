@@ -2,12 +2,14 @@ import { useState, useMemo, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { keccak256, encodePacked } from "viem";
 import { useDemo } from "../../../contexts/DemoContext";
+import { useI18n } from "../../../contexts/I18nContext";
 import { CONTRACTS } from "../../../config/contracts";
 import TxStatus from "../TxStatus";
 import { pushLog } from "../EventLog";
 
 export default function CommitRationaleStep() {
   const { agentId, proposalId, completeStep, update } = useDemo();
+  const { t } = useI18n();
   const [rationaleURI, setRationaleURI] = useState("ipfs://QmDemoRationale");
   const [confidence, setConfidence] = useState("85");
   const [step, setStep] = useState<"commit" | "predict" | "done">("commit");
@@ -84,22 +86,21 @@ export default function CommitRationaleStep() {
     writePredict({
       ...CONTRACTS.credibility,
       functionName: "recordPrediction",
-      args: [agentId, proposalId, 1, BigInt(confidence)], // 1 = For
+      args: [agentId, proposalId, 1, Number(confidence)], // 1 = For
     });
   };
 
   return (
     <div>
       <h3 style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-        4. Commit Rationale + Predict
+        {t("commit.title")}
       </h3>
       <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: "1rem" }}>
-        Two transactions: (1) commit a hash of the rationale URI for tamper-proof integrity,
-        then (2) record a prediction with confidence score for credibility tracking.
+        {t("commit.desc")}
       </p>
 
       <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
-        Rationale URI
+        {t("commit.rationaleURI")}
       </label>
       <input
         className="input"
@@ -110,7 +111,7 @@ export default function CommitRationaleStep() {
       />
 
       <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
-        Confidence (0-100)
+        {t("commit.confidence")}
       </label>
       <input
         className="input"
@@ -135,12 +136,12 @@ export default function CommitRationaleStep() {
           fontSize: "0.75rem",
         }}>
           <div style={{ color: "var(--text-muted)", marginBottom: "0.25rem" }}>
-            keccak256(rationaleURI || salt):
+            {t("commit.hashLabel")}
           </div>
           <div style={{ color: "var(--accent-purple)", wordBreak: "break-all" }}>
             {commitHash}
           </div>
-          <div style={{ color: "var(--text-muted)", marginTop: "0.5rem" }}>Salt:</div>
+          <div style={{ color: "var(--text-muted)", marginTop: "0.5rem" }}>{t("commit.salt")}</div>
           <div style={{ color: "var(--text-secondary)", wordBreak: "break-all" }}>{salt}</div>
         </div>
       )}
@@ -152,7 +153,7 @@ export default function CommitRationaleStep() {
             onClick={submitCommit}
             disabled={!agentId || proposalId === null || commitPending || commitConfirming}
           >
-            {commitPending ? "Signing..." : commitConfirming ? "Confirming..." : "1. Commit Hash"}
+            {commitPending ? t("common.signing") : commitConfirming ? t("common.confirming") : t("commit.commitButton")}
           </button>
         )}
         {step === "predict" && (
@@ -161,11 +162,11 @@ export default function CommitRationaleStep() {
             onClick={submitPredict}
             disabled={predictPending || predictConfirming}
           >
-            {predictPending ? "Signing..." : predictConfirming ? "Confirming..." : "2. Record Prediction"}
+            {predictPending ? t("common.signing") : predictConfirming ? t("common.confirming") : t("commit.predictButton")}
           </button>
         )}
         {step === "done" && (
-          <span className="badge badge-green">Both transactions confirmed</span>
+          <span className="badge badge-green">{t("commit.bothConfirmed")}</span>
         )}
       </div>
 

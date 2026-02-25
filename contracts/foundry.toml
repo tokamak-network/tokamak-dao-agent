@@ -42,6 +42,24 @@ solc_version = "0.6.12"
 [profile.v7]
 solc_version = "0.7.6"
 
+# Deploy profile - only governance contracts (excludes legacy src/)
+# Usage: FOUNDRY_PROFILE=deploy forge script script/DeploySepolia.s.sol:DeploySepolia ...
+[profile.deploy]
+src = "src/governance"
+out = "out"
+libs = ["lib"]
+test = "test"
+script = "script"
+solc_version = "0.8.24"
+evm_version = "london"
+optimizer = true
+optimizer_runs = 200
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "forge-std/=lib/forge-std/src/"
+]
+
 # Fork testing profile - excludes legacy src/ contracts
 # Usage: FOUNDRY_PROFILE=fork forge test --fork-url $ALCHEMY_RPC_URL
 [profile.fork]

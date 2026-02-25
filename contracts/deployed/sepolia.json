@@ -1,15 +1,15 @@
 {
   "chainId": 11155111,
-  "deployer": "",
+  "deployer": "0x488f3660FCD32099F2A250633822a6fbF6Eb771B",
   "contracts": {
-    "MockERC20Votes": "",
-    "MockGovernor": "",
-    "AIAgentRegistry": "",
-    "AIDelegation": "",
-    "RationaleCommitment": "",
-    "GovernorResolver": "",
-    "CredibilityRegistry": "",
-    "GovernorAIDelegation": ""
+    "MockERC20Votes": "0x747D6B202938f2c7A40aF027aFe72e76eFDbFEE1",
+    "MockGovernor": "0xFF34eee4FA947cE15e276675891Fb1f68D19cd2d",
+    "AIAgentRegistry": "0x5c61ad57Ea37C6bd2772d96F3F2930aB72D778AE",
+    "AIDelegation": "0x975D4f36AC917771559b54beED563580839dEb37",
+    "RationaleCommitment": "0x225280Ac0b539BD30874a2500B796869756C2873",
+    "GovernorResolver": "0x067B79cf76710810D923E6655c9d76A0a3F3c990",
+    "CredibilityRegistry": "0x7782f64bB25d643cD86D629De863b8C78Cd3941F",
+    "GovernorAIDelegation": "0x90359FeCB8C0DAD6f7a51b26F703c9A41668aA64"
   },
   "config": {
     "votingDelay": 1,

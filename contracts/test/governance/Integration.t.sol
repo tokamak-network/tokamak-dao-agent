@@ -2,8 +2,8 @@
 pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
-import {AIAgentRegistry} from "../../src/governance/AIAgentRegistry.sol";
-import {AIDelegation} from "../../src/governance/AIDelegation.sol";
+import {AgentRegistry} from "../../src/governance/AgentRegistry.sol";
+import {AgentDelegation} from "../../src/governance/AgentDelegation.sol";
 import {RationaleCommitment} from "../../src/governance/RationaleCommitment.sol";
 import {CredibilityRegistry} from "../../src/governance/CredibilityRegistry.sol";
 import {MockERC20Votes} from "./mocks/MockERC20Votes.sol";
@@ -22,8 +22,8 @@ import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
  */
 contract IntegrationTest is Test {
     // ─── Core ERC Contracts ───
-    AIAgentRegistry public registry;
-    AIDelegation public delegation;
+    AgentRegistry public registry;
+    AgentDelegation public delegation;
     RationaleCommitment public rationale;
     CredibilityRegistry public credibility;
 
@@ -54,8 +54,8 @@ contract IntegrationTest is Test {
         governor = new MockGovernor(IVotes(address(token)), VOTING_DELAY, VOTING_PERIOD, QUORUM);
 
         // Deploy ERC contracts
-        registry = new AIAgentRegistry();
-        delegation = new AIDelegation(address(registry));
+        registry = new AgentRegistry();
+        delegation = new AgentDelegation(address(registry));
         rationale = new RationaleCommitment(address(registry));
         credibility = new CredibilityRegistry(
             address(registry),
@@ -91,7 +91,7 @@ contract IntegrationTest is Test {
         bytes32 delegationId = delegation.delegateToAgent(agentId, expiry, "ipfs://QmPrefs");
         assertTrue(delegationId != bytes32(0));
 
-        (, bytes32 retAgent, uint256 retExpiry,) = delegation.getAIDelegation(delegator);
+        (, bytes32 retAgent, uint256 retExpiry,) = delegation.getAgentDelegation(delegator);
         assertEq(retAgent, agentId);
         assertEq(retExpiry, expiry);
 
@@ -198,14 +198,14 @@ contract IntegrationTest is Test {
         delegation.delegateToAgent(agentId, shortExpiry, "ipfs://QmPrefs");
 
         // Verify active
-        (, bytes32 retAgent,,) = delegation.getAIDelegation(delegator);
+        (, bytes32 retAgent,,) = delegation.getAgentDelegation(delegator);
         assertEq(retAgent, agentId);
 
         // Warp past expiry
         vm.warp(shortExpiry + 1);
 
         // Delegation returns zero values (expired)
-        (, retAgent,,) = delegation.getAIDelegation(delegator);
+        (, retAgent,,) = delegation.getAgentDelegation(delegator);
         assertEq(retAgent, bytes32(0));
 
         // New delegation can be created
@@ -213,7 +213,7 @@ contract IntegrationTest is Test {
         uint256 newExpiry = block.timestamp + 30 days;
         delegation.delegateToAgent(agentId, newExpiry, "ipfs://QmNewPrefs");
 
-        (, retAgent,,) = delegation.getAIDelegation(delegator);
+        (, retAgent,,) = delegation.getAgentDelegation(delegator);
         assertEq(retAgent, agentId);
     }
 
@@ -304,7 +304,7 @@ contract IntegrationTest is Test {
         // Delegation to deactivated agent reverts
         uint256 expiry = block.timestamp + 30 days;
         vm.prank(delegator);
-        vm.expectRevert(abi.encodeWithSelector(AIDelegation.AgentNotActive.selector, agentId));
+        vm.expectRevert(abi.encodeWithSelector(AgentDelegation.AgentNotActive.selector, agentId));
         delegation.delegateToAgent(agentId, expiry, "ipfs://QmPrefs");
 
         // Rationale commitment to deactivated agent reverts

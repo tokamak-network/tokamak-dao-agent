@@ -2,17 +2,17 @@
 pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
-import {AIAgentRegistry} from "../../src/governance/AIAgentRegistry.sol";
-import {IAIAgentRegistry} from "../../src/governance/IAIAgentRegistry.sol";
+import {AgentRegistry} from "../../src/governance/AgentRegistry.sol";
+import {IAgentRegistry} from "../../src/governance/IAgentRegistry.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
- * @title AIAgentRegistryTest
- * @notice Tests for AIAgentRegistry reference implementation
- * Run with: forge test --match-contract AIAgentRegistryTest -vvv
+ * @title AgentRegistryTest
+ * @notice Tests for AgentRegistry reference implementation
+ * Run with: forge test --match-contract AgentRegistryTest -vvv
  */
-contract AIAgentRegistryTest is Test {
-    AIAgentRegistry public registry;
+contract AgentRegistryTest is Test {
+    AgentRegistry public registry;
 
     address operator1 = makeAddr("operator1");
     address operator2 = makeAddr("operator2");
@@ -27,7 +27,7 @@ contract AIAgentRegistryTest is Test {
     event AgentDeactivated(bytes32 indexed agentId);
 
     function setUp() public {
-        registry = new AIAgentRegistry();
+        registry = new AgentRegistry();
     }
 
     // ─── Registration ───
@@ -72,7 +72,7 @@ contract AIAgentRegistryTest is Test {
 
     function test_registerAgent_revertEmptyURI() public {
         vm.prank(operator1);
-        vm.expectRevert(AIAgentRegistry.EmptyURI.selector);
+        vm.expectRevert(AgentRegistry.EmptyURI.selector);
         registry.registerAgent("");
     }
 
@@ -103,7 +103,7 @@ contract AIAgentRegistryTest is Test {
         bytes32 agentId = registry.registerAgent(URI_1);
 
         vm.prank(stranger);
-        vm.expectRevert(abi.encodeWithSelector(AIAgentRegistry.NotOperator.selector, agentId, stranger));
+        vm.expectRevert(abi.encodeWithSelector(AgentRegistry.NotOperator.selector, agentId, stranger));
         registry.updateAgent(agentId, URI_UPDATED);
     }
 
@@ -112,7 +112,7 @@ contract AIAgentRegistryTest is Test {
         bytes32 agentId = registry.registerAgent(URI_1);
 
         vm.prank(operator1);
-        vm.expectRevert(AIAgentRegistry.EmptyURI.selector);
+        vm.expectRevert(AgentRegistry.EmptyURI.selector);
         registry.updateAgent(agentId, "");
     }
 
@@ -121,7 +121,7 @@ contract AIAgentRegistryTest is Test {
         bytes32 agentId = registry.registerAgent(URI_1);
         registry.deactivateAgent(agentId);
 
-        vm.expectRevert(abi.encodeWithSelector(AIAgentRegistry.AgentNotFound.selector, agentId));
+        vm.expectRevert(abi.encodeWithSelector(AgentRegistry.AgentNotFound.selector, agentId));
         registry.updateAgent(agentId, URI_UPDATED);
         vm.stopPrank();
     }
@@ -153,7 +153,7 @@ contract AIAgentRegistryTest is Test {
         bytes32 agentId = registry.registerAgent(URI_1);
 
         vm.prank(stranger);
-        vm.expectRevert(abi.encodeWithSelector(AIAgentRegistry.NotOperator.selector, agentId, stranger));
+        vm.expectRevert(abi.encodeWithSelector(AgentRegistry.NotOperator.selector, agentId, stranger));
         registry.deactivateAgent(agentId);
     }
 
@@ -161,13 +161,13 @@ contract AIAgentRegistryTest is Test {
 
     function test_agentURI_revertNotFound() public {
         bytes32 fakeId = keccak256("nonexistent");
-        vm.expectRevert(abi.encodeWithSelector(AIAgentRegistry.AgentNotFound.selector, fakeId));
+        vm.expectRevert(abi.encodeWithSelector(AgentRegistry.AgentNotFound.selector, fakeId));
         registry.agentURI(fakeId);
     }
 
     function test_agentOperator_revertNotFound() public {
         bytes32 fakeId = keccak256("nonexistent");
-        vm.expectRevert(abi.encodeWithSelector(AIAgentRegistry.AgentNotFound.selector, fakeId));
+        vm.expectRevert(abi.encodeWithSelector(AgentRegistry.AgentNotFound.selector, fakeId));
         registry.agentOperator(fakeId);
     }
 
@@ -193,7 +193,7 @@ contract AIAgentRegistryTest is Test {
     // ─── ERC-165 ───
 
     function test_supportsInterface_ownInterface() public view {
-        assertTrue(registry.supportsInterface(type(IAIAgentRegistry).interfaceId));
+        assertTrue(registry.supportsInterface(type(IAgentRegistry).interfaceId));
     }
 
     function test_supportsInterface_IERC165() public view {

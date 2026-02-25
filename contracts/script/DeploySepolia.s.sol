@@ -4,24 +4,24 @@ pragma solidity ^0.8.24;
 import "forge-std/Script.sol";
 import "../test/governance/mocks/MockERC20Votes.sol";
 import "../test/governance/mocks/MockGovernor.sol";
-import "../src/governance/AIAgentRegistry.sol";
-import "../src/governance/AIDelegation.sol";
+import "../src/governance/AgentRegistry.sol";
+import "../src/governance/AgentDelegation.sol";
 import "../src/governance/RationaleCommitment.sol";
 import "../src/governance/CredibilityRegistry.sol";
 import "../src/governance/examples/GovernorResolver.sol";
-import "../src/governance/examples/GovernorAIDelegation.sol";
+import "../src/governance/examples/GovernorAgentDelegation.sol";
 
 /// @title DeploySepolia
 /// @notice Deploys all ERC AI Governance contracts to Sepolia testnet.
 /// @dev Deployment order follows dependency graph:
 ///      1. MockERC20Votes (no deps)
 ///      2. MockGovernor (needs token)
-///      3. AIAgentRegistry (no deps)
-///      4. AIDelegation (needs registry)
+///      3. AgentRegistry (no deps)
+///      4. AgentDelegation (needs registry)
 ///      5. RationaleCommitment (needs registry)
 ///      6. GovernorResolver (needs governor)
 ///      7. CredibilityRegistry (needs registry + resolver)
-///      8. GovernorAIDelegation (needs registry + token)
+///      8. GovernorAgentDelegation (needs registry + token)
 ///
 /// Usage:
 ///   forge script script/DeploySepolia.s.sol:DeploySepolia \
@@ -52,13 +52,13 @@ contract DeploySepolia is Script {
         );
         console.log("MockGovernor:", address(governor));
 
-        // 3. AIAgentRegistry
-        AIAgentRegistry registry = new AIAgentRegistry();
-        console.log("AIAgentRegistry:", address(registry));
+        // 3. AgentRegistry
+        AgentRegistry registry = new AgentRegistry();
+        console.log("AgentRegistry:", address(registry));
 
-        // 4. AIDelegation
-        AIDelegation delegation = new AIDelegation(address(registry));
-        console.log("AIDelegation:", address(delegation));
+        // 4. AgentDelegation
+        AgentDelegation delegation = new AgentDelegation(address(registry));
+        console.log("AgentDelegation:", address(delegation));
 
         // 5. RationaleCommitment
         RationaleCommitment rationale = new RationaleCommitment(address(registry));
@@ -80,12 +80,12 @@ contract DeploySepolia is Script {
         );
         console.log("CredibilityRegistry:", address(credibility));
 
-        // 8. GovernorAIDelegation
-        GovernorAIDelegation govDelegation = new GovernorAIDelegation(
+        // 8. GovernorAgentDelegation
+        GovernorAgentDelegation govDelegation = new GovernorAgentDelegation(
             address(registry),
             address(token)
         );
-        console.log("GovernorAIDelegation:", address(govDelegation));
+        console.log("GovernorAgentDelegation:", address(govDelegation));
 
         // Mint tokens to deployer for testing (100 tokens)
         token.mint(deployer, 100e18);
@@ -97,11 +97,11 @@ contract DeploySepolia is Script {
         console.log("\n=== Deployment Summary ===");
         console.log("MockERC20Votes:       ", address(token));
         console.log("MockGovernor:         ", address(governor));
-        console.log("AIAgentRegistry:      ", address(registry));
-        console.log("AIDelegation:         ", address(delegation));
+        console.log("AgentRegistry:      ", address(registry));
+        console.log("AgentDelegation:         ", address(delegation));
         console.log("RationaleCommitment:  ", address(rationale));
         console.log("GovernorResolver:     ", address(resolver));
         console.log("CredibilityRegistry:  ", address(credibility));
-        console.log("GovernorAIDelegation: ", address(govDelegation));
+        console.log("GovernorAgentDelegation: ", address(govDelegation));
     }
 }

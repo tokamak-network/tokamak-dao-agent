@@ -2,9 +2,9 @@
 pragma solidity ^0.8.24;
 
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {IAgentRegistry} from "./IAgentRegistry.sol";
 
-/// @title IAIDelegation
+/// @title IAgentDelegation
 /// @notice Preference-based delegation of voting power to AI agents.
 /// @dev Extends the concept of ERC-5805 delegation with:
 ///      - Expiry timestamps (delegations MUST NOT be permanent)
@@ -15,9 +15,9 @@ import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 ///      - Implementations MAY bridge to IVotes.delegate() internally
 ///      - The agent's operator address SHOULD be usable as an IVotes delegatee
 ///      - Existing Governor contracts require no modification
-interface IAIDelegation is IERC165 {
+interface IAgentDelegation is IERC165 {
     /// @notice Emitted when a delegation to an AI agent is created
-    event AIDelegationCreated(
+    event AgentDelegationCreated(
         address indexed delegator,
         bytes32 indexed agentId,
         bytes32 delegationId,
@@ -25,7 +25,7 @@ interface IAIDelegation is IERC165 {
     );
 
     /// @notice Emitted when a delegation is revoked
-    event AIDelegationRevoked(bytes32 indexed delegationId);
+    event AgentDelegationRevoked(bytes32 indexed delegationId);
 
     /// @notice Emitted when an agent escalates a decision to the human delegator
     /// @dev The reasonURI points to a JSON document explaining the escalation.
@@ -35,11 +35,11 @@ interface IAIDelegation is IERC165 {
     event Escalated(bytes32 indexed delegationId, uint256 indexed proposalId, string reasonURI);
 
     /// @notice Get the registry contract
-    /// @return The IAIAgentRegistry contract
-    function registry() external view returns (IAIAgentRegistry);
+    /// @return The IAgentRegistry contract
+    function registry() external view returns (IAgentRegistry);
 
     /// @notice Delegate voting power to an AI agent with constraints
-    /// @param agentId Registered agent from IAIAgentRegistry
+    /// @param agentId Registered agent from IAgentRegistry
     /// @param expiry Delegation expiry timestamp (MUST be > block.timestamp)
     /// @param preferencesURI URI to DelegationPreferences JSON
     /// @return delegationId Unique delegation identifier
@@ -59,7 +59,7 @@ interface IAIDelegation is IERC165 {
     /// @return agentId The delegated agent
     /// @return expiry Delegation expiry timestamp
     /// @return preferencesURI URI to preferences JSON
-    function getAIDelegation(address account) external view returns (
+    function getAgentDelegation(address account) external view returns (
         bytes32 delegationId,
         bytes32 agentId,
         uint256 expiry,

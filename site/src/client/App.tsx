@@ -6,15 +6,17 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { I18nProvider } from "./contexts/I18nContext";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
+import LandingPage from "./pages/LandingPage";
 import SpecPage from "./pages/SpecPage";
 import DemoPage from "./pages/DemoPage";
 
-type View = "spec" | "demo";
+type View = "landing" | "spec" | "demo";
 
 function parseView(): View {
   const path = window.location.pathname;
+  if (path === "/spec") return "spec";
   if (path === "/demo") return "demo";
-  return "spec";
+  return "landing";
 }
 
 export function navigate(path: string) {
@@ -33,7 +35,10 @@ export default function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  const content = view === "demo" ? <DemoPage /> : <SpecPage />;
+  const content =
+    view === "demo" ? <DemoPage /> :
+    view === "spec" ? <SpecPage /> :
+    <LandingPage />;
 
   if (!isWalletConfigured) {
     return (

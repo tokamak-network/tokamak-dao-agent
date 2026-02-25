@@ -21,12 +21,12 @@ function addr(key: keyof typeof deployed.contracts): Address {
 export const CONTRACTS = {
   token: { address: addr("MockERC20Votes"), abi: tokenAbi },
   governor: { address: addr("MockGovernor"), abi: governorAbi },
-  registry: { address: addr("AIAgentRegistry"), abi: registryAbi },
-  delegation: { address: addr("AIDelegation"), abi: delegationAbi },
+  registry: { address: addr("AgentRegistry"), abi: registryAbi },
+  delegation: { address: addr("AgentDelegation"), abi: delegationAbi },
   rationale: { address: addr("RationaleCommitment"), abi: rationaleAbi },
   resolver: { address: addr("GovernorResolver"), abi: resolverAbi },
   credibility: { address: addr("CredibilityRegistry"), abi: credibilityAbi },
-  govDelegation: { address: addr("GovernorAIDelegation"), abi: govDelegationAbi },
+  govDelegation: { address: addr("GovernorAgentDelegation"), abi: govDelegationAbi },
 } as const;
 
 export const CHAIN_ID = deployed.chainId;

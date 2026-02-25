@@ -2,19 +2,19 @@
 pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
-import {AIAgentRegistry} from "../../src/governance/AIAgentRegistry.sol";
-import {AIDelegation} from "../../src/governance/AIDelegation.sol";
-import {IAIDelegation} from "../../src/governance/IAIDelegation.sol";
+import {AgentRegistry} from "../../src/governance/AgentRegistry.sol";
+import {AgentDelegation} from "../../src/governance/AgentDelegation.sol";
+import {IAgentDelegation} from "../../src/governance/IAgentDelegation.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
- * @title AIDelegationTest
- * @notice Tests for AIDelegation reference implementation
- * Run with: forge test --match-contract AIDelegationTest -vvv
+ * @title AgentDelegationTest
+ * @notice Tests for AgentDelegation reference implementation
+ * Run with: forge test --match-contract AgentDelegationTest -vvv
  */
-contract AIDelegationTest is Test {
-    AIAgentRegistry public registry;
-    AIDelegation public delegation;
+contract AgentDelegationTest is Test {
+    AgentRegistry public registry;
+    AgentDelegation public delegation;
 
     address operator = makeAddr("operator");
     address delegator1 = makeAddr("delegator1");
@@ -27,13 +27,13 @@ contract AIDelegationTest is Test {
     string constant PREFS_URI = "ipfs://QmPreferences1";
     string constant AGENT_URI = "ipfs://QmAgent1";
 
-    event AIDelegationCreated(address indexed delegator, bytes32 indexed agentId, bytes32 delegationId, uint256 expiry);
-    event AIDelegationRevoked(bytes32 indexed delegationId);
+    event AgentDelegationCreated(address indexed delegator, bytes32 indexed agentId, bytes32 delegationId, uint256 expiry);
+    event AgentDelegationRevoked(bytes32 indexed delegationId);
     event Escalated(bytes32 indexed delegationId, uint256 indexed proposalId, string reasonURI);
 
     function setUp() public {
-        registry = new AIAgentRegistry();
-        delegation = new AIDelegation(address(registry));
+        registry = new AgentRegistry();
+        delegation = new AgentDelegation(address(registry));
 
         vm.prank(operator);
         agentId = registry.registerAgent(AGENT_URI);
@@ -47,7 +47,7 @@ contract AIDelegationTest is Test {
         vm.prank(delegator1);
         bytes32 delegationId = delegation.delegateToAgent(agentId, expiry, PREFS_URI);
 
-        (bytes32 retDelegationId, bytes32 retAgent, uint256 retExpiry, string memory retPrefs) = delegation.getAIDelegation(delegator1);
+        (bytes32 retDelegationId, bytes32 retAgent, uint256 retExpiry, string memory retPrefs) = delegation.getAgentDelegation(delegator1);
         assertEq(retDelegationId, delegationId);
         assertEq(retAgent, agentId);
         assertEq(retExpiry, expiry);
@@ -59,7 +59,7 @@ contract AIDelegationTest is Test {
         bytes32 expectedId = keccak256(abi.encodePacked(delegator1, uint256(0)));
 
         vm.expectEmit(true, true, false, true);
-        emit AIDelegationCreated(delegator1, agentId, expectedId, expiry);
+        emit AgentDelegationCreated(delegator1, agentId, expectedId, expiry);
 
         vm.prank(delegator1);
         delegation.delegateToAgent(agentId, expiry, PREFS_URI);
@@ -70,13 +70,13 @@ contract AIDelegationTest is Test {
         registry.deactivateAgent(agentId);
 
         vm.prank(delegator1);
-        vm.expectRevert(abi.encodeWithSelector(AIDelegation.AgentNotActive.selector, agentId));
+        vm.expectRevert(abi.encodeWithSelector(AgentDelegation.AgentNotActive.selector, agentId));
         delegation.delegateToAgent(agentId, expiry, PREFS_URI);
     }
 
     function test_delegateToAgent_revertExpiryInPast() public {
         vm.prank(delegator1);
-        vm.expectRevert(abi.encodeWithSelector(AIDelegation.ExpiryInPast.selector, block.timestamp - 1));
+        vm.expectRevert(abi.encodeWithSelector(AgentDelegation.ExpiryInPast.selector, block.timestamp - 1));
         delegation.delegateToAgent(agentId, block.timestamp - 1, PREFS_URI);
     }
 
@@ -89,7 +89,7 @@ contract AIDelegationTest is Test {
         assertTrue(id1 != id2);
         assertEq(delegation.activeDelegation(delegator1), id2);
 
-        (, bytes32 retAgent,, string memory retPrefs) = delegation.getAIDelegation(delegator1);
+        (, bytes32 retAgent,, string memory retPrefs) = delegation.getAgentDelegation(delegator1);
         assertEq(retAgent, agentId);
         assertEq(retPrefs, "ipfs://QmPrefs2");
     }
@@ -105,7 +105,7 @@ contract AIDelegationTest is Test {
 
         assertEq(delegation.activeDelegation(delegator1), bytes32(0));
 
-        (, bytes32 retAgent,,) = delegation.getAIDelegation(delegator1);
+        (, bytes32 retAgent,,) = delegation.getAgentDelegation(delegator1);
         assertEq(retAgent, bytes32(0));
     }
 
@@ -114,7 +114,7 @@ contract AIDelegationTest is Test {
         bytes32 delegationId = delegation.delegateToAgent(agentId, expiry, PREFS_URI);
 
         vm.expectEmit(true, false, false, false);
-        emit AIDelegationRevoked(delegationId);
+        emit AgentDelegationRevoked(delegationId);
 
         vm.prank(delegator1);
         delegation.revokeDelegation(delegationId);
@@ -125,27 +125,27 @@ contract AIDelegationTest is Test {
         bytes32 delegationId = delegation.delegateToAgent(agentId, expiry, PREFS_URI);
 
         vm.prank(stranger);
-        vm.expectRevert(abi.encodeWithSelector(AIDelegation.NotDelegator.selector, delegationId, stranger));
+        vm.expectRevert(abi.encodeWithSelector(AgentDelegation.NotDelegator.selector, delegationId, stranger));
         delegation.revokeDelegation(delegationId);
     }
 
     function test_revokeDelegation_revertNotFound() public {
         bytes32 fakeId = keccak256("nonexistent");
         vm.prank(delegator1);
-        vm.expectRevert(abi.encodeWithSelector(AIDelegation.DelegationNotFound.selector, fakeId));
+        vm.expectRevert(abi.encodeWithSelector(AgentDelegation.DelegationNotFound.selector, fakeId));
         delegation.revokeDelegation(fakeId);
     }
 
     // ─── Expiry ───
 
-    function test_getAIDelegation_returnsEmptyAfterExpiry() public {
+    function test_getAgentDelegation_returnsEmptyAfterExpiry() public {
         vm.prank(delegator1);
         delegation.delegateToAgent(agentId, expiry, PREFS_URI);
 
         // Warp past expiry
         vm.warp(expiry + 1);
 
-        (, bytes32 retAgent,,) = delegation.getAIDelegation(delegator1);
+        (, bytes32 retAgent,,) = delegation.getAgentDelegation(delegator1);
         assertEq(retAgent, bytes32(0));
     }
 
@@ -169,7 +169,7 @@ contract AIDelegationTest is Test {
         bytes32 delegationId = delegation.delegateToAgent(agentId, expiry, PREFS_URI);
 
         vm.prank(stranger);
-        vm.expectRevert(abi.encodeWithSelector(AIDelegation.NotAgentOperator.selector, delegationId, stranger));
+        vm.expectRevert(abi.encodeWithSelector(AgentDelegation.NotAgentOperator.selector, delegationId, stranger));
         delegation.escalate(delegationId, 42, "ipfs://QmReason");
     }
 
@@ -180,7 +180,7 @@ contract AIDelegationTest is Test {
         vm.warp(expiry + 1);
 
         vm.prank(operator);
-        vm.expectRevert(abi.encodeWithSelector(AIDelegation.DelegationExpired.selector, delegationId));
+        vm.expectRevert(abi.encodeWithSelector(AgentDelegation.DelegationExpired.selector, delegationId));
         delegation.escalate(delegationId, 42, "ipfs://QmReason");
     }
 
@@ -195,8 +195,8 @@ contract AIDelegationTest is Test {
 
         assertTrue(id1 != id2);
 
-        (, bytes32 agent1,,) = delegation.getAIDelegation(delegator1);
-        (, bytes32 agent2,,) = delegation.getAIDelegation(delegator2);
+        (, bytes32 agent1,,) = delegation.getAgentDelegation(delegator1);
+        (, bytes32 agent2,,) = delegation.getAgentDelegation(delegator2);
         assertEq(agent1, agentId);
         assertEq(agent2, agentId);
     }
@@ -210,7 +210,7 @@ contract AIDelegationTest is Test {
     // ─── ERC-165 ───
 
     function test_supportsInterface_ownInterface() public view {
-        assertTrue(delegation.supportsInterface(type(IAIDelegation).interfaceId));
+        assertTrue(delegation.supportsInterface(type(IAgentDelegation).interfaceId));
     }
 
     function test_supportsInterface_IERC165() public view {

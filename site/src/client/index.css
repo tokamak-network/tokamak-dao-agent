@@ -96,12 +96,19 @@ pre {
   overflow-x: auto;
   font-size: 0.85rem;
   line-height: 1.5;
+  margin-bottom: 1.5rem;
 }
 
 pre code {
   background: none;
   padding: 0;
   font-size: inherit;
+}
+
+/* Override highlight.js background to match our theme */
+pre code.hljs {
+  background: transparent;
+  padding: 0;
 }
 
 /* Scrollbar */
@@ -212,10 +219,51 @@ textarea.input {
   resize: vertical;
 }
 
+/* Range slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--bg-primary);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--bg-primary);
+}
+
 /* Card */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
+}
+
+/* Landing page */
+.landing-section { padding: 4rem 1.5rem; }
+.landing-section-alt { padding: 4rem 1.5rem; background: var(--bg-secondary); }
+.landing-container { max-width: var(--max-width); margin: 0 auto; }
+.landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+.lifecycle-flow { display: flex; align-items: center; overflow-x: auto; padding: 1rem 0; gap: 0; }
+.landing-glow { text-shadow: 0 0 8px rgba(74,158,255,0.3), 0 0 24px rgba(74,158,255,0.15); }
+
+@media (max-width: 768px) {
+  .landing-section, .landing-section-alt { padding: 2.5rem 1rem; }
 }

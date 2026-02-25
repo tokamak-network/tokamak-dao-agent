@@ -6,14 +6,14 @@ AI agent for analyzing Tokamak Network contracts and participating in DAO govern
 
 ```mermaid
 flowchart TB
-    Claude["Claude Code"] <-->|"MCP (stdio)"| MCP["MCP Server\n(Bun)"]
-    Browser["Web Browser"] <-->|"HTTP/SSE"| Web["Web Server\n(Bun, port 3333)"]
-    ElizaOS["ElizaOS"] <-->|"SSE"| SSE["SSE Bridge\n(port 3001)"]
+    Claude["Claude Code"] <-->|"MCP (stdio)"| MCP["MCP Server<br/>(Bun)"]
+    Browser["Web Browser"] <-->|"HTTP/SSE"| Web["Web Server<br/>(Bun, port 3333)"]
+    ElizaOS["ElizaOS"] <-->|"SSE"| SSE["SSE Bridge<br/>(port 3001)"]
 
-    MCP & Web & SSE --> Handlers["Shared Tool Handlers\n(15 tools)"]
+    MCP & Web & SSE --> Handlers["Shared Tool Handlers<br/>(15 tools)"]
 
-    Handlers --> Data["contracts.json · Solidity sources\ncompiled ABIs · storage layouts"]
-    Handlers --> RPC["Ethereum Mainnet\n(Alchemy RPC)"]
+    Handlers --> Data["contracts.json · Solidity sources · ABIs · storage layouts"]
+    Handlers --> RPC["Ethereum Mainnet<br/>(Alchemy RPC)"]
 ```
 
 ## Tools

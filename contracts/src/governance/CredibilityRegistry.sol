@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {ICredibilityRegistry} from "./ICredibilityRegistry.sol";
-import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {IAgentRegistry} from "./IAgentRegistry.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
@@ -40,7 +40,7 @@ contract CredibilityRegistry is ICredibilityRegistry, ERC165 {
         int8 lowConfWrong;
     }
 
-    IAIAgentRegistry public immutable registry;
+    IAgentRegistry public immutable registry;
     address public immutable resolver;
 
     /// @notice Confidence threshold: score >= highConfThreshold is high confidence
@@ -68,7 +68,7 @@ contract CredibilityRegistry is ICredibilityRegistry, ERC165 {
     error InvalidOutcome(uint8 outcome);
     error InvalidDeltaConfig();
 
-    /// @param _registry Address of the IAIAgentRegistry
+    /// @param _registry Address of the IAgentRegistry
     /// @param _resolver Address authorized to resolve predictions
     /// @param _highConfThreshold Score threshold for high confidence (default: 70)
     /// @param _verdictPositiveThreshold Verdict values >= this are "positive" (default: 1 for Governor-compatible)
@@ -83,7 +83,7 @@ contract CredibilityRegistry is ICredibilityRegistry, ERC165 {
         if (_deltas[0] <= _deltas[1]) revert InvalidDeltaConfig(); // highConfCorrect > lowConfCorrect
         if (_deltas[2] > _deltas[3]) revert InvalidDeltaConfig();  // highConfWrong <= lowConfWrong (more negative = harsher penalty)
 
-        registry = IAIAgentRegistry(_registry);
+        registry = IAgentRegistry(_registry);
         resolver = _resolver;
         highConfThreshold = _highConfThreshold;
         verdictPositiveThreshold = _verdictPositiveThreshold;

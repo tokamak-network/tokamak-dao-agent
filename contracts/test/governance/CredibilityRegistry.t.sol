@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
-import {AIAgentRegistry} from "../../src/governance/AIAgentRegistry.sol";
+import {AgentRegistry} from "../../src/governance/AgentRegistry.sol";
 import {CredibilityRegistry} from "../../src/governance/CredibilityRegistry.sol";
 import {ICredibilityRegistry} from "../../src/governance/ICredibilityRegistry.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
@@ -13,7 +13,7 @@ import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
  * Run with: forge test --match-contract CredibilityRegistryTest -vvv
  */
 contract CredibilityRegistryTest is Test {
-    AIAgentRegistry public agentRegistry;
+    AgentRegistry public agentRegistry;
     CredibilityRegistry public credibility;
 
     address operator = makeAddr("operator");
@@ -38,7 +38,7 @@ contract CredibilityRegistryTest is Test {
     event PredictionResolved(bytes32 indexed agentId, uint256 indexed proposalId, int8 delta);
 
     function setUp() public {
-        agentRegistry = new AIAgentRegistry();
+        agentRegistry = new AgentRegistry();
         // highConfThreshold=70, verdictPositiveThreshold=1 (FOR and above are positive)
         credibility = new CredibilityRegistry(
             address(agentRegistry),

@@ -27,7 +27,8 @@ export default function RegisterAgentStep() {
           });
           if (decoded.eventName === "AgentRegistered") {
             const agentId = (decoded.args as any).agentId as `0x${string}`;
-            update({ agentId });
+            const operator = (decoded.args as any).operator as string;
+            update({ agentId, operatorAddress: operator });
             completeStep(0);
             pushLog("AgentRegistered", {
               agentId,

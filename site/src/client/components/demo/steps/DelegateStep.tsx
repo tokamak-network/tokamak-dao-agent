@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { decodeEventLog } from "viem";
 import { useDemo } from "../../../contexts/DemoContext";
@@ -6,12 +6,37 @@ import { useI18n } from "../../../contexts/I18nContext";
 import { CONTRACTS } from "../../../config/contracts";
 import TxStatus from "../TxStatus";
 import { pushLog } from "../EventLog";
+import PreferencesForm, { type RiskTolerance } from "./PreferencesForm";
 
 export default function DelegateStep() {
   const { agentId, completeStep, update } = useDemo();
   const { t } = useI18n();
   const [days, setDays] = useState("30");
-  const [prefsURI, setPrefsURI] = useState("ipfs://QmPreferences");
+
+  // Structured preferences state
+  const [riskTolerance, setRiskTolerance] = useState<RiskTolerance>("moderate");
+  const [confidenceThreshold, setConfidenceThreshold] = useState(50);
+  const [escalateCategories, setEscalateCategories] = useState<string[]>([]);
+  const [principlesText, setPrinciplesText] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Build preferences JSON and data: URI
+  const { prefsJson, prefsURI } = useMemo(() => {
+    const prefs: Record<string, unknown> = {
+      riskTolerance,
+      escalation: {
+        confidenceThreshold,
+        alwaysEscalate: escalateCategories,
+      },
+      principles: principlesText
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean),
+    };
+    const json = JSON.stringify(prefs, null, 2);
+    const uri = `data:application/json;base64,${btoa(json)}`;
+    return { prefsJson: json, prefsURI: uri };
+  }, [riskTolerance, confidenceThreshold, escalateCategories, principlesText]);
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash });
@@ -25,11 +50,11 @@ export default function DelegateStep() {
             data: log.data,
             topics: log.topics,
           });
-          if (decoded.eventName === "AIDelegationCreated") {
+          if (decoded.eventName === "AgentDelegationCreated") {
             const delegationId = (decoded.args as any).delegationId as `0x${string}`;
             update({ delegationId });
             completeStep(1);
-            pushLog("AIDelegationCreated", {
+            pushLog("AgentDelegationCreated", {
               delegationId,
               delegator: (decoded.args as any).delegator,
               agentId: (decoded.args as any).agentId,
@@ -67,28 +92,74 @@ export default function DelegateStep() {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: "1rem", marginBottom: "0.75rem" }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
-            {t("delegate.expiryDays")}
-          </label>
-          <input
-            className="input"
-            type="number"
-            value={days}
-            onChange={(e) => setDays(e.target.value)}
-          />
-        </div>
-        <div style={{ flex: 2 }}>
-          <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
-            {t("delegate.prefsURI")}
-          </label>
-          <input
-            className="input"
-            value={prefsURI}
-            onChange={(e) => setPrefsURI(e.target.value)}
-          />
-        </div>
+      <PreferencesForm
+        riskTolerance={riskTolerance}
+        setRiskTolerance={setRiskTolerance}
+        confidenceThreshold={confidenceThreshold}
+        setConfidenceThreshold={setConfidenceThreshold}
+        escalateCategories={escalateCategories}
+        setEscalateCategories={setEscalateCategories}
+        principlesText={principlesText}
+        setPrinciplesText={setPrinciplesText}
+      />
+
+      {/* JSON Preview (collapsible) */}
+      <div style={{ marginBottom: "0.75rem" }}>
+        <button
+          type="button"
+          onClick={() => setShowPreview(!showPreview)}
+          style={{
+            background: "none",
+            border: "none",
+            color: "var(--text-muted)",
+            fontSize: "0.75rem",
+            fontFamily: "var(--font-mono)",
+            cursor: "pointer",
+            padding: 0,
+            marginBottom: "0.25rem",
+          }}
+        >
+          {showPreview ? "\u25BC" : "\u25B6"} {t("delegate.jsonPreview")}
+        </button>
+        {showPreview && (
+          <div style={{
+            padding: "0.75rem",
+            background: "var(--bg-primary)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.75rem",
+          }}>
+            <div style={{ color: "var(--text-muted)", marginBottom: "0.25rem" }}>
+              {t("delegate.jsonPreviewNote")}
+            </div>
+            <pre style={{
+              color: "var(--accent-purple)",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-all",
+              margin: 0,
+              padding: 0,
+              background: "none",
+              border: "none",
+              fontSize: "0.75rem",
+            }}>
+              {prefsJson}
+            </pre>
+          </div>
+        )}
+      </div>
+
+      {/* Expiry Days */}
+      <div style={{ marginBottom: "0.75rem" }}>
+        <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
+          {t("delegate.expiryDays")}
+        </label>
+        <input
+          className="input"
+          type="number"
+          value={days}
+          onChange={(e) => setDays(e.target.value)}
+        />
       </div>
 
       <button className="btn btn-primary" onClick={submit} disabled={!agentId || isPending || isConfirming}>

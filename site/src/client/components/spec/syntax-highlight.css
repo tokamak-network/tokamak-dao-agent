@@ -1,0 +1,233 @@
+/* Custom syntax highlighting — high contrast for dark backgrounds */
+
+pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  background: transparent !important;
+  padding: 0 !important;
+  color: #f0f0f8;
+}
+
+/* ── Comments ── */
+.hljs-comment,
+.hljs-quote {
+  color: #7a8198;
+  font-style: italic;
+}
+
+/* ── Keywords: pragma, function, event, interface, import, from, is, returns, external, view, indexed ── */
+.hljs-keyword,
+.hljs-selector-tag {
+  color: #ff79c6;
+  font-weight: 600;
+}
+
+/* ── Types: bytes32, uint256, address, string, bool, int8 ── */
+.hljs-type,
+.hljs-template-variable,
+.hljs-variable.language_ {
+  color: #50fa7b;
+  font-weight: 600;
+}
+
+/* ── Strings ── */
+.hljs-string,
+.hljs-template-tag {
+  color: #f1fa8c;
+}
+
+/* ── Numbers ── */
+.hljs-number {
+  color: #ffb86c;
+  font-weight: 500;
+}
+
+/* ── Function/method names ── */
+.hljs-title.function_,
+.hljs-title {
+  color: #8be9fd;
+  font-weight: 600;
+}
+
+/* ── Class/interface names ── */
+.hljs-title.class_,
+.hljs-title.class_.inherited__ {
+  color: #8be9fd;
+  font-weight: 700;
+}
+
+/* ── Built-in, literals (true, false, null) ── */
+.hljs-literal,
+.hljs-built_in {
+  color: #bd93f9;
+  font-weight: 600;
+}
+
+/* ── JSON keys ── */
+.hljs-attr {
+  color: #50fa7b;
+  font-weight: 600;
+}
+
+/* ── Punctuation, operators, braces ── */
+.hljs-punctuation,
+.hljs-operator {
+  color: #f0f0f8;
+}
+
+/* ── Params (variable names in function signatures) ── */
+.hljs-params {
+  color: #f0f0f8;
+}
+
+/* ── Variable names ── */
+.hljs-variable {
+  color: #f0f0f8;
+}
+
+/* ── Doc tags: @notice, @param ── */
+.hljs-doctag {
+  color: #ff79c6;
+  font-weight: 600;
+}
+
+/* ── Sections, selectors ── */
+.hljs-section {
+  color: #8be9fd;
+  font-weight: 600;
+}
+
+/* ── Meta/pragma line ── */
+.hljs-meta {
+  color: #ff79c6;
+}
+
+.hljs-meta .hljs-keyword {
+  color: #ff79c6;
+  font-weight: 600;
+}
+
+/* ── Symbols ── */
+.hljs-symbol {
+  color: #ffb86c;
+}
+
+/* ── Deletions / additions (diff) ── */
+.hljs-deletion {
+  color: #ff5555;
+}
+
+.hljs-addition {
+  color: #50fa7b;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Light theme overrides — darker, high-contrast colors
+   for readability on light (#f5f5f7) backgrounds.
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="light"] pre code.hljs {
+  color: #1a1a2e;
+}
+
+/* ── Comments ── */
+[data-theme="light"] .hljs-comment,
+[data-theme="light"] .hljs-quote {
+  color: #6a737d;
+}
+
+/* ── Keywords ── */
+[data-theme="light"] .hljs-keyword,
+[data-theme="light"] .hljs-selector-tag {
+  color: #d63384;
+}
+
+/* ── Types ── */
+[data-theme="light"] .hljs-type,
+[data-theme="light"] .hljs-template-variable,
+[data-theme="light"] .hljs-variable.language_ {
+  color: #1a7f37;
+}
+
+/* ── Strings ── */
+[data-theme="light"] .hljs-string,
+[data-theme="light"] .hljs-template-tag {
+  color: #9a6700;
+}
+
+/* ── Numbers ── */
+[data-theme="light"] .hljs-number {
+  color: #c45100;
+}
+
+/* ── Function/method names ── */
+[data-theme="light"] .hljs-title.function_,
+[data-theme="light"] .hljs-title {
+  color: #0550ae;
+}
+
+/* ── Class/interface names ── */
+[data-theme="light"] .hljs-title.class_,
+[data-theme="light"] .hljs-title.class_.inherited__ {
+  color: #0550ae;
+}
+
+/* ── Built-in, literals (true, false, null) ── */
+[data-theme="light"] .hljs-literal,
+[data-theme="light"] .hljs-built_in {
+  color: #6639ba;
+}
+
+/* ── JSON keys ── */
+[data-theme="light"] .hljs-attr {
+  color: #1a7f37;
+}
+
+/* ── Punctuation, operators, braces ── */
+[data-theme="light"] .hljs-punctuation,
+[data-theme="light"] .hljs-operator {
+  color: #1a1a2e;
+}
+
+/* ── Params ── */
+[data-theme="light"] .hljs-params {
+  color: #1a1a2e;
+}
+
+/* ── Variable names ── */
+[data-theme="light"] .hljs-variable {
+  color: #1a1a2e;
+}
+
+/* ── Doc tags ── */
+[data-theme="light"] .hljs-doctag {
+  color: #d63384;
+}
+
+/* ── Sections ── */
+[data-theme="light"] .hljs-section {
+  color: #0550ae;
+}
+
+/* ── Meta/pragma ── */
+[data-theme="light"] .hljs-meta {
+  color: #d63384;
+}
+
+[data-theme="light"] .hljs-meta .hljs-keyword {
+  color: #d63384;
+}
+
+/* ── Symbols ── */
+[data-theme="light"] .hljs-symbol {
+  color: #c45100;
+}
+
+/* ── Diff ── */
+[data-theme="light"] .hljs-deletion {
+  color: #cf222e;
+}
+
+[data-theme="light"] .hljs-addition {
+  color: #1a7f37;
+}

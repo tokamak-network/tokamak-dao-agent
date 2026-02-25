@@ -14,6 +14,7 @@ const MakeProposalTab = lazy(() => import("./MakeProposalTab").then((m) => ({ de
 const AnalyzeProposalTab = lazy(() => import("./AnalyzeProposalTab").then((m) => ({ default: m.AnalyzeProposalTab })));
 const AgentsTab = lazy(() => import("./AgentsTab").then((m) => ({ default: m.AgentsTab })));
 const ForumTab = lazy(() => import("./forum").then((m) => ({ default: m.ForumTab })));
+const GuideTab = lazy(() => import("./guide").then((m) => ({ default: m.GuideTab })));
 
 function LazyFallback() {
   return (
@@ -175,6 +176,16 @@ function ChatApp() {
           <Suspense fallback={<LazyFallback />}>
             <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
               <ForumTab />
+            </div>
+          </Suspense>
+        </ErrorBoundary>
+      )}
+
+      {activeTab === "guide" && (
+        <ErrorBoundary>
+          <Suspense fallback={<LazyFallback />}>
+            <div className="tab-content" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+              <GuideTab />
             </div>
           </Suspense>
         </ErrorBoundary>

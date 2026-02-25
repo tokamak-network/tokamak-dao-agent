@@ -103,7 +103,7 @@ export const delegationAbi = [
   },
   {
     "type": "function",
-    "name": "getAIDelegation",
+    "name": "getAgentDelegation",
     "inputs": [
       {
         "name": "account",
@@ -143,7 +143,7 @@ export const delegationAbi = [
       {
         "name": "",
         "type": "address",
-        "internalType": "contract IAIAgentRegistry"
+        "internalType": "contract IAgentRegistry"
       }
     ],
     "stateMutability": "view"
@@ -182,7 +182,7 @@ export const delegationAbi = [
   },
   {
     "type": "event",
-    "name": "AIDelegationCreated",
+    "name": "AgentDelegationCreated",
     "inputs": [
       {
         "name": "delegator",
@@ -213,7 +213,7 @@ export const delegationAbi = [
   },
   {
     "type": "event",
-    "name": "AIDelegationRevoked",
+    "name": "AgentDelegationRevoked",
     "inputs": [
       {
         "name": "delegationId",

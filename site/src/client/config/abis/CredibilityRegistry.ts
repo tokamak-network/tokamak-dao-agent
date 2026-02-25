@@ -171,7 +171,7 @@ export const credibilityAbi = [
       {
         "name": "",
         "type": "address",
-        "internalType": "contract IAIAgentRegistry"
+        "internalType": "contract IAgentRegistry"
       }
     ],
     "stateMutability": "view"

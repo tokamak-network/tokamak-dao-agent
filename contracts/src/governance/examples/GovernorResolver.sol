@@ -5,7 +5,7 @@ import {IGovernor} from "@openzeppelin/contracts/governance/IGovernor.sol";
 import {ICredibilityRegistry} from "../ICredibilityRegistry.sol";
 
 /// @title GovernorResolver — Automatic Credibility Resolution Example
-/// @author Tokamak Network
+/// @author Thomas Shin
 /// @notice INFORMATIVE EXAMPLE — NOT part of the ERC specification.
 ///
 /// @dev Reads IGovernor.state() to determine proposal outcome and resolves

@@ -1,3 +1,4 @@
+import { useAccount } from "wagmi";
 import { useDemo } from "../../contexts/DemoContext";
 import { useI18n } from "../../contexts/I18nContext";
 import { isWalletConfigured } from "../../config/wagmi";
@@ -25,6 +26,8 @@ export default function StepContainer() {
   const { currentStep } = useDemo();
   const { t } = useI18n();
 
+  const { isConnected } = useAccount();
+
   if (!isWalletConfigured) {
     return (
       <div className="card" style={{
@@ -48,6 +51,37 @@ export default function StepContainer() {
           }}>
             {t("wallet.notConfiguredDesc")}
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isConnected) {
+    return (
+      <div className="card" style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+      }}>
+        <div>
+          <div style={{
+            fontSize: "1.2rem",
+            fontWeight: 600,
+            marginBottom: "0.5rem",
+          }}>
+            {t("wallet.notConnected")}
+          </div>
+          <p style={{
+            color: "var(--text-secondary)",
+            fontSize: "0.85rem",
+            maxWidth: "400px",
+          }}>
+            {t("wallet.notConnectedDesc")}
+          </p>
+          <div style={{ marginTop: "1rem", display: "flex", justifyContent: "center" }}>
+            <w3m-button size="md" />
+          </div>
         </div>
       </div>
     );

@@ -8,6 +8,45 @@ interface TxStatusProps {
   error: Error | null;
 }
 
+/** Extract a human-readable reason from a viem/wagmi error */
+function extractErrorReason(error: Error): string {
+  const msg = error.message;
+
+  // Check for known custom error names
+  const customErrorMatch = msg.match(/reverted with custom error '([^']+)'/);
+  if (customErrorMatch) return customErrorMatch[1];
+
+  // Check for revert reason strings
+  const reasonMatch = msg.match(/reverted with reason string '([^']+)'/);
+  if (reasonMatch) return reasonMatch[1];
+
+  // Check for known error signatures from our contracts
+  const knownErrors: Record<string, string> = {
+    NotAgentOperator: "Not agent operator — wrong wallet connected",
+    AgentNotActive: "Agent is not active",
+    AgentNotFound: "Agent not found — try resetting the demo",
+    AlreadyCommitted: "Rationale already committed for this proposal",
+    AlreadyRevealed: "Rationale already revealed",
+    HashMismatch: "Reveal hash does not match commitment",
+    NotResolver: "Not authorized resolver",
+    PredictionExists: "Prediction already recorded",
+    PredictionNotFound: "Prediction not found",
+  };
+
+  for (const [name, description] of Object.entries(knownErrors)) {
+    if (msg.includes(name)) return description;
+  }
+
+  // Middleware/RPC errors
+  if (msg.includes("RetryOnEmptyMiddleware"))
+    return "Transaction reverted (simulation failed). Try resetting the demo.";
+  if (msg.includes("User rejected"))
+    return "Transaction rejected by user";
+
+  // Fallback: truncate
+  return msg.slice(0, 200);
+}
+
 export default function TxStatus({ hash, isPending, isConfirming, isSuccess, error }: TxStatusProps) {
   const { t } = useI18n();
 
@@ -57,7 +96,7 @@ export default function TxStatus({ hash, isPending, isConfirming, isSuccess, err
       )}
       {error && (
         <div style={{ color: "var(--accent-red)", fontSize: "0.75rem", wordBreak: "break-word" }}>
-          {error.message.slice(0, 200)}
+          {extractErrorReason(error)}
         </div>
       )}
       <style>{`

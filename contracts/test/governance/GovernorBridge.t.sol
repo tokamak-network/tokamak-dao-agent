@@ -2,9 +2,9 @@
 pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
-import {AIAgentRegistry} from "../../src/governance/AIAgentRegistry.sol";
+import {AgentRegistry} from "../../src/governance/AgentRegistry.sol";
 import {CredibilityRegistry} from "../../src/governance/CredibilityRegistry.sol";
-import {GovernorAIDelegation} from "../../src/governance/examples/GovernorAIDelegation.sol";
+import {GovernorAgentDelegation} from "../../src/governance/examples/GovernorAgentDelegation.sol";
 import {GovernorResolver} from "../../src/governance/examples/GovernorResolver.sol";
 import {MockERC20Votes} from "./mocks/MockERC20Votes.sol";
 import {MockGovernor} from "./mocks/MockGovernor.sol";
@@ -13,15 +13,15 @@ import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
 /**
  * @title GovernorBridgeTest
- * @notice Tests for Governor bridge examples (GovernorAIDelegation + GovernorResolver).
+ * @notice Tests for Governor bridge examples (GovernorAgentDelegation + GovernorResolver).
  *         Demonstrates the IVotes bridge pattern and automatic credibility resolution.
  * Run with: forge test --match-contract GovernorBridgeTest -vvv
  */
 contract GovernorBridgeTest is Test {
     MockERC20Votes public token;
     MockGovernor public governor;
-    AIAgentRegistry public registry;
-    GovernorAIDelegation public delegation;
+    AgentRegistry public registry;
+    GovernorAgentDelegation public delegation;
     GovernorResolver public resolverContract;
     CredibilityRegistry public credibility;
 
@@ -41,8 +41,8 @@ contract GovernorBridgeTest is Test {
     function setUp() public {
         token = new MockERC20Votes();
         governor = new MockGovernor(IVotes(address(token)), VOTING_DELAY, VOTING_PERIOD, QUORUM);
-        registry = new AIAgentRegistry();
-        delegation = new GovernorAIDelegation(address(registry), address(token));
+        registry = new AgentRegistry();
+        delegation = new GovernorAgentDelegation(address(registry), address(token));
         resolverContract = new GovernorResolver(address(governor));
         credibility = new CredibilityRegistry(
             address(registry),
@@ -61,7 +61,7 @@ contract GovernorBridgeTest is Test {
         vm.roll(block.number + 1);
     }
 
-    // ─── GovernorAIDelegation: IVotes Bridge ───
+    // ─── GovernorAgentDelegation: IVotes Bridge ───
 
     function test_delegateBridge_votingPowerTransferAndRestore() public {
         uint256 expiry = block.timestamp + 30 days;

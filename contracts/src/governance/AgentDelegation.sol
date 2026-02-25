@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IAIDelegation} from "./IAIDelegation.sol";
-import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {IAgentDelegation} from "./IAgentDelegation.sol";
+import {IAgentRegistry} from "./IAgentRegistry.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-/// @title AIDelegation
-/// @notice Reference implementation of IAIDelegation.
+/// @title AgentDelegation
+/// @notice Reference implementation of IAgentDelegation.
 /// @dev Each account can have at most one active AI delegation at a time.
 ///      Delegations expire automatically and can be revoked by the delegator.
 ///      Only the agent's operator can call escalate().
-contract AIDelegation is IAIDelegation, ERC165 {
+contract AgentDelegation is IAgentDelegation, ERC165 {
     struct Delegation {
         address delegator;
         bytes32 agentId;
@@ -20,7 +20,7 @@ contract AIDelegation is IAIDelegation, ERC165 {
         bool active;
     }
 
-    IAIAgentRegistry public immutable registry;
+    IAgentRegistry public immutable registry;
 
     /// @notice Delegation ID → Delegation data
     mapping(bytes32 => Delegation) internal _delegations;
@@ -40,10 +40,10 @@ contract AIDelegation is IAIDelegation, ERC165 {
     error DelegationExpired(bytes32 delegationId);
 
     constructor(address _registry) {
-        registry = IAIAgentRegistry(_registry);
+        registry = IAgentRegistry(_registry);
     }
 
-    /// @inheritdoc IAIDelegation
+    /// @inheritdoc IAgentDelegation
     function delegateToAgent(
         bytes32 agentId,
         uint256 expiry,
@@ -56,7 +56,7 @@ contract AIDelegation is IAIDelegation, ERC165 {
         bytes32 existing = activeDelegation[msg.sender];
         if (existing != bytes32(0) && _delegations[existing].active) {
             _delegations[existing].active = false;
-            emit AIDelegationRevoked(existing);
+            emit AgentDelegationRevoked(existing);
         }
 
         uint256 nonce = delegatorNonce[msg.sender]++;
@@ -71,10 +71,10 @@ contract AIDelegation is IAIDelegation, ERC165 {
         });
         activeDelegation[msg.sender] = delegationId;
 
-        emit AIDelegationCreated(msg.sender, agentId, delegationId, expiry);
+        emit AgentDelegationCreated(msg.sender, agentId, delegationId, expiry);
     }
 
-    /// @inheritdoc IAIDelegation
+    /// @inheritdoc IAgentDelegation
     function revokeDelegation(bytes32 delegationId) public virtual {
         Delegation storage d = _delegations[delegationId];
         if (d.delegator == address(0)) revert DelegationNotFound(delegationId);
@@ -85,11 +85,11 @@ contract AIDelegation is IAIDelegation, ERC165 {
             activeDelegation[msg.sender] = bytes32(0);
         }
 
-        emit AIDelegationRevoked(delegationId);
+        emit AgentDelegationRevoked(delegationId);
     }
 
-    /// @inheritdoc IAIDelegation
-    function getAIDelegation(address account) external view returns (
+    /// @inheritdoc IAgentDelegation
+    function getAgentDelegation(address account) external view returns (
         bytes32 delegationId,
         bytes32 agentId,
         uint256 expiry,
@@ -104,7 +104,7 @@ contract AIDelegation is IAIDelegation, ERC165 {
         return (delegationId, d.agentId, d.expiry, d.preferencesURI);
     }
 
-    /// @inheritdoc IAIDelegation
+    /// @inheritdoc IAgentDelegation
     function escalate(bytes32 delegationId, uint256 proposalId, string calldata reasonURI) public virtual {
         Delegation storage d = _delegations[delegationId];
         if (d.delegator == address(0)) revert DelegationNotFound(delegationId);
@@ -119,6 +119,6 @@ contract AIDelegation is IAIDelegation, ERC165 {
 
     /// @inheritdoc ERC165
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
-        return interfaceId == type(IAIDelegation).interfaceId || super.supportsInterface(interfaceId);
+        return interfaceId == type(IAgentDelegation).interfaceId || super.supportsInterface(interfaceId);
     }
 }

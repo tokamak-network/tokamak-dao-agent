@@ -44,6 +44,8 @@ const en: Translations = {
   // StepContainer
   "wallet.notConfigured": "Wallet Not Configured",
   "wallet.notConfiguredDesc": "Set VITE_REOWN_PROJECT_ID in your environment to enable wallet connection and interact with the demo contracts on Sepolia.",
+  "wallet.notConnected": "Connect Your Wallet",
+  "wallet.notConnectedDesc": "Connect a wallet to interact with the demo contracts on Sepolia testnet.",
 
   // Step 1: Register Agent
   "register.title": "1. Register AI Agent",
@@ -135,6 +137,50 @@ const en: Translations = {
   "meta.created": "Created",
   "meta.discussion": "Discussion",
   "meta.ethereumMagicians": "Ethereum Magicians",
+
+  // Landing Page
+  "landing.hero.title": "AI Agent Governance Interface",
+  "landing.hero.subtitle": "A standard interface for AI agents to participate in DAO governance with identity, delegation, rationale transparency, and cross-DAO credibility.",
+  "landing.hero.readSpec": "Read Full Spec",
+  "landing.hero.tryDemo": "Try Demo",
+  "landing.hero.draft": "ERC Draft",
+
+  "landing.problem.title": "Why This Standard?",
+  "landing.problem.identity.title": "No AI Identity",
+  "landing.problem.identity.desc": "AI agents participate as regular EOAs with no on-chain distinction from human wallets. DAOs cannot identify, audit, or govern automated participants.",
+  "landing.problem.delegation.title": "Permanent Delegation",
+  "landing.problem.delegation.desc": "ERC-5805 delegation lacks expiry, preference constraints, and escalation mechanisms. Once delegated, control is effectively permanent.",
+  "landing.problem.rationale.title": "Rationale Manipulation",
+  "landing.problem.rationale.desc": "Without commit-reveal, agents can modify their published reasoning after seeing vote outcomes. No integrity guarantee exists.",
+  "landing.problem.reputation.title": "No Cross-DAO Reputation",
+  "landing.problem.reputation.desc": "Agent credibility is siloed per DAO. There is no portable trust score to evaluate agent reliability across governance systems.",
+
+  "landing.interfaces.title": "Four Interfaces",
+  "landing.interfaces.registry.name": "IAIAgentRegistry",
+  "landing.interfaces.registry.desc": "On-chain registration and identity for AI agents with metadata and capability declarations.",
+  "landing.interfaces.delegation.name": "IAIDelegation",
+  "landing.interfaces.delegation.desc": "Time-bounded delegation with preference constraints and escalation thresholds.",
+  "landing.interfaces.rationale.name": "IRationaleCommitment",
+  "landing.interfaces.rationale.desc": "Commit-reveal scheme ensuring tamper-proof reasoning transparency for agent votes.",
+  "landing.interfaces.credibility.name": "ICredibilityRegistry",
+  "landing.interfaces.credibility.desc": "Cross-DAO portable credibility scores based on prediction accuracy tracking.",
+
+  "landing.lifecycle.title": "Governance Lifecycle",
+  "landing.lifecycle.subtitle": "Eight steps from agent registration to credibility scoring",
+
+  "landing.code.title": "Built on Solidity Interfaces",
+  "landing.code.viewSpec": "View full specification",
+
+  "landing.compat.title": "ERC-165 Interface IDs",
+  "landing.compat.interface": "Interface",
+  "landing.compat.id": "Interface ID",
+
+  "landing.cta.title": "Ready to Integrate?",
+  "landing.cta.subtitle": "Explore the specification or try the interactive demo on Sepolia testnet.",
+  "landing.cta.spec": "Read Specification",
+  "landing.cta.demo": "Interactive Demo",
+  "landing.cta.github": "GitHub",
+  "landing.cta.discuss": "Discussion",
 };
 
 const ko: Translations = {
@@ -167,6 +213,8 @@ const ko: Translations = {
 
   "wallet.notConfigured": "\uC9C0\uAC11 \uBBF8\uC124\uC815",
   "wallet.notConfiguredDesc": "\uD658\uACBD\uC5D0 VITE_REOWN_PROJECT_ID\uB97C \uC124\uC815\uD558\uC5EC \uC9C0\uAC11 \uC5F0\uACB0\uC744 \uD65C\uC131\uD654\uD558\uACE0 Sepolia\uC758 \uB370\uBAA8 \uCEE8\uD2B8\uB799\uD2B8\uC640 \uC0C1\uD638\uC791\uC6A9\uD558\uC138\uC694.",
+  "wallet.notConnected": "\uC9C0\uAC11\uC744 \uC5F0\uACB0\uD558\uC138\uC694",
+  "wallet.notConnectedDesc": "Sepolia \uD14C\uC2A4\uD2B8\uB137\uC758 \uB370\uBAA8 \uCEE8\uD2B8\uB799\uD2B8\uC640 \uC0C1\uD638\uC791\uC6A9\uD558\uB824\uBA74 \uC9C0\uAC11\uC744 \uC5F0\uACB0\uD558\uC138\uC694.",
 
   "register.title": "1. AI \uC5D0\uC774\uC804\uD2B8 \uB4F1\uB85D",
   "register.desc": "AIAgentRegistry\uC5D0 AI \uC5D0\uC774\uC804\uD2B8\uB97C \uB4F1\uB85D\uD569\uB2C8\uB2E4. \uC5D0\uC774\uC804\uD2B8 ID\uB294 \uC8FC\uC18C\uC640 \uB17C\uC2A4\uB85C\uBD80\uD130 \uACB0\uC815\uC801\uC73C\uB85C \uC0DD\uC131\uB429\uB2C8\uB2E4.",
@@ -245,6 +293,50 @@ const ko: Translations = {
   "meta.created": "\uC0DD\uC131\uC77C",
   "meta.discussion": "\uD1A0\uB860",
   "meta.ethereumMagicians": "Ethereum Magicians",
+
+  // Landing Page
+  "landing.hero.title": "AI 에이전트 거버넌스 인터페이스",
+  "landing.hero.subtitle": "AI 에이전트가 신원, 위임, 근거 투명성, 교차 DAO 신뢰도를 갖추고 DAO 거버넌스에 참여하기 위한 표준 인터페이스.",
+  "landing.hero.readSpec": "스펙 전문 보기",
+  "landing.hero.tryDemo": "데모 체험",
+  "landing.hero.draft": "ERC 초안",
+
+  "landing.problem.title": "왜 이 표준이 필요한가?",
+  "landing.problem.identity.title": "AI 신원 부재",
+  "landing.problem.identity.desc": "AI 에이전트가 일반 EOA로 참여하여 인간 지갑과 온체인에서 구별할 수 없습니다. DAO가 자동화된 참여자를 식별, 감사, 통제할 수 없습니다.",
+  "landing.problem.delegation.title": "영구적 위임",
+  "landing.problem.delegation.desc": "ERC-5805 위임에는 만료, 선호도 제약, 에스컬레이션 메커니즘이 없습니다. 한 번 위임하면 사실상 영구적입니다.",
+  "landing.problem.rationale.title": "근거 조작 가능",
+  "landing.problem.rationale.desc": "커밋-리빌 없이 에이전트가 투표 결과를 본 후 공개된 추론을 수정할 수 있습니다. 무결성 보장이 존재하지 않습니다.",
+  "landing.problem.reputation.title": "교차 DAO 평판 부재",
+  "landing.problem.reputation.desc": "에이전트 신뢰도가 DAO별로 격리됩니다. 거버넌스 시스템 간 에이전트 신뢰성을 평가할 휴대용 신뢰 점수가 없습니다.",
+
+  "landing.interfaces.title": "4개 인터페이스",
+  "landing.interfaces.registry.name": "IAIAgentRegistry",
+  "landing.interfaces.registry.desc": "메타데이터 및 기능 선언을 포함한 AI 에이전트의 온체인 등록 및 신원.",
+  "landing.interfaces.delegation.name": "IAIDelegation",
+  "landing.interfaces.delegation.desc": "선호도 제약과 에스컬레이션 임계값이 있는 시간 제한 위임.",
+  "landing.interfaces.rationale.name": "IRationaleCommitment",
+  "landing.interfaces.rationale.desc": "에이전트 투표에 대한 위변조 방지 추론 투명성을 보장하는 커밋-리빌 체계.",
+  "landing.interfaces.credibility.name": "ICredibilityRegistry",
+  "landing.interfaces.credibility.desc": "예측 정확도 추적 기반의 교차 DAO 휴대용 신뢰도 점수.",
+
+  "landing.lifecycle.title": "거버넌스 라이프사이클",
+  "landing.lifecycle.subtitle": "에이전트 등록부터 신뢰도 점수까지 8단계",
+
+  "landing.code.title": "Solidity 인터페이스 기반",
+  "landing.code.viewSpec": "스펙 전문 보기",
+
+  "landing.compat.title": "ERC-165 인터페이스 ID",
+  "landing.compat.interface": "인터페이스",
+  "landing.compat.id": "인터페이스 ID",
+
+  "landing.cta.title": "통합 준비 되셨나요?",
+  "landing.cta.subtitle": "스펙을 살펴보거나 Sepolia 테스트넷에서 인터랙티브 데모를 체험하세요.",
+  "landing.cta.spec": "스펙 읽기",
+  "landing.cta.demo": "인터랙티브 데모",
+  "landing.cta.github": "GitHub",
+  "landing.cta.discuss": "토론",
 };
 
 const zh: Translations = {
@@ -277,6 +369,8 @@ const zh: Translations = {
 
   "wallet.notConfigured": "\u94B1\u5305\u672A\u914D\u7F6E",
   "wallet.notConfiguredDesc": "\u5728\u73AF\u5883\u53D8\u91CF\u4E2D\u8BBE\u7F6E VITE_REOWN_PROJECT_ID \u4EE5\u542F\u7528\u94B1\u5305\u8FDE\u63A5\uFF0C\u5E76\u4E0E Sepolia \u4E0A\u7684\u6F14\u793A\u5408\u7EA6\u8FDB\u884C\u4EA4\u4E92\u3002",
+  "wallet.notConnected": "\u8BF7\u8FDE\u63A5\u94B1\u5305",
+  "wallet.notConnectedDesc": "\u8FDE\u63A5\u94B1\u5305\u4EE5\u4E0E Sepolia \u6D4B\u8BD5\u7F51\u4E0A\u7684\u6F14\u793A\u5408\u7EA6\u8FDB\u884C\u4EA4\u4E92\u3002",
 
   "register.title": "1. \u6CE8\u518C AI \u4EE3\u7406",
   "register.desc": "\u5728 AIAgentRegistry \u4E0A\u6CE8\u518C AI \u4EE3\u7406\u3002\u4EE3\u7406 ID \u7531\u60A8\u7684\u5730\u5740\u548C\u968F\u673A\u6570\u786E\u5B9A\u6027\u751F\u6210\u3002",
@@ -355,6 +449,50 @@ const zh: Translations = {
   "meta.created": "\u521B\u5EFA\u65E5\u671F",
   "meta.discussion": "\u8BA8\u8BBA",
   "meta.ethereumMagicians": "Ethereum Magicians",
+
+  // Landing Page
+  "landing.hero.title": "AI 代理治理接口",
+  "landing.hero.subtitle": "一个标准接口，使 AI 代理能够以身份、委托、理由透明性和跨 DAO 信誉参与 DAO 治理。",
+  "landing.hero.readSpec": "阅读完整规范",
+  "landing.hero.tryDemo": "体验演示",
+  "landing.hero.draft": "ERC 草案",
+
+  "landing.problem.title": "为什么需要这个标准？",
+  "landing.problem.identity.title": "无 AI 身份",
+  "landing.problem.identity.desc": "AI 代理以普通 EOA 身份参与，在链上无法与人类钱包区分。DAO 无法识别、审计或治理自动化参与者。",
+  "landing.problem.delegation.title": "永久委托",
+  "landing.problem.delegation.desc": "ERC-5805 委托缺少到期、偏好约束和升级机制。一旦委托，控制权实际上是永久的。",
+  "landing.problem.rationale.title": "理由篡改",
+  "landing.problem.rationale.desc": "没有提交-揭示机制，代理可以在看到投票结果后修改其发布的推理。不存在完整性保证。",
+  "landing.problem.reputation.title": "无跨 DAO 声誉",
+  "landing.problem.reputation.desc": "代理信誉按 DAO 隔离。没有可移植的信任分数来跨治理系统评估代理可靠性。",
+
+  "landing.interfaces.title": "四个接口",
+  "landing.interfaces.registry.name": "IAIAgentRegistry",
+  "landing.interfaces.registry.desc": "带有元数据和能力声明的 AI 代理链上注册和身份。",
+  "landing.interfaces.delegation.name": "IAIDelegation",
+  "landing.interfaces.delegation.desc": "带有偏好约束和升级阈值的有时限委托。",
+  "landing.interfaces.rationale.name": "IRationaleCommitment",
+  "landing.interfaces.rationale.desc": "确保代理投票防篡改推理透明性的提交-揭示方案。",
+  "landing.interfaces.credibility.name": "ICredibilityRegistry",
+  "landing.interfaces.credibility.desc": "基于预测准确度追踪的跨 DAO 可移植信誉分数。",
+
+  "landing.lifecycle.title": "治理生命周期",
+  "landing.lifecycle.subtitle": "从代理注册到信誉评分的八个步骤",
+
+  "landing.code.title": "基于 Solidity 接口",
+  "landing.code.viewSpec": "查看完整规范",
+
+  "landing.compat.title": "ERC-165 接口 ID",
+  "landing.compat.interface": "接口",
+  "landing.compat.id": "接口 ID",
+
+  "landing.cta.title": "准备好集成了吗？",
+  "landing.cta.subtitle": "探索规范或在 Sepolia 测试网上体验交互演示。",
+  "landing.cta.spec": "阅读规范",
+  "landing.cta.demo": "交互演示",
+  "landing.cta.github": "GitHub",
+  "landing.cta.discuss": "讨论",
 };
 
 const ja: Translations = {
@@ -387,6 +525,8 @@ const ja: Translations = {
 
   "wallet.notConfigured": "\u30A6\u30A9\u30EC\u30C3\u30C8\u672A\u8A2D\u5B9A",
   "wallet.notConfiguredDesc": "\u74B0\u5883\u5909\u6570\u306B VITE_REOWN_PROJECT_ID \u3092\u8A2D\u5B9A\u3057\u3066\u30A6\u30A9\u30EC\u30C3\u30C8\u63A5\u7D9A\u3092\u6709\u52B9\u306B\u3057\u3001Sepolia \u306E\u30C7\u30E2\u30B3\u30F3\u30C8\u30E9\u30AF\u30C8\u3068\u5BFE\u8A71\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  "wallet.notConnected": "\u30A6\u30A9\u30EC\u30C3\u30C8\u3092\u63A5\u7D9A\u3057\u3066\u304F\u3060\u3055\u3044",
+  "wallet.notConnectedDesc": "Sepolia \u30C6\u30B9\u30C8\u30CD\u30C3\u30C8\u306E\u30C7\u30E2\u30B3\u30F3\u30C8\u30E9\u30AF\u30C8\u3068\u5BFE\u8A71\u3059\u308B\u306B\u306F\u30A6\u30A9\u30EC\u30C3\u30C8\u3092\u63A5\u7D9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
 
   "register.title": "1. AI \u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u767B\u9332",
   "register.desc": "AIAgentRegistry \u306B AI \u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u3092\u767B\u9332\u3057\u307E\u3059\u3002\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8 ID \u306F\u30A2\u30C9\u30EC\u30B9\u3068\u30CE\u30F3\u30B9\u304B\u3089\u6C7A\u5B9A\u7684\u306B\u751F\u6210\u3055\u308C\u307E\u3059\u3002",
@@ -465,6 +605,50 @@ const ja: Translations = {
   "meta.created": "\u4F5C\u6210\u65E5",
   "meta.discussion": "\u8B70\u8AD6",
   "meta.ethereumMagicians": "Ethereum Magicians",
+
+  // Landing Page
+  "landing.hero.title": "AI エージェントガバナンスインターフェース",
+  "landing.hero.subtitle": "AI エージェントが身元、委任、根拠の透明性、クロス DAO 信頼度を持って DAO ガバナンスに参加するための標準インターフェース。",
+  "landing.hero.readSpec": "仕様全文を読む",
+  "landing.hero.tryDemo": "デモを体験",
+  "landing.hero.draft": "ERC ドラフト",
+
+  "landing.problem.title": "なぜこの標準が必要か？",
+  "landing.problem.identity.title": "AI 身元なし",
+  "landing.problem.identity.desc": "AI エージェントが通常の EOA として参加し、オンチェーンで人間のウォレットと区別できません。DAO は自動化された参加者を識別、監査、統制できません。",
+  "landing.problem.delegation.title": "永続的委任",
+  "landing.problem.delegation.desc": "ERC-5805 の委任には有効期限、選好制約、エスカレーション機構がありません。一度委任すると、事実上永続的です。",
+  "landing.problem.rationale.title": "根拠の改ざん",
+  "landing.problem.rationale.desc": "コミット・リビールなしでは、エージェントが投票結果を見た後に公開した推論を変更できます。整合性の保証がありません。",
+  "landing.problem.reputation.title": "クロス DAO レピュテーションなし",
+  "landing.problem.reputation.desc": "エージェントの信頼度は DAO ごとに隔離されています。ガバナンスシステム間でエージェントの信頼性を評価するポータブルな信頼スコアがありません。",
+
+  "landing.interfaces.title": "4つのインターフェース",
+  "landing.interfaces.registry.name": "IAIAgentRegistry",
+  "landing.interfaces.registry.desc": "メタデータと機能宣言を含む AI エージェントのオンチェーン登録と身元。",
+  "landing.interfaces.delegation.name": "IAIDelegation",
+  "landing.interfaces.delegation.desc": "選好制約とエスカレーション閾値を持つ時間制限付き委任。",
+  "landing.interfaces.rationale.name": "IRationaleCommitment",
+  "landing.interfaces.rationale.desc": "エージェント投票の改ざん防止推論透明性を保証するコミット・リビール方式。",
+  "landing.interfaces.credibility.name": "ICredibilityRegistry",
+  "landing.interfaces.credibility.desc": "予測精度追跡に基づくクロス DAO ポータブル信頼度スコア。",
+
+  "landing.lifecycle.title": "ガバナンスライフサイクル",
+  "landing.lifecycle.subtitle": "エージェント登録から信頼度スコアまでの8ステップ",
+
+  "landing.code.title": "Solidity インターフェースベース",
+  "landing.code.viewSpec": "仕様全文を見る",
+
+  "landing.compat.title": "ERC-165 インターフェース ID",
+  "landing.compat.interface": "インターフェース",
+  "landing.compat.id": "インターフェース ID",
+
+  "landing.cta.title": "統合の準備はできましたか？",
+  "landing.cta.subtitle": "仕様を確認するか、Sepolia テストネットでインタラクティブデモを体験してください。",
+  "landing.cta.spec": "仕様を読む",
+  "landing.cta.demo": "インタラクティブデモ",
+  "landing.cta.github": "GitHub",
+  "landing.cta.discuss": "ディスカッション",
 };
 
 export const translations: Record<Locale, Translations> = { en, ko, zh, ja };

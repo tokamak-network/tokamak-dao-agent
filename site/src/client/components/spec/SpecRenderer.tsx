@@ -1,6 +1,10 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
+import rehypeHighlight from "rehype-highlight";
+import { common } from "lowlight";
+import solidity from "highlightjs-solidity/dist/solidity.es.min.js";
+import "./syntax-highlight.css";
 import type { Components } from "react-markdown";
 
 interface Props {
@@ -207,7 +211,7 @@ export default function SpecRenderer({ content }: Props) {
     <div className="spec-content">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeSlug]}
+        rehypePlugins={[rehypeSlug, [rehypeHighlight, { languages: { ...common, solidity } }]]}
         components={components}
       >
         {content}

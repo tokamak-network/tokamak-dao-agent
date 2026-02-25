@@ -1,6 +1,8 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
+import { useAccount } from "wagmi";
 
 export interface DemoState {
+  operatorAddress: string | null;
   agentId: `0x${string}` | null;
   delegationId: `0x${string}` | null;
   proposalId: bigint | null;
@@ -25,6 +27,7 @@ interface DemoContextValue extends DemoState {
 const STORAGE_KEY = "erc-ai-gov-demo-state";
 
 const defaultState: DemoState = {
+  operatorAddress: null,
   agentId: null,
   delegationId: null,
   proposalId: null,
@@ -76,6 +79,23 @@ const DemoContext = createContext<DemoContextValue | null>(null);
 
 export function DemoProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DemoState>(loadState);
+  const { address } = useAccount();
+  const prevAddress = useRef(address);
+
+  // Auto-reset when wallet address changes (and there's existing state to clear)
+  useEffect(() => {
+    if (
+      prevAddress.current &&
+      address &&
+      prevAddress.current !== address &&
+      state.operatorAddress &&
+      state.operatorAddress.toLowerCase() !== address.toLowerCase()
+    ) {
+      localStorage.removeItem(STORAGE_KEY);
+      setState(defaultState);
+    }
+    prevAddress.current = address;
+  }, [address]);
 
   useEffect(() => {
     saveState(state);

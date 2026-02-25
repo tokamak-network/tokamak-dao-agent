@@ -4,9 +4,13 @@ import { deriveInitialState } from "./helpers.ts";
 import { AgendaListView } from "./AgendaListView.tsx";
 import { AgendaWizard } from "./AgendaWizard.tsx";
 import { AgendaDetailView } from "./AgendaDetailView.tsx";
+import { useTabContext } from "../../contexts/TabContext.tsx";
 
 export function ForumTab() {
-  const [state, setState] = useState<ViewState>(deriveInitialState);
+  const { pendingChatMessage } = useTabContext();
+  const [state, setState] = useState<ViewState>(() =>
+    pendingChatMessage ? { view: "create" } : deriveInitialState()
+  );
 
   const goToList = useCallback(() => {
     setState({ view: "list" });

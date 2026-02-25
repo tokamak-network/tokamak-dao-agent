@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
-export type TabMode = "chat" | "make_proposal" | "analyze_proposal" | "agents" | "forum";
+export type TabMode = "chat" | "make_proposal" | "analyze_proposal" | "agents" | "forum" | "guide";
 
 export interface Proposal {
   targets: string[];
@@ -22,6 +22,7 @@ const TAB_TO_PATH: Record<TabMode, string> = {
   analyze_proposal: "/proposal",
   agents: "/agents",
   forum: "/forum",
+  guide: "/guide",
 };
 
 const PATH_TO_TAB: Record<string, TabMode> = Object.fromEntries(

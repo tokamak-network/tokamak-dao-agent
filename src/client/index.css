@@ -4229,3 +4229,326 @@ body {
   margin-top: 20px;
   width: 100%;
 }
+
+/* ==========================================
+   Guide Tab Styles
+   ========================================== */
+
+.guide-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.guide-header {
+  max-width: 900px;
+  margin: 0 auto 20px;
+}
+
+.guide-title {
+  font-size: 18px;
+  color: var(--term-accent);
+  margin-bottom: 4px;
+}
+
+.guide-stats {
+  font-size: 13px;
+  color: var(--term-text-muted);
+}
+
+.guide-filters {
+  max-width: 900px;
+  margin: 0 auto 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.guide-search {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  background: var(--term-bg-secondary);
+  border: 1px solid var(--term-border);
+  border-radius: 6px;
+  color: var(--term-text);
+  font-size: 13px;
+  font-family: var(--font-mono, monospace);
+  outline: none;
+}
+
+.guide-search:focus {
+  border-color: var(--term-accent);
+}
+
+.guide-select {
+  padding: 8px 12px;
+  background: var(--term-bg-secondary);
+  border: 1px solid var(--term-border);
+  border-radius: 6px;
+  color: var(--term-text);
+  font-size: 13px;
+  font-family: var(--font-mono, monospace);
+  cursor: pointer;
+  outline: none;
+}
+
+.guide-list {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guide-empty {
+  text-align: center;
+  color: var(--term-text-muted);
+  padding: 40px 16px;
+  font-size: 14px;
+}
+
+/* Contract accordion */
+.guide-contract {
+  border: 1px solid var(--term-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.guide-contract-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--term-bg-secondary);
+  border: none;
+  cursor: pointer;
+  color: var(--term-text);
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  text-align: left;
+}
+
+.guide-contract-header:hover {
+  background: var(--term-bg-tertiary, var(--term-bg-secondary));
+}
+
+.guide-contract-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.guide-contract-name {
+  font-weight: 600;
+  color: var(--term-accent);
+  white-space: nowrap;
+}
+
+.guide-contract-addr {
+  font-size: 12px;
+  color: var(--term-text-muted);
+  white-space: nowrap;
+}
+
+.guide-contract-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.guide-fn-count {
+  font-size: 12px;
+  color: var(--term-text-muted);
+}
+
+.guide-contract-chevron {
+  font-size: 11px;
+  color: var(--term-text-muted);
+}
+
+.guide-contract-body {
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--term-border);
+}
+
+.guide-contract-desc {
+  font-size: 13px;
+  color: var(--term-text-dim, var(--term-text-muted));
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+/* Category badge */
+.guide-category-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.guide-category-badge.governance { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+.guide-category-badge.treasury   { background: rgba(234, 179, 8, 0.15);  color: #facc15; }
+.guide-category-badge.staking    { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.guide-category-badge.registry   { background: rgba(14, 165, 233, 0.15); color: #38bdf8; }
+.guide-category-badge.token      { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+
+/* Risk badge */
+.guide-risk-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.guide-risk-badge.safe      { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.guide-risk-badge.caution   { background: rgba(234, 179, 8, 0.15);  color: #facc15; }
+.guide-risk-badge.dangerous { background: rgba(239, 68, 68, 0.15);  color: #f87171; }
+
+/* Function rows */
+.guide-fn-row {
+  border: 1px solid var(--term-border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.guide-fn-row:last-child {
+  margin-bottom: 0;
+}
+
+.guide-fn-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--term-text);
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  text-align: left;
+}
+
+.guide-fn-header:hover {
+  background: var(--term-bg-secondary);
+}
+
+.guide-fn-name {
+  font-weight: 500;
+  flex: 1;
+}
+
+.guide-fn-chevron {
+  font-size: 10px;
+  color: var(--term-text-muted);
+}
+
+.guide-fn-detail {
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--term-border);
+}
+
+.guide-fn-sig {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: var(--term-accent);
+  padding: 6px 10px;
+  background: var(--term-bg-secondary);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+
+.guide-fn-params {
+  margin-bottom: 8px;
+}
+
+.guide-fn-param {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  padding: 3px 0;
+  flex-wrap: wrap;
+}
+
+.guide-fn-param code {
+  color: var(--term-accent);
+  font-weight: 500;
+}
+
+.guide-fn-param-type {
+  color: var(--term-text-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+}
+
+.guide-fn-param-desc {
+  color: var(--term-text-dim, var(--term-text-muted));
+}
+
+.guide-fn-desc {
+  font-size: 13px;
+  color: var(--term-text);
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+.guide-fn-notes {
+  font-size: 12px;
+  color: var(--term-warning, #facc15);
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.guide-try-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--term-bg-secondary);
+  border: 1px solid var(--term-border);
+  border-radius: 6px;
+  color: var(--term-accent);
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.guide-try-btn:hover {
+  border-color: var(--term-accent);
+}
+
+.guide-try-example {
+  color: var(--term-text-muted);
+  font-style: italic;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .guide-filters {
+    flex-direction: column;
+  }
+
+  .guide-contract-info {
+    flex-wrap: wrap;
+  }
+
+  .guide-try-example {
+    display: none;
+  }
+}

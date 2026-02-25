@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useChat } from "../chat/useChat.ts";
@@ -11,6 +11,7 @@ import { extractAgendaDraft, ensureTipPrefix } from "./helpers.ts";
 import { AgentReviewModalContent } from "./AgentReviewModal.tsx";
 import { useWallet } from "../../contexts/WalletContext.tsx";
 import { isWalletConfigured } from "../../config/wagmi.ts";
+import { useTabContext } from "../../contexts/TabContext.tsx";
 
 export function AgendaWizard({
   onBack,
@@ -20,7 +21,18 @@ export function AgendaWizard({
   onCreated: (id: number) => void;
 }) {
   const { address, isConnected, openModal } = useWallet();
+  const { pendingChatMessage, clearPendingChatMessage } = useTabContext();
   const chat = useChat(undefined, "forum_proposal");
+
+  // Consume pending message from Guide "Try it" button
+  const pendingConsumedRef = useRef(false);
+  useEffect(() => {
+    if (pendingChatMessage && chat.messages.length === 0 && !chat.isLoading && !pendingConsumedRef.current) {
+      pendingConsumedRef.current = true;
+      clearPendingChatMessage();
+      chat.handleSubmit(pendingChatMessage);
+    }
+  }, [pendingChatMessage]);
   const [draft, setDraft] = useState<AgendaDraft>({});
   const [userEditedFields, setUserEditedFields] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);

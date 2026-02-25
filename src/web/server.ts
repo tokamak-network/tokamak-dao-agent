@@ -528,7 +528,7 @@ const serveSpa = async (c: any) => {
 };
 
 // SPA routes — serve index.html for each client-side tab
-for (const route of ["/chat", "/calldata", "/proposal", "/agents", "/forum"]) {
+for (const route of ["/chat", "/calldata", "/proposal", "/agents", "/forum", "/guide"]) {
   app.get(route, serveSpa);
   app.get(`${route}/*`, serveSpa);
 }

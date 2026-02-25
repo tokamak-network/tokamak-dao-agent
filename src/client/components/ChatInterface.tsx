@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useChat } from "./chat/useChat";
 import { ChatBubble } from "./chat/ChatBubble";
 import { ChatLoader } from "./chat/ChatLoader";
@@ -34,7 +34,7 @@ export function ChatInterface({
   suggestions = [],
   scenarios = [],
 }: ChatInterfaceProps) {
-  const { navigateWithMessage } = useTabContext();
+  const { navigateWithMessage, pendingChatMessage, clearPendingChatMessage } = useTabContext();
   const {
     messages,
     input,
@@ -54,6 +54,15 @@ export function ChatInterface({
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  const pendingConsumedRef = useRef(false);
+  useEffect(() => {
+    if (pendingChatMessage && messages.length === 0 && !isLoading && !pendingConsumedRef.current) {
+      pendingConsumedRef.current = true;
+      clearPendingChatMessage();
+      handleSubmit(pendingChatMessage);
+    }
+  }, [pendingChatMessage]);
 
   const isStreaming =
     isLoading &&

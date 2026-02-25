@@ -6,6 +6,7 @@ const TAB_TO_PATH: Record<string, string> = {
   analyze_proposal: "/proposal",
   agents: "/agents",
   forum: "/forum",
+  guide: "/guide",
 };
 
 const TABS: { mode: TabMode; label: string }[] = [
@@ -14,6 +15,7 @@ const TABS: { mode: TabMode; label: string }[] = [
   { mode: "analyze_proposal", label: "Analyze Proposal" },
   { mode: "agents", label: "Agents" },
   { mode: "forum", label: "Forum" },
+  { mode: "guide", label: "Guide" },
 ];
 
 export function TabBar() {

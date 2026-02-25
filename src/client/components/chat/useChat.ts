@@ -1,8 +1,7 @@
 import { useState, useRef } from "react";
 import type { Message, MessagePart } from "./types";
-import type { TabMode } from "../../contexts/TabContext";
 
-export function useChat(selectedModel?: string, mode?: TabMode) {
+export function useChat(selectedModel?: string, mode?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);

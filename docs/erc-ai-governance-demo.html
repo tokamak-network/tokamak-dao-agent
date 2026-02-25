@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERC-AI-Governance Architecture | Tokamak Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a26;
+  --bg-card: #151520;
+  --border: #2a2a3a;
+  --border-hover: #3a3a4f;
+  --text-primary: #e0e0e8;
+  --text-secondary: #8888a0;
+  --text-muted: #555570;
+  --accent-blue: #4a9eff;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-yellow: #eab308;
+  --accent-purple: #a78bfa;
+  --accent-orange: #f97316;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; color-scheme: dark; }
+body {
+  font-family: var(--font-mono);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Header ── */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,15,0.95); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header-left { display: flex; align-items: center; gap: 0.75rem; }
+.header-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); }
+.header-badge {
+  padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.6rem; font-weight: 600;
+  background: rgba(234,179,8,0.15); color: var(--accent-yellow);
+  border: 1px solid rgba(234,179,8,0.3);
+}
+
+/* ── Step Controls ── */
+.controls {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1.5rem; background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.step-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.3rem 0.65rem; border-radius: 6px; font-size: 0.65rem;
+  font-family: var(--font-mono); cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg-tertiary);
+  color: var(--text-muted); transition: all 0.15s ease;
+}
+.step-btn:hover { border-color: var(--border-hover); color: var(--text-secondary); }
+.step-btn.active { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+.step-btn.done { border-color: var(--accent-green); color: var(--accent-green); }
+.step-btn-num {
+  width: 18px; height: 18px; line-height: 18px; text-align: center;
+  border-radius: 50%; font-size: 0.55rem; font-weight: 700;
+  background: rgba(255,255,255,0.1);
+}
+.step-btn.active .step-btn-num { background: rgba(255,255,255,0.25); }
+.ctrl-btn {
+  padding: 0.3rem 0.75rem; border-radius: 6px; font-size: 0.65rem;
+  font-family: var(--font-mono); cursor: pointer; border: 1px solid var(--border);
+  background: var(--bg-tertiary); color: var(--text-secondary);
+  transition: all 0.15s ease; margin-left: 0.5rem;
+}
+.ctrl-btn:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+.ctrl-btn.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+
+/* ── Main Layout ── */
+.main { display: flex; height: calc(100vh - 100px); overflow: hidden; }
+.diagram-pane {
+  flex: 1; overflow: auto; padding: 0;
+  position: relative; min-width: 0;
+}
+.state-pane {
+  width: 340px; flex-shrink: 0; border-left: 1px solid var(--border);
+  background: var(--bg-secondary); overflow-y: auto; display: flex;
+  flex-direction: column;
+}
+.state-pane-header {
+  padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);
+  font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);
+  position: sticky; top: 0; background: var(--bg-secondary); z-index: 2;
+}
+.state-pane-body { padding: 0.75rem; flex: 1; font-size: 0.65rem; }
+
+/* ── SVG Diagram ── */
+.diagram-svg { display: block; }
+.diagram-svg text { font-family: var(--font-mono); }
+
+/* ── Detail Panel (bottom overlay) ── */
+.detail-overlay {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  background: var(--bg-card); border-top: 2px solid var(--accent-blue);
+  max-height: 45vh; overflow-y: auto;
+  transform: translateY(100%); transition: transform 0.3s ease;
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+}
+.detail-overlay.open { transform: translateY(0); }
+.detail-close {
+  position: absolute; top: 0.5rem; right: 0.75rem;
+  background: none; border: none; color: var(--text-muted);
+  cursor: pointer; font-size: 1.2rem; font-family: var(--font-mono);
+}
+.detail-close:hover { color: var(--text-primary); }
+.detail-content { padding: 1.25rem 1.5rem; }
+.detail-title {
+  font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+.detail-section h4 {
+  font-size: 0.65rem; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;
+}
+.detail-row {
+  font-size: 0.68rem; padding: 0.3rem 0.5rem;
+  background: var(--bg-tertiary); border-radius: 4px; margin-bottom: 0.3rem;
+  word-break: break-all;
+}
+.detail-row .label { color: var(--text-muted); }
+.detail-row .val-blue { color: var(--accent-blue); }
+.detail-row .val-green { color: var(--accent-green); }
+.detail-row .val-yellow { color: var(--accent-yellow); }
+.detail-row .val-purple { color: var(--accent-purple); }
+.detail-row .val-red { color: var(--accent-red); }
+.detail-storage {
+  display: grid; grid-template-columns: auto 1fr 16px 1fr; gap: 0.2rem 0.5rem;
+  align-items: center; font-size: 0.62rem;
+}
+.detail-storage .slot { color: var(--text-muted); }
+.detail-storage .before { color: var(--accent-red); opacity: 0.7; text-decoration: line-through; }
+.detail-storage .arrow { color: var(--text-muted); text-align: center; }
+.detail-storage .after { color: var(--accent-green); }
+
+/* ── State Panel Items ── */
+.state-contract {
+  margin-bottom: 0.75rem; border: 1px solid var(--border);
+  border-radius: 6px; overflow: hidden;
+}
+.state-contract-header {
+  padding: 0.4rem 0.6rem; font-size: 0.68rem; font-weight: 600;
+  display: flex; align-items: center; gap: 0.4rem;
+  cursor: pointer;
+}
+.state-contract-header .dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.state-contract-body {
+  padding: 0.4rem 0.6rem; border-top: 1px solid var(--border);
+  background: var(--bg-primary);
+}
+.state-entry {
+  font-size: 0.6rem; padding: 0.15rem 0;
+  display: flex; gap: 0.3rem;
+}
+.state-key { color: var(--text-muted); white-space: nowrap; }
+.state-val { color: var(--accent-green); word-break: break-all; }
+.state-empty { color: var(--text-muted); font-size: 0.6rem; font-style: italic; padding: 0.5rem 0; }
+
+/* ── Highlight flash ── */
+@keyframes flash {
+  0% { background: rgba(74,158,255,0.3); }
+  100% { background: transparent; }
+}
+.flash { animation: flash 1s ease; }
+
+/* ── Arrow hover ── */
+.arrow-hitbox { cursor: pointer; }
+.arrow-hitbox:hover + line, .arrow-hitbox:hover + line + line { stroke-width: 2.5; }
+
+/* ── Step divider ── */
+.step-divider rect { rx: 10; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .state-pane { display: none; }
+  .controls { padding: 0.5rem 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <span class="header-title">ERC-AI-Governance</span>
+    <span class="header-badge">Architecture</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--text-muted);">컨트랙트 호출 흐름 시각화</div>
+</header>
+
+<!-- Step Controls -->
+<div class="controls" id="controls"></div>
+
+<!-- Main Layout -->
+<div class="main">
+  <div class="diagram-pane" id="diagramPane"></div>
+  <div class="state-pane">
+    <div class="state-pane-header">Contract State</div>
+    <div class="state-pane-body" id="statePanel"></div>
+  </div>
+</div>
+
+<!-- Detail Panel -->
+<div class="detail-overlay" id="detailOverlay">
+  <button class="detail-close" onclick="closeDetail()">&times;</button>
+  <div class="detail-content" id="detailContent"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   DATA
+   ══════════════════════════════════════════════════════════════ */
+const P = [
+  { id: 'user',        label: 'User (EOA)',         short: 'User',       color: '#e0e0e8' },
+  { id: 'registry',    label: 'AgentRegistry',      short: 'Registry',   color: '#4a9eff' },
+  { id: 'delegation',  label: 'AgentDelegation',    short: 'Delegation', color: '#22c55e' },
+  { id: 'governor',    label: 'Governor',           short: 'Governor',   color: '#eab308' },
+  { id: 'rationale',   label: 'RationaleCommit',    short: 'Rationale',  color: '#f97316' },
+  { id: 'credibility', label: 'CredibilityRegistry',short: 'Credibility',color: '#a78bfa' },
+  { id: 'resolver',    label: 'GovernorResolver',   short: 'Resolver',   color: '#ef4444' },
+];
+
+const MOCK = {
+  operator: '0x488f...771B',
+  agentId:  '0x7a3e...f91d',
+  delegationId: '0xb4c8...e0b2',
+  proposalId: '48291038...7562',
+  metadataURI: 'ipfs://QmYx3...agent-v1.json',
+  rationaleURI: 'ipfs://QmTk7...rationale.json',
+  salt: '0xdeadbeef...5678',
+  commitHash: '0xa1b2c3d4...3456',
+  preferencesURI: 'data:application/json;base64,...',
+};
+
+const STEPS = [
+  {
+    id: 0, title: 'Step 0', subtitle: '에이전트 등록',
+    arrows: [
+      { from: 0, to: 1, label: 'registerAgent(metadataURI)', type: 'call', detailId: 0 },
+      { from: 1, to: 0, label: 'agentId', type: 'return' },
+    ],
+  },
+  {
+    id: 1, title: 'Step 1', subtitle: '위임',
+    arrows: [
+      { from: 0, to: 2, label: 'delegateToAgent(agentId, expiry, prefsURI)', type: 'call', detailId: 1 },
+      { from: 2, to: 1, label: 'isActiveAgent(agentId)', type: 'subcall' },
+      { from: 1, to: 2, label: 'true', type: 'subreturn' },
+      { from: 2, to: 0, label: 'delegationId', type: 'return' },
+    ],
+  },
+  {
+    id: 2, title: 'Step 2', subtitle: '제안 생성',
+    arrows: [
+      { from: 0, to: 3, label: 'propose(targets, values, calldatas, desc)', type: 'call', detailId: 2 },
+      { from: 3, to: 0, label: 'proposalId', type: 'return' },
+    ],
+  },
+  {
+    id: 3, title: 'Step 3a', subtitle: '근거 커밋',
+    arrows: [
+      { from: 0, to: 4, label: 'commitRationale(agentId, proposalId, commitHash)', type: 'call', detailId: 3 },
+      { from: 4, to: 1, label: 'agentOperator(agentId)', type: 'subcall' },
+      { from: 1, to: 4, label: 'operator', type: 'subreturn' },
+      { from: 4, to: 0, label: '\u2713', type: 'return' },
+    ],
+  },
+  {
+    id: 4, title: 'Step 3b', subtitle: '\uc608\uce21 \uae30\ub85d',
+    arrows: [
+      { from: 0, to: 5, label: 'recordPrediction(agentId, proposalId, 1, 85)', type: 'call', detailId: 4 },
+      { from: 5, to: 1, label: 'agentOperator(agentId)', type: 'subcall' },
+      { from: 1, to: 5, label: 'operator', type: 'subreturn' },
+      { from: 5, to: 0, label: '\u2713', type: 'return' },
+    ],
+  },
+  {
+    id: 5, title: 'Step 4', subtitle: '\ud22c\ud45c',
+    arrows: [
+      { from: 0, to: 3, label: 'castVote(proposalId, For)', type: 'call', detailId: 5 },
+      { from: 3, to: 0, label: '\u2713', type: 'return' },
+    ],
+  },
+  {
+    id: 6, title: 'Step 5', subtitle: '\uadfc\uac70 \uacf5\uac1c',
+    arrows: [
+      { from: 0, to: 4, label: 'revealRationale(agentId, proposalId, URI, salt)', type: 'call', detailId: 6 },
+      { from: 4, to: 1, label: 'agentOperator(agentId)', type: 'subcall' },
+      { from: 1, to: 4, label: 'operator', type: 'subreturn' },
+      { from: 4, to: 4, label: 'verify hash', type: 'self' },
+      { from: 4, to: 0, label: '\u2713', type: 'return' },
+    ],
+  },
+  {
+    id: 7, title: 'Step 6', subtitle: '\uacb0\uacfc \ud655\uc815',
+    arrows: [
+      { from: 0, to: 6, label: 'resolve(credibility, agentId, proposalId, govPropId)', type: 'call', detailId: 7 },
+      { from: 6, to: 3, label: 'state(govProposalId)', type: 'subcall' },
+      { from: 3, to: 6, label: 'Succeeded', type: 'subreturn' },
+      { from: 6, to: 5, label: 'resolvePrediction(agentId, proposalId, 1)', type: 'subcall', detailId: 8 },
+      { from: 5, to: 5, label: 'computeDelta \u2192 +3', type: 'self' },
+      { from: 5, to: 6, label: '\u2713', type: 'subreturn' },
+      { from: 6, to: 0, label: '\u2713', type: 'return' },
+    ],
+  },
+  {
+    id: 8, title: 'Step 7', subtitle: '\uc2e0\ub8b0\ub3c4 \ud655\uc778',
+    arrows: [
+      { from: 0, to: 5, label: 'getCredibility(agentId)  [view]', type: 'call', detailId: 9 },
+      { from: 5, to: 0, label: '(totalScore=3, totalPredictions=1)', type: 'return' },
+    ],
+  },
+];
+
+const DETAILS = [
+  /* 0: registerAgent */
+  {
+    title: 'AgentRegistry.registerAgent()',
+    signature: 'function registerAgent(string calldata metadataURI) external returns (bytes32 agentId)',
+    params: [
+      ['metadataURI', MOCK.metadataURI, 'AI \uc5d0\uc774\uc804\ud2b8 \ud504\ub85c\ud544 JSON URI'],
+    ],
+    logic: [
+      'uint256 nonce = operatorNonce[msg.sender]++',
+      'agentId = keccak256(abi.encodePacked(msg.sender, nonce))',
+      '_agents[agentId] = Agent(msg.sender, metadataURI, true)',
+    ],
+    returns: [['agentId', MOCK.agentId, 'bytes32']],
+    events: ['AgentRegistered(agentId, msg.sender, metadataURI)'],
+    storage: [
+      ['agents[agentId].operator', '\u2205', MOCK.operator],
+      ['agents[agentId].metadataURI', '""', '"ipfs://QmYx3..."'],
+      ['agents[agentId].active', 'false', 'true'],
+      ['operatorNonce[operator]', '0', '1'],
+    ],
+  },
+  /* 1: delegateToAgent */
+  {
+    title: 'AgentDelegation.delegateToAgent()',
+    signature: 'function delegateToAgent(bytes32 agentId, uint256 expiry, string calldata preferencesURI) external returns (bytes32)',
+    params: [
+      ['agentId', MOCK.agentId, '\ub4f1\ub85d\ub41c \uc5d0\uc774\uc804\ud2b8 ID'],
+      ['expiry', 'block.timestamp + 30 days', '\uc704\uc784 \ub9cc\ub8cc \ud0c0\uc784\uc2a4\ud0ec\ud504'],
+      ['preferencesURI', MOCK.preferencesURI, '\uc704\uc784\uc790 \uc120\ud638\ub3c4 JSON URI'],
+    ],
+    logic: [
+      '\u2460 registry.isActiveAgent(agentId) \u2190 \uc5d0\uc774\uc804\ud2b8 \ud65c\uc131 \ud655\uc778',
+      '\u2461 \uae30\uc874 \uc704\uc784 \uc788\uc73c\uba74 \uc790\ub3d9 revoke',
+      '\u2462 delegationId = keccak256(msg.sender, nonce++)',
+      '\u2463 _delegations[delegationId] = \uc0c8 \uc704\uc784 \uc0dd\uc131',
+    ],
+    returns: [['delegationId', MOCK.delegationId, 'bytes32']],
+    events: ['AgentDelegationCreated(msg.sender, agentId, delegationId, expiry)'],
+    storage: [
+      ['delegations[delegId].agentId', '\u2205', MOCK.agentId],
+      ['delegations[delegId].expiry', '0', '1743000000'],
+      ['delegations[delegId].preferencesURI', '""', '"data:..."'],
+      ['activeDelegation[delegator]', '\u2205', MOCK.delegationId],
+    ],
+  },
+  /* 2: propose */
+  {
+    title: 'Governor.propose()',
+    signature: 'function propose(address[] targets, uint256[] values, bytes[] calldatas, string description) external returns (uint256)',
+    params: [
+      ['targets', '[address(0)]', '\ub300\uc0c1 \ucee8\ud2b8\ub799\ud2b8'],
+      ['description', '"Upgrade treasury allocation for Q3"', '\uc81c\uc548 \uc124\uba85'],
+    ],
+    logic: [
+      'proposalId = hashProposal(targets, values, calldatas, keccak256(description))',
+      '_proposals[proposalId].voteStart = block.number + votingDelay',
+      '_proposals[proposalId].voteEnd = voteStart + votingPeriod',
+    ],
+    returns: [['proposalId', MOCK.proposalId, 'uint256']],
+    events: ['ProposalCreated(proposalId, proposer, targets, values, calldatas, voteStart, voteEnd, description)'],
+    storage: [
+      ['proposals[propId].voteStart', '0', 'block.number + 1'],
+      ['proposals[propId].voteEnd', '0', 'voteStart + 100'],
+    ],
+  },
+  /* 3: commitRationale */
+  {
+    title: 'RationaleCommitment.commitRationale()',
+    signature: 'function commitRationale(bytes32 agentId, uint256 proposalId, bytes32 commitHash) external',
+    params: [
+      ['agentId', MOCK.agentId, '\uc5d0\uc774\uc804\ud2b8 ID'],
+      ['proposalId', MOCK.proposalId, '\uc81c\uc548 ID'],
+      ['commitHash', MOCK.commitHash, 'keccak256(rationaleURI || salt)'],
+    ],
+    logic: [
+      '\u2460 onlyAgentOperator: registry.agentOperator(agentId) == msg.sender',
+      '\u2461 require: \uae30\uc874 \ucee4\ubc0b \uc5c6\uc74c (\uc774\uc911 \ucee4\ubc0b \ubc29\uc9c0)',
+      '\u2462 _commitments[agentId][proposalId] = Commitment(commitHash, block.timestamp, false)',
+    ],
+    returns: [],
+    events: ['RationaleCommitted(agentId, proposalId, commitHash, block.timestamp)'],
+    storage: [
+      ['commitments[agent][prop].commitHash', '\u2205', MOCK.commitHash],
+      ['commitments[agent][prop].timestamp', '0', String(Math.floor(Date.now()/1000))],
+      ['commitments[agent][prop].revealed', 'false', 'false'],
+    ],
+  },
+  /* 4: recordPrediction */
+  {
+    title: 'CredibilityRegistry.recordPrediction()',
+    signature: 'function recordPrediction(bytes32 agentId, uint256 proposalId, uint8 verdict, uint8 score) external',
+    params: [
+      ['agentId', MOCK.agentId, '\uc5d0\uc774\uc804\ud2b8 ID'],
+      ['proposalId', MOCK.proposalId, '\uc81c\uc548 ID'],
+      ['verdict', '1 (For)', '\uc608\uce21 \ud22c\ud45c \ubc29\ud5a5'],
+      ['score', '85', '\uc2e0\ub8b0\ub3c4 (0-100)'],
+    ],
+    logic: [
+      '\u2460 onlyAgentOperator: registry.agentOperator(agentId) == msg.sender',
+      '\u2461 require: score <= 100',
+      '\u2462 require: \uae30\uc874 \uc608\uce21 \uc5c6\uc74c',
+      '\u2463 _predictions[agentId][proposalId] = Prediction(1, 85, true, false, 0)',
+    ],
+    returns: [],
+    events: ['PredictionRecorded(agentId, proposalId, verdict=1, score=85)'],
+    storage: [
+      ['predictions[agent][prop].verdict', '\u2205', '1 (For)'],
+      ['predictions[agent][prop].score', '0', '85'],
+      ['predictions[agent][prop].exists', 'false', 'true'],
+      ['predictions[agent][prop].resolved', '-', 'false'],
+    ],
+  },
+  /* 5: castVote */
+  {
+    title: 'Governor.castVote()',
+    signature: 'function castVote(uint256 proposalId, uint8 support) external returns (uint256)',
+    params: [
+      ['proposalId', MOCK.proposalId, '\uc81c\uc548 ID'],
+      ['support', '1 (For)', '0=Against, 1=For, 2=Abstain'],
+    ],
+    logic: [
+      '\u2460 require: state(proposalId) == Active',
+      '\u2461 require: !hasVoted[proposalId][msg.sender]',
+      '\u2462 weight = getVotes(msg.sender, proposalSnapshot)',
+      '\u2463 _countVote(proposalId, msg.sender, support, weight)',
+    ],
+    returns: [['weight', '1000000', 'uint256']],
+    events: ['VoteCast(voter, proposalId, support=1, weight, reason="")'],
+    storage: [
+      ['hasVoted[propId][voter]', 'false', 'true'],
+      ['proposalVotes[propId].forVotes', '0', '1000000'],
+    ],
+  },
+  /* 6: revealRationale */
+  {
+    title: 'RationaleCommitment.revealRationale()',
+    signature: 'function revealRationale(bytes32 agentId, uint256 proposalId, string calldata rationaleURI, bytes32 salt) external',
+    params: [
+      ['agentId', MOCK.agentId, '\uc5d0\uc774\uc804\ud2b8 ID'],
+      ['proposalId', MOCK.proposalId, '\uc81c\uc548 ID'],
+      ['rationaleURI', MOCK.rationaleURI, '\uadfc\uac70 \ubb38\uc11c URI'],
+      ['salt', MOCK.salt, '\ucee4\ubc0b \uc2dc \uc0ac\uc6a9\ud55c \ub79c\ub364 \uac12'],
+    ],
+    logic: [
+      '\u2460 onlyAgentOperator: registry.agentOperator(agentId) == msg.sender',
+      '\u2461 computed = keccak256(abi.encodePacked(rationaleURI, salt))',
+      '\u2462 require: computed == commitments[agentId][proposalId].commitHash',
+      '\u2463 \ud55c \uae00\uc790\ub77c\ub3c4 \ubcc0\uacbd\ub418\uba74 \ud574\uc2dc \ubd88\uc77c\uce58 \u2192 revert',
+    ],
+    returns: [],
+    events: ['RationaleRevealed(agentId, proposalId, rationaleURI)'],
+    storage: [
+      ['commitments[agent][prop].revealed', 'false', 'true'],
+      ['commitments[agent][prop].rationaleURI', '""', MOCK.rationaleURI],
+    ],
+  },
+  /* 7: resolve (GovernorResolver) */
+  {
+    title: 'GovernorResolver.resolve()',
+    signature: 'function resolve(ICredibilityRegistry credibility, bytes32 agentId, uint256 proposalId, uint256 govProposalId) external',
+    params: [
+      ['credibility', '0x7782...941F', 'CredibilityRegistry \uc8fc\uc18c'],
+      ['agentId', MOCK.agentId, '\uc5d0\uc774\uc804\ud2b8 ID'],
+      ['proposalId', MOCK.proposalId, '\uc81c\uc548 ID'],
+      ['govProposalId', MOCK.proposalId, 'Governor \uc81c\uc548 ID'],
+    ],
+    logic: [
+      '\u2460 state = governor.state(govProposalId)',
+      '\u2461 Succeeded/Executed \u2192 outcome=1, Defeated/Canceled \u2192 outcome=0',
+      '\u2462 Pending/Active/Queued \u2192 revert ProposalNotFinalized',
+      '\u2463 credibility.resolvePrediction(agentId, proposalId, outcome)',
+    ],
+    returns: [],
+    events: ['(\uc774\ubca4\ud2b8\ub294 CredibilityRegistry\uc5d0\uc11c \ubc1c\uc0dd)'],
+    storage: [],
+  },
+  /* 8: resolvePrediction (CredibilityRegistry) */
+  {
+    title: 'CredibilityRegistry.resolvePrediction()',
+    signature: 'function resolvePrediction(bytes32 agentId, uint256 proposalId, uint8 actualOutcome) external',
+    params: [
+      ['agentId', MOCK.agentId, '\uc5d0\uc774\uc804\ud2b8 ID'],
+      ['proposalId', MOCK.proposalId, '\uc81c\uc548 ID'],
+      ['actualOutcome', '1 (positive)', '0=negative, 1=positive'],
+    ],
+    logic: [
+      '\u2460 onlyResolver: msg.sender == resolver (GovernorResolver)',
+      '\u2461 prediction = _predictions[agentId][proposalId]',
+      '\u2462 highConf = (score >= 70) = true',
+      '\u2463 correct = (verdict >= 1) == (outcome == 1) = true',
+      '\u2464 delta = deltas[0] = +3 (\ub192\uc740 \uc2e0\ub8b0\ub3c4 + \uc815\ud655)',
+      '\u2465 credibility[agentId].totalScore += 3',
+    ],
+    returns: [],
+    events: ['PredictionResolved(agentId, proposalId, delta=+3)'],
+    storage: [
+      ['predictions[agent][prop].resolved', 'false', 'true'],
+      ['predictions[agent][prop].delta', '0', '+3'],
+      ['credibility[agentId].totalScore', '0', '3'],
+      ['credibility[agentId].totalPredictions', '0', '1'],
+    ],
+  },
+  /* 9: getCredibility */
+  {
+    title: 'CredibilityRegistry.getCredibility()  [view]',
+    signature: 'function getCredibility(bytes32 agentId) external view returns (int256 totalScore, uint256 totalPredictions)',
+    params: [
+      ['agentId', MOCK.agentId, '\uc5d0\uc774\uc804\ud2b8 ID'],
+    ],
+    logic: [
+      'return _credibility[agentId]',
+      '\ud2b8\ub79c\uc7ad\uc158 \uc5c6\uc74c \u2014 \uc21c\uc218 \uc77d\uae30 \ud638\ucd9c',
+    ],
+    returns: [
+      ['totalScore', '3', 'int256'],
+      ['totalPredictions', '1', 'uint256'],
+    ],
+    events: [],
+    storage: [],
+  },
+];
+
+/* Per-step cumulative state changes */
+const STATE_CHANGES = [
+  /* step 0 */ {
+    AgentRegistry: [
+      { k: 'agents[0x7a3e..].operator', v: MOCK.operator },
+      { k: 'agents[0x7a3e..].metadataURI', v: '"ipfs://QmYx3..."' },
+      { k: 'agents[0x7a3e..].active', v: 'true' },
+      { k: 'operatorNonce[0x488f..]', v: '1' },
+    ],
+  },
+  /* step 1 */ {
+    AgentDelegation: [
+      { k: 'delegations[0xb4c8..].agentId', v: '0x7a3e..f91d' },
+      { k: 'delegations[0xb4c8..].expiry', v: '1743000000' },
+      { k: 'activeDelegation[0x488f..]', v: '0xb4c8..e0b2' },
+    ],
+  },
+  /* step 2 */ {
+    Governor: [
+      { k: 'proposals[4829..].voteStart', v: 'block.number + 1' },
+      { k: 'proposals[4829..].voteEnd', v: 'voteStart + 100' },
+    ],
+  },
+  /* step 3 */ {
+    RationaleCommitment: [
+      { k: 'commitments[agent][prop].commitHash', v: '0xa1b2..3456' },
+      { k: 'commitments[agent][prop].timestamp', v: String(Math.floor(Date.now()/1000)) },
+    ],
+  },
+  /* step 4 */ {
+    CredibilityRegistry: [
+      { k: 'predictions[agent][prop].verdict', v: '1 (For)' },
+      { k: 'predictions[agent][prop].score', v: '85' },
+      { k: 'predictions[agent][prop].exists', v: 'true' },
+    ],
+  },
+  /* step 5 */ {
+    Governor: [
+      { k: 'hasVoted[propId][voter]', v: 'true' },
+      { k: 'proposalVotes[propId].forVotes', v: '1000000' },
+    ],
+  },
+  /* step 6 */ {
+    RationaleCommitment: [
+      { k: 'commitments[agent][prop].revealed', v: 'true' },
+      { k: 'commitments[agent][prop].rationaleURI', v: '"ipfs://QmTk7..."' },
+    ],
+  },
+  /* step 7 */ {
+    CredibilityRegistry: [
+      { k: 'predictions[agent][prop].resolved', v: 'true' },
+      { k: 'predictions[agent][prop].delta', v: '+3' },
+      { k: 'credibility[agentId].totalScore', v: '3' },
+      { k: 'credibility[agentId].totalPredictions', v: '1' },
+    ],
+  },
+  /* step 8 */ {},
+];
+
+/* ══════════════════════════════════════════════════════════════
+   LAYOUT
+   ══════════════════════════════════════════════════════════════ */
+const COL_GAP = 155;
+const COL_START = 75;
+const COLS = P.map((_, i) => COL_START + i * COL_GAP);
+const SVG_W = COLS[COLS.length - 1] + COL_START + 20;
+const HEADER_H = 55;
+const ROW_H = 28;
+const STEP_GAP = 18;
+const SELF_H = 22;
+
+/* Compute Y positions */
+let curY = HEADER_H + 20;
+const stepLayouts = [];
+for (const step of STEPS) {
+  const startY = curY;
+  curY += 22; // step label row
+  const arrowYs = [];
+  for (const a of step.arrows) {
+    if (a.type === 'self') {
+      arrowYs.push(curY);
+      curY += SELF_H + 4;
+    } else {
+      arrowYs.push(curY);
+      curY += ROW_H;
+    }
+  }
+  stepLayouts.push({ startY, arrowYs });
+  curY += STEP_GAP;
+}
+const SVG_H = curY + 10;
+
+/* ══════════════════════════════════════════════════════════════
+   RENDER
+   ══════════════════════════════════════════════════════════════ */
+let activeStep = -1;
+let selectedArrowDetail = -1;
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function renderControls() {
+  const c = document.getElementById('controls');
+  let html = '';
+  STEPS.forEach((s, i) => {
+    const cls = i === activeStep ? 'active' : (i < activeStep ? 'done' : '');
+    html += `<button class="step-btn ${cls}" onclick="goToStep(${i})">
+      <span class="step-btn-num">${i < activeStep ? '\u2713' : i}</span>
+      <span>${s.subtitle}</span>
+    </button>`;
+  });
+  html += `<button class="ctrl-btn primary" onclick="nextStep()" id="nextBtn">\u25B6 \ub2e4\uc74c</button>`;
+  html += `<button class="ctrl-btn" onclick="resetAll()">\u21ba \ucd08\uae30\ud654</button>`;
+  c.innerHTML = html;
+}
+
+function renderDiagram() {
+  const pane = document.getElementById('diagramPane');
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'diagram-svg');
+  svg.setAttribute('width', SVG_W);
+  svg.setAttribute('height', SVG_H);
+  svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
+  svg.style.minWidth = SVG_W + 'px';
+
+  /* Defs */
+  const defs = svgEl('defs', {});
+  // Filled arrowhead
+  const m1 = svgEl('marker', { id: 'ah', viewBox: '0 0 10 8', refX: '10', refY: '4', markerWidth: '8', markerHeight: '6', orient: 'auto' });
+  m1.appendChild(svgEl('path', { d: 'M0,0 L10,4 L0,8 Z', fill: '#4a9eff' }));
+  defs.appendChild(m1);
+  // Return arrowhead
+  const m2 = svgEl('marker', { id: 'ah-ret', viewBox: '0 0 10 8', refX: '10', refY: '4', markerWidth: '8', markerHeight: '6', orient: 'auto' });
+  m2.appendChild(svgEl('path', { d: 'M0,0 L10,4 L0,8 Z', fill: '#555570' }));
+  defs.appendChild(m2);
+  // Subcall arrowhead
+  const m3 = svgEl('marker', { id: 'ah-sub', viewBox: '0 0 10 8', refX: '10', refY: '4', markerWidth: '7', markerHeight: '5', orient: 'auto' });
+  m3.appendChild(svgEl('path', { d: 'M0,0 L10,4 L0,8 Z', fill: '#8888a0' }));
+  defs.appendChild(m3);
+  svg.appendChild(defs);
+
+  /* Background */
+  svg.appendChild(svgEl('rect', { x: 0, y: 0, width: SVG_W, height: SVG_H, fill: '#0a0a0f' }));
+
+  /* Participant headers */
+  P.forEach((p, i) => {
+    const x = COLS[i];
+    const g = svgEl('g', {});
+    g.appendChild(svgEl('rect', {
+      x: x - 60, y: 8, width: 120, height: 38, rx: 6,
+      fill: '#151520', stroke: p.color, 'stroke-width': 1.5,
+    }));
+    const t = svgEl('text', { x, y: 27, fill: p.color, 'font-size': 9, 'font-weight': 600, 'text-anchor': 'middle', 'dominant-baseline': 'central' });
+    t.textContent = p.label;
+    g.appendChild(t);
+    svg.appendChild(g);
+  });
+
+  /* Lifelines */
+  P.forEach((_, i) => {
+    svg.appendChild(svgEl('line', {
+      x1: COLS[i], y1: HEADER_H, x2: COLS[i], y2: SVG_H,
+      stroke: '#2a2a3a', 'stroke-width': 1, 'stroke-dasharray': '4,4',
+    }));
+  });
+
+  /* Steps */
+  STEPS.forEach((step, si) => {
+    const layout = stepLayouts[si];
+    const isActive = si <= activeStep;
+    const g = svgEl('g', { opacity: isActive ? 1 : 0.12 });
+    g.style.transition = 'opacity 0.4s ease';
+
+    /* Step label */
+    const labelY = layout.startY + 5;
+    const bg = svgEl('rect', { x: 4, y: labelY - 9, width: 44, height: 16, rx: 3, fill: isActive ? '#1a1a26' : 'transparent', stroke: isActive ? '#2a2a3a' : 'transparent', 'stroke-width': 0.5 });
+    g.appendChild(bg);
+    const lt = svgEl('text', { x: 8, y: labelY + 3, fill: isActive ? '#8888a0' : '#555570', 'font-size': 7.5, 'font-weight': 600 });
+    lt.textContent = step.title;
+    g.appendChild(lt);
+
+    /* Arrows */
+    step.arrows.forEach((a, ai) => {
+      const y = layout.arrowYs[ai];
+      const x1 = COLS[a.from];
+      const x2 = COLS[a.to];
+
+      if (a.type === 'self') {
+        /* Self-loop */
+        const cx = COLS[a.from];
+        const r = 10;
+        const path = svgEl('path', {
+          d: `M${cx+4},${y} C${cx+30},${y} ${cx+30},${y+SELF_H} ${cx+4},${y+SELF_H}`,
+          fill: 'none', stroke: '#8888a0', 'stroke-width': 1, 'stroke-dasharray': '3,2',
+          'marker-end': 'url(#ah-sub)',
+        });
+        g.appendChild(path);
+        const st = svgEl('text', { x: cx + 36, y: y + SELF_H/2 + 3, fill: '#8888a0', 'font-size': 7, 'font-style': 'italic' });
+        st.textContent = a.label;
+        g.appendChild(st);
+
+      } else if (a.type === 'call') {
+        /* Main call arrow */
+        const dir = x2 > x1 ? 1 : -1;
+        const line = svgEl('line', {
+          x1: x1 + dir * 4, y1: y, x2: x2 - dir * 4, y2: y,
+          stroke: '#4a9eff', 'stroke-width': 1.5, 'marker-end': 'url(#ah)',
+        });
+        g.appendChild(line);
+        const mid = (x1 + x2) / 2;
+        const tt = svgEl('text', {
+          x: mid, y: y - 5, fill: '#e0e0e8', 'font-size': 7.5, 'text-anchor': 'middle', 'font-weight': 500,
+        });
+        tt.textContent = a.label.length > 50 ? a.label.slice(0, 48) + '...' : a.label;
+        g.appendChild(tt);
+        /* Click hitbox */
+        if (a.detailId !== undefined && isActive) {
+          const hb = svgEl('rect', {
+            x: Math.min(x1, x2), y: y - 12, width: Math.abs(x2 - x1), height: 18,
+            fill: 'transparent', class: 'arrow-hitbox',
+          });
+          hb.style.cursor = 'pointer';
+          hb.addEventListener('click', () => showDetail(a.detailId));
+          g.appendChild(hb);
+        }
+
+      } else if (a.type === 'return') {
+        /* Return dashed arrow */
+        const dir = x2 > x1 ? 1 : -1;
+        g.appendChild(svgEl('line', {
+          x1: x1 + dir * 4, y1: y, x2: x2 - dir * 4, y2: y,
+          stroke: '#555570', 'stroke-width': 1, 'stroke-dasharray': '5,3',
+          'marker-end': 'url(#ah-ret)',
+        }));
+        const mid = (x1 + x2) / 2;
+        const tt = svgEl('text', { x: mid, y: y - 5, fill: '#555570', 'font-size': 7, 'text-anchor': 'middle' });
+        tt.textContent = a.label;
+        g.appendChild(tt);
+
+      } else if (a.type === 'subcall') {
+        /* Internal verification call */
+        const dir = x2 > x1 ? 1 : -1;
+        g.appendChild(svgEl('line', {
+          x1: x1 + dir * 4, y1: y, x2: x2 - dir * 4, y2: y,
+          stroke: '#8888a0', 'stroke-width': 1, 'stroke-dasharray': '3,2',
+          'marker-end': 'url(#ah-sub)',
+        }));
+        const mid = (x1 + x2) / 2;
+        const tt = svgEl('text', { x: mid, y: y - 5, fill: '#8888a0', 'font-size': 6.5, 'text-anchor': 'middle', 'font-style': 'italic' });
+        tt.textContent = a.label;
+        g.appendChild(tt);
+        /* Click hitbox for subcall details */
+        if (a.detailId !== undefined && isActive) {
+          const hb = svgEl('rect', {
+            x: Math.min(x1, x2), y: y - 10, width: Math.abs(x2 - x1), height: 15,
+            fill: 'transparent', class: 'arrow-hitbox',
+          });
+          hb.style.cursor = 'pointer';
+          hb.addEventListener('click', () => showDetail(a.detailId));
+          g.appendChild(hb);
+        }
+
+      } else if (a.type === 'subreturn') {
+        const dir = x2 > x1 ? 1 : -1;
+        g.appendChild(svgEl('line', {
+          x1: x1 + dir * 4, y1: y, x2: x2 - dir * 4, y2: y,
+          stroke: '#3a3a4f', 'stroke-width': 0.8, 'stroke-dasharray': '3,3',
+          'marker-end': 'url(#ah-ret)',
+        }));
+        const mid = (x1 + x2) / 2;
+        const tt = svgEl('text', { x: mid, y: y - 4, fill: '#3a3a4f', 'font-size': 6, 'text-anchor': 'middle' });
+        tt.textContent = a.label;
+        g.appendChild(tt);
+      }
+    });
+
+    svg.appendChild(g);
+  });
+
+  pane.innerHTML = '';
+  pane.appendChild(svg);
+
+}
+
+function renderStatePanel() {
+  const el = document.getElementById('statePanel');
+  if (activeStep < 0) {
+    el.innerHTML = '<div class="state-empty">\u25B6 "\ub2e4\uc74c" \ubc84\ud2bc\uc744 \ub20c\ub7ec \uc2dc\uc791\ud558\uc138\uc694</div>';
+    return;
+  }
+
+  /* Accumulate state across all completed steps */
+  const accum = {}; // contractName -> { key: value }
+  for (let i = 0; i <= activeStep; i++) {
+    const changes = STATE_CHANGES[i];
+    for (const [contract, entries] of Object.entries(changes)) {
+      if (!accum[contract]) accum[contract] = {};
+      for (const e of entries) {
+        accum[contract][e.k] = e.v;
+      }
+    }
+  }
+
+  const contractColors = {
+    AgentRegistry: '#4a9eff',
+    AgentDelegation: '#22c55e',
+    Governor: '#eab308',
+    RationaleCommitment: '#f97316',
+    CredibilityRegistry: '#a78bfa',
+  };
+
+  let html = '';
+  for (const [name, entries] of Object.entries(accum)) {
+    const color = contractColors[name] || '#e0e0e8';
+    const isNew = STATE_CHANGES[activeStep] && STATE_CHANGES[activeStep][name];
+    html += `<div class="state-contract ${isNew ? 'flash' : ''}">
+      <div class="state-contract-header" style="background:${color}11;">
+        <span class="dot" style="background:${color};"></span>
+        <span style="color:${color};">${name}</span>
+      </div>
+      <div class="state-contract-body">
+        ${Object.entries(entries).map(([k, v]) => {
+          const isThisStep = isNew && STATE_CHANGES[activeStep][name]?.some(e => e.k === k);
+          return `<div class="state-entry">
+            <span class="state-key">${k}:</span>
+            <span class="state-val" style="${isThisStep ? 'color:#22c55e;font-weight:600;' : ''}">${v}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  el.innerHTML = html || '<div class="state-empty">\uc0c1\ud0dc \ubcc0\uacbd \uc5c6\uc74c</div>';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DETAIL PANEL
+   ══════════════════════════════════════════════════════════════ */
+function showDetail(id) {
+  const d = DETAILS[id];
+  if (!d) return;
+  selectedArrowDetail = id;
+
+  const el = document.getElementById('detailContent');
+  let html = `<div class="detail-title">
+    <span style="color:var(--accent-blue);">\u25B8</span> ${d.title}
+  </div>`;
+
+  html += '<div class="detail-grid">';
+
+  /* Signature & Params */
+  html += '<div class="detail-section">';
+  html += '<h4>Function Signature</h4>';
+  html += `<div class="detail-row" style="color:var(--accent-blue);font-size:0.62rem;">${d.signature}</div>`;
+  if (d.params.length > 0) {
+    html += '<h4 style="margin-top:0.75rem;">Parameters</h4>';
+    d.params.forEach(([name, val, desc]) => {
+      html += `<div class="detail-row">
+        <span class="label">${name}:</span> <span class="val-blue">${val}</span>
+        <div style="color:var(--text-muted);font-size:0.58rem;margin-top:0.1rem;">${desc}</div>
+      </div>`;
+    });
+  }
+  if (d.returns.length > 0) {
+    html += '<h4 style="margin-top:0.75rem;">Returns</h4>';
+    d.returns.forEach(([name, val, type]) => {
+      html += `<div class="detail-row"><span class="label">${name}:</span> <span class="val-green">${val}</span> <span style="color:var(--text-muted);">(${type})</span></div>`;
+    });
+  }
+  html += '</div>';
+
+  /* Logic & Events & Storage */
+  html += '<div class="detail-section">';
+  if (d.logic.length > 0) {
+    html += '<h4>Internal Logic</h4>';
+    d.logic.forEach(l => {
+      html += `<div class="detail-row" style="color:var(--accent-yellow);font-size:0.62rem;">${l}</div>`;
+    });
+  }
+  if (d.events.length > 0) {
+    html += '<h4 style="margin-top:0.75rem;">Events</h4>';
+    d.events.forEach(e => {
+      html += `<div class="detail-row"><span class="val-green">\u25C6 ${e}</span></div>`;
+    });
+  }
+  if (d.storage.length > 0) {
+    html += '<h4 style="margin-top:0.75rem;">Storage Changes</h4>';
+    html += '<div class="detail-storage">';
+    d.storage.forEach(([slot, before, after]) => {
+      html += `<span class="slot">${slot}</span>
+        <span class="before">${before}</span>
+        <span class="arrow">\u2192</span>
+        <span class="after">${after}</span>`;
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  html += '</div>'; // grid end
+  el.innerHTML = html;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+  selectedArrowDetail = -1;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAVIGATION
+   ══════════════════════════════════════════════════════════════ */
+function goToStep(n) {
+  activeStep = n;
+  closeDetail();
+  renderAll();
+}
+
+function nextStep() {
+  if (activeStep < STEPS.length - 1) {
+    activeStep++;
+    closeDetail();
+    renderAll();
+  }
+}
+
+function resetAll() {
+  activeStep = -1;
+  closeDetail();
+  renderAll();
+}
+
+function renderAll() {
+  renderControls();
+  renderDiagram();
+  renderStatePanel();
+  const btn = document.getElementById('nextBtn');
+  if (btn && activeStep >= STEPS.length - 1) {
+    btn.textContent = '\u2713 \uc644\ub8cc';
+    btn.style.opacity = '0.5';
+  }
+}
+
+/* Keyboard navigation */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextStep(); }
+  if (e.key === 'ArrowLeft' && activeStep > 0) { e.preventDefault(); goToStep(activeStep - 1); }
+  if (e.key === 'Escape') closeDetail();
+  if (e.key === 'r' || e.key === 'R') resetAll();
+});
+
+/* Init */
+renderAll();
+</script>
+</body>
+</html>

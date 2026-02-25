@@ -72,14 +72,12 @@ export interface AggregatedResult {
 
 export interface SimulationCallResult {
   target: string;
-  functionName: string;
+  decoded: string;
   success: boolean;
-  gasUsed: string;
   revertReason?: string;
 }
 
 export interface SimulationResponse {
-  proposalId: string;
   results: SimulationCallResult[];
   overallSuccess: boolean;
 }

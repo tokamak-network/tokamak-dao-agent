@@ -20,7 +20,7 @@ export function SimulationResult({ data }: Props) {
           <span className="sim-target">
             {r.target.slice(0, 6)}...{r.target.slice(-4)}
           </span>
-          <span className="sim-fn">{r.functionName || "call"}</span>
+          <span className="sim-fn">{r.decoded || "call"}</span>
           {r.revertReason && (
             <span className="sim-revert">{r.revertReason}</span>
           )}

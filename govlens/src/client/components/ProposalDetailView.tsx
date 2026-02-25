@@ -25,8 +25,8 @@ export function ProposalDetailView({ proposalId, onBack }: Props) {
     setLoading(true);
     getProposal(slug, proposalId, apiKey)
       .then((res) => {
-        setProposal(res.data.proposal);
-        setEvaluation(res.data.evaluation);
+        setProposal(res.proposal);
+        setEvaluation(res.evaluation);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -38,7 +38,7 @@ export function ProposalDetailView({ proposalId, onBack }: Props) {
     setError("");
     try {
       const res = await analyzeProposal(slug, proposalId, apiKey);
-      setEvaluation(res.data);
+      setEvaluation(res.result);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -52,7 +52,7 @@ export function ProposalDetailView({ proposalId, onBack }: Props) {
     setError("");
     try {
       const res = await simulateProposal(slug, proposalId, apiKey);
-      setSimulation(res.data);
+      setSimulation({ overallSuccess: res.success, results: res.calls });
     } catch (err: any) {
       setError(err.message);
     } finally {

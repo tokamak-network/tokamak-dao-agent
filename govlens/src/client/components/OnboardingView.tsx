@@ -34,7 +34,7 @@ export function OnboardingView() {
     setDiscovery(null);
     try {
       const res = await discover(address, chainId);
-      setDiscovery(res.data);
+      setDiscovery(res);
     } catch (err: any) {
       setDiscError(err.message || "Discovery failed");
     } finally {
@@ -52,7 +52,7 @@ export function OnboardingView() {
         governorAddress: address,
         chainId,
       });
-      setApiKey(res.data.apiKey);
+      setApiKey(res.apiKey);
     } catch (err: any) {
       setCreateError(err.message || "Failed to create tenant");
     } finally {

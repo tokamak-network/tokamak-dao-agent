@@ -17,7 +17,7 @@ export function CredibilityView() {
     if (!slug || !apiKey) return;
     setLoading(true);
     getCredibility(slug, apiKey)
-      .then((res) => setData(res.data))
+      .then((res) => setData(res.agents))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [slug, apiKey]);

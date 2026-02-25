@@ -29,7 +29,7 @@ export function ProposalListView({ onSelectProposal }: Props) {
     if (!slug || !apiKey) return;
     setLoading(true);
     listProposals(slug, apiKey, { limit: 50 })
-      .then((res) => setProposals(res.data))
+      .then((res) => setProposals(res.proposals))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [slug, apiKey]);

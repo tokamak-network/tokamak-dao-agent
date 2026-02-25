@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setState({
           apiKey: stored.apiKey,
           slug: stored.slug,
-          tenant: res.data,
+          tenant: res as Tenant,
           loading: false,
         });
       })
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Fetch tenant to populate state
     getTenant(slug, apiKey)
       .then((res) => {
-        setState({ apiKey, slug, tenant: res.data, loading: false });
+        setState({ apiKey, slug, tenant: res as Tenant, loading: false });
       })
       .catch(() => {
         setState({ apiKey, slug, tenant: null, loading: false });

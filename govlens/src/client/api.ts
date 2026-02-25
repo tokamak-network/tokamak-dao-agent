@@ -1,5 +1,14 @@
 /** Fetch wrapper with Bearer token injection */
 
+import type {
+  DiscoveryResult,
+  Tenant,
+  Proposal,
+  AggregatedResult,
+  SimulationCallResult,
+  CredibilitySummary,
+} from "./types";
+
 const BASE = "/api/v1";
 
 export class ApiError extends Error {
@@ -37,31 +46,40 @@ async function request<T>(
 
 // ─── Public endpoints ────────────────────────────────────────
 
+/** POST /discover → { framework, confidence, contracts } */
 export function discover(address: string, chainId: number) {
-  return request<{ data: import("./types").DiscoveryResult }>("/discover", {
+  return request<DiscoveryResult>("/discover", {
     method: "POST",
     body: JSON.stringify({ address, chainId }),
   });
 }
 
+/** POST /tenants → { tenant, apiKey, discovery } */
 export function createTenant(params: {
   slug: string;
   name: string;
   governorAddress: string;
   chainId: number;
 }) {
-  return request<{ data: { tenant: import("./types").Tenant; apiKey: string } }>("/tenants", {
+  return request<{ tenant: Partial<Tenant>; apiKey: string }>("/tenants", {
     method: "POST",
-    body: JSON.stringify(params),
+    body: JSON.stringify({
+      slug: params.slug,
+      name: params.name,
+      address: params.governorAddress,
+      chainId: params.chainId,
+    }),
   });
 }
 
 // ─── Authenticated endpoints ─────────────────────────────────
 
+/** GET /tenants/:slug → flat tenant object */
 export function getTenant(slug: string, apiKey: string) {
-  return request<{ data: import("./types").Tenant }>(`/tenants/${slug}`, {}, apiKey);
+  return request<Partial<Tenant>>(`/tenants/${slug}`, {}, apiKey);
 }
 
+/** GET .../proposals → { proposals, total } */
 export function listProposals(
   slug: string,
   apiKey: string,
@@ -72,39 +90,47 @@ export function listProposals(
   if (params?.offset) qs.set("offset", String(params.offset));
   if (params?.status) qs.set("status", params.status);
   const query = qs.toString() ? `?${qs}` : "";
-  return request<{ data: import("./types").Proposal[] }>(
+  return request<{ proposals: Proposal[]; total: number }>(
     `/tenants/${slug}/proposals${query}`,
     {},
     apiKey,
   );
 }
 
+/** GET .../proposals/:id → { proposal, evaluation } */
 export function getProposal(slug: string, proposalId: string, apiKey: string) {
-  return request<{ data: { proposal: import("./types").Proposal; evaluation: import("./types").AggregatedResult | null } }>(
+  return request<{ proposal: Proposal; evaluation: AggregatedResult | null }>(
     `/tenants/${slug}/proposals/${proposalId}`,
     {},
     apiKey,
   );
 }
 
+/** POST .../analyze → { result: { ... } } */
 export function analyzeProposal(slug: string, proposalId: string, apiKey: string) {
-  return request<{ data: import("./types").AggregatedResult }>(
+  return request<{ result: AggregatedResult }>(
     `/tenants/${slug}/proposals/${proposalId}/analyze`,
     { method: "POST" },
     apiKey,
   );
 }
 
+/** POST .../simulate → { success, failedAt, calls } */
 export function simulateProposal(slug: string, proposalId: string, apiKey: string) {
-  return request<{ data: import("./types").SimulationResponse }>(
+  return request<{
+    success: boolean;
+    failedAt: number | null;
+    calls: SimulationCallResult[];
+  }>(
     `/tenants/${slug}/proposals/${proposalId}/simulate`,
     { method: "POST" },
     apiKey,
   );
 }
 
+/** GET .../credibility → { agents: [...] } */
 export function getCredibility(slug: string, apiKey: string) {
-  return request<{ data: import("./types").CredibilitySummary[] }>(
+  return request<{ agents: CredibilitySummary[] }>(
     `/tenants/${slug}/credibility`,
     {},
     apiKey,

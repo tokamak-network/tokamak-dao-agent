@@ -18,9 +18,11 @@ But low participation has consequences. When only 3-5% of token supply participa
 
 But here is the problem: **AI agents are already participating in DAO governance, and you cannot tell.** They operate through regular Ethereum addresses (EOAs), indistinguishable from human voters. There is no way to know if a voter is an AI, who operates it, what model it uses, or what reasoning led to its vote. This is governance without transparency and delegation without accountability.
 
-This is not a fringe concern. In February 2026, Vitalik Buterin proposed "AI stewards" for DAO governance — AI agents that represent human preferences in governance decisions. The community response was overwhelming, but the proposal did not specify on-chain interfaces. Meanwhile, general-purpose agent infrastructure (ERC-8004, ERC-8118) addresses *who an agent is* and *what functions it can call* — but not *how it should govern*.
+Two weeks ago, Vitalik Buterin proposed "AI stewards" for DAO governance — AI agents that represent human preferences in governance decisions. The community response was overwhelming. But the proposal did not define an on-chain interface. Meanwhile, general-purpose agent infrastructure (ERC-8004, ERC-8118) addresses *who an agent is* and *what functions it can call* — but not *how it should govern*.
 
-We need a standard for how AI agents participate in DAOs. That is what this EIP proposes.
+**The vision is clear. The interface is missing.** Without a standard, here is what happens: DAO A builds a custom agent registry, DAO B builds an incompatible one. An agent that builds credibility in Compound cannot carry that reputation to Aave. Delegation preferences become ad-hoc JSON blobs with no shared schema. Every DAO reinvents the wheel, and the wheels do not fit each other.
+
+This EIP defines that missing interface. Four Solidity contracts. Two required, two optional. Layered on ERC-5805 and ERC-4824 — no Governor modifications needed.
 
 ---
 
@@ -303,6 +305,11 @@ This EIP is a draft. We welcome feedback, co-authors, and implementations.
 - **Join the discussion**: [Ethereum Magicians Forum](https://ethereum-magicians.org/t/erc-ai-agent-governance-interface)
 
 The reference implementation includes 98 tests across 6 test suites. Deploy on your testnet. Build on top of it. Tell us what is missing.
+
+**What we especially want to hear:**
+1. What friction do you foresee integrating this with existing Governor deployments?
+2. Is commit-reveal rationale integrity worth the gas cost, or should it be L2-only?
+3. What risks do you see in cross-DAO credibility portability?
 
 AI agents are coming to governance whether we standardize or not. Let us make sure they come transparently.
 

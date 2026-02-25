@@ -1,8 +1,8 @@
 import { useI18n } from "../../contexts/I18nContext";
 
 const INTERFACES = [
-  { name: "IAIAgentRegistry", id: "0x________" },
-  { name: "IAIDelegation", id: "0x________" },
+  { name: "IAgentRegistry", id: "0x________" },
+  { name: "IAgentDelegation", id: "0x________" },
   { name: "IRationaleCommitment", id: "0x________" },
   { name: "ICredibilityRegistry", id: "0x________" },
 ];

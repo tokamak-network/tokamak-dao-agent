@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
-import {AIAgentRegistry} from "../../src/governance/AIAgentRegistry.sol";
+import {AgentRegistry} from "../../src/governance/AgentRegistry.sol";
 import {RationaleCommitment} from "../../src/governance/RationaleCommitment.sol";
 import {IRationaleCommitment} from "../../src/governance/IRationaleCommitment.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
@@ -13,7 +13,7 @@ import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
  * Run with: forge test --match-contract RationaleCommitmentTest -vvv
  */
 contract RationaleCommitmentTest is Test {
-    AIAgentRegistry public registry;
+    AgentRegistry public registry;
     RationaleCommitment public commitment;
 
     address operator = makeAddr("operator");
@@ -28,7 +28,7 @@ contract RationaleCommitmentTest is Test {
     event RationaleRevealed(bytes32 indexed agentId, uint256 indexed proposalId, string rationaleURI);
 
     function setUp() public {
-        registry = new AIAgentRegistry();
+        registry = new AgentRegistry();
         commitment = new RationaleCommitment(address(registry));
 
         vm.prank(operator);

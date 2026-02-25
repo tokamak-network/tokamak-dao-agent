@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {IAgentRegistry} from "./IAgentRegistry.sol";
 
 /// @title IRationaleCommitment
 /// @notice Commit-reveal scheme for AI agent proposal rationales.
@@ -27,8 +27,8 @@ interface IRationaleCommitment is IERC165 {
     );
 
     /// @notice Get the registry contract
-    /// @return The IAIAgentRegistry contract
-    function registry() external view returns (IAIAgentRegistry);
+    /// @return The IAgentRegistry contract
+    function registry() external view returns (IAgentRegistry);
 
     /// @notice Commit rationale hash before voting ends
     /// @param agentId The agent committing the rationale

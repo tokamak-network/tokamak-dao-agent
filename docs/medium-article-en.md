@@ -48,7 +48,7 @@ Beyond delegation, there are two more gaps:
 | Permanent delegation | Periodic renewal | `expiry` parameter |
 | No preferences | Machine-readable preferences | `preferencesURI` |
 | No escalation | Human fallback mechanism | `escalate()` |
-| AI indistinguishable | On-chain identity | `IAIAgentRegistry` |
+| AI indistinguishable | On-chain identity | `IAgentRegistry` |
 | Rationale manipulation | Integrity guarantee | Commit-reveal scheme |
 
 ---
@@ -62,7 +62,7 @@ This EIP defines four Solidity interfaces organized into two tiers:
 │              Core (Required)                │
 │                                             │
 │  ┌───────────────────┐ ┌─────────────────┐  │
-│  │ IAIAgentRegistry  │ │  IAIDelegation  │  │
+│  │ IAgentRegistry  │ │  IAgentDelegation  │  │
 │  │                   │ │                 │  │
 │  │ On-chain identity │ │ Expiring        │  │
 │  │ for AI agents     │ │ delegation with │  │
@@ -96,7 +96,7 @@ All four interfaces implement ERC-165 for runtime feature detection — a DAO ca
 
 **The problem:** If AI agents are indistinguishable from regular EOAs, governance participants cannot track AI influence, assess AI operator quality, or make informed delegation decisions.
 
-**The solution:** `IAIAgentRegistry` provides on-chain registration for AI agents.
+**The solution:** `IAgentRegistry` provides on-chain registration for AI agents.
 
 ```solidity
 function registerAgent(string calldata metadataURI) external returns (bytes32 agentId);
@@ -118,7 +118,7 @@ The `metadataURI` points to a JSON document describing the agent's model, operat
 
 **The problem:** ERC-5805's `delegate(address)` is permanent and unconditional. Delegating to an AI agent forever, without constraints, is a governance risk.
 
-**The solution:** `IAIDelegation` extends delegation with three AI-specific constraints:
+**The solution:** `IAgentDelegation` extends delegation with three AI-specific constraints:
 
 ```solidity
 function delegateToAgent(
@@ -224,7 +224,7 @@ Here is the complete journey of an AI agent participating in governance:
 
 **Step 1 — Register Agent.** An operator registers an AI agent on-chain. `AgentRegistered(agentId, operator, metadataURI)` is emitted.
 
-**Step 2 — Receive Delegation.** A token holder delegates to the agent with expiry and preferences. `AIDelegationCreated(delegator, agentId, delegationId, expiry)` is emitted.
+**Step 2 — Receive Delegation.** A token holder delegates to the agent with expiry and preferences. `AgentDelegationCreated(delegator, agentId, delegationId, expiry)` is emitted.
 
 **Step 3 — Proposal Created.** A new proposal appears in the Governor contract.
 
@@ -246,7 +246,7 @@ Here is the complete journey of an AI agent participating in governance:
 
 The standard is designed to work with any governance framework, but we provide informative examples for the most common one: OpenZeppelin Governor.
 
-**`GovernorAIDelegation`** extends `AIDelegation` to bridge with `IVotes`:
+**`GovernorAgentDelegation`** extends `AgentDelegation` to bridge with `IVotes`:
 - On `delegateToAgent()`: stores the delegator's current IVotes delegatee for later restoration
 - On `revokeDelegation()`: emits an event advising the delegator to restore their previous delegation
 - The delegator calls `token.delegate(operator)` externally — required because `IVotes.delegate()` uses `msg.sender`
@@ -265,7 +265,7 @@ The standard is designed to work with any governance framework, but we provide i
 
 We identified and addressed 10 security threats in the specification. Here are the most critical:
 
-**Agent Collusion.** A single operator could register multiple agents to amplify influence. The mitigation: the `operator` field is publicly visible in `IAIAgentRegistry`, allowing delegators to identify same-operator agents. Governance frameworks should weight credibility by operator diversity.
+**Agent Collusion.** A single operator could register multiple agents to amplify influence. The mitigation: the `operator` field is publicly visible in `IAgentRegistry`, allowing delegators to identify same-operator agents. Governance frameworks should weight credibility by operator diversity.
 
 **Sybil Resistance.** Since `registerAgent` is permissionless, an adversary could register many agents. Mitigations include registration fees, weighting by operator on-chain history, and requiring minimum prediction volume before credibility is considered meaningful.
 
@@ -315,4 +315,4 @@ AI agents are coming to governance whether we standardize or not. Let us make su
 
 ---
 
-*This EIP was authored by Tokamak Network. The specification, reference implementation, and tests are released under CC0.*
+*This EIP was authored by Thomas Shin. The specification, reference implementation, and tests are released under CC0.*

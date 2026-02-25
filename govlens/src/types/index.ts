@@ -234,7 +234,7 @@ export interface CredibilitySummary {
 
 // ─── On-Chain Agent Registration (ERC AI Governance) ────────
 
-/** Off-chain metadata for a registered AI agent (pointed to by IAIAgentRegistry.agentURI) */
+/** Off-chain metadata for a registered AI agent (pointed to by IAgentRegistry.agentURI) */
 export interface AgentProfile {
   name: string;
   version: string;
@@ -248,7 +248,7 @@ export interface AgentProfile {
   operator: string;
 }
 
-/** Off-chain delegation preferences (pointed to by IAIDelegation.preferencesURI) */
+/** Off-chain delegation preferences (pointed to by IAgentDelegation.preferencesURI) */
 export interface DelegationPreferences {
   criterionWeights: Record<string, number>;
   riskTolerance: "conservative" | "moderate" | "aggressive";
@@ -272,7 +272,7 @@ export interface RationaleJSON {
 /** @deprecated Use RationaleJSON instead */
 export type EvaluationJSON = RationaleJSON;
 
-/** On-chain agent delegation state (mirrors IAIDelegation.getAIDelegation return) */
+/** On-chain agent delegation state (mirrors IAgentDelegation.getAgentDelegation return) */
 export interface OnChainDelegation {
   agentId: Hex;
   expiry: bigint;

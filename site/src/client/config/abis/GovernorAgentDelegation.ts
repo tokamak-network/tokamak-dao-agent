@@ -108,7 +108,7 @@ export const govDelegationAbi = [
   },
   {
     "type": "function",
-    "name": "getAIDelegation",
+    "name": "getAgentDelegation",
     "inputs": [
       {
         "name": "account",
@@ -167,7 +167,7 @@ export const govDelegationAbi = [
       {
         "name": "",
         "type": "address",
-        "internalType": "contract IAIAgentRegistry"
+        "internalType": "contract IAgentRegistry"
       }
     ],
     "stateMutability": "view"
@@ -219,7 +219,7 @@ export const govDelegationAbi = [
   },
   {
     "type": "event",
-    "name": "AIDelegationCreated",
+    "name": "AgentDelegationCreated",
     "inputs": [
       {
         "name": "delegator",
@@ -250,7 +250,7 @@ export const govDelegationAbi = [
   },
   {
     "type": "event",
-    "name": "AIDelegationRevoked",
+    "name": "AgentDelegationRevoked",
     "inputs": [
       {
         "name": "delegationId",

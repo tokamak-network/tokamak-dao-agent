@@ -12,12 +12,12 @@ const ABI_DIR = join(import.meta.dir, "../src/client/config/abis");
 
 // contract name → export name mapping (avoid ugly "aI" camelCase)
 const TARGET_CONTRACTS: Record<string, string> = {
-  AIAgentRegistry: "registryAbi",
-  AIDelegation: "delegationAbi",
+  AgentRegistry: "registryAbi",
+  AgentDelegation: "delegationAbi",
   RationaleCommitment: "rationaleAbi",
   CredibilityRegistry: "credibilityAbi",
   GovernorResolver: "resolverAbi",
-  GovernorAIDelegation: "govDelegationAbi",
+  GovernorAgentDelegation: "govDelegationAbi",
   MockGovernor: "governorAbi",
   MockERC20Votes: "tokenAbi",
 };

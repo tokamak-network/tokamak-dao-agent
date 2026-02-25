@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {IRationaleCommitment} from "./IRationaleCommitment.sol";
-import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {IAgentRegistry} from "./IAgentRegistry.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
@@ -20,7 +20,7 @@ contract RationaleCommitment is IRationaleCommitment, ERC165 {
         string rationaleURI;
     }
 
-    IAIAgentRegistry public immutable registry;
+    IAgentRegistry public immutable registry;
 
     /// @notice (agentId, proposalId) → Commitment
     mapping(bytes32 => mapping(uint256 => Commitment)) internal _commitments;
@@ -33,7 +33,7 @@ contract RationaleCommitment is IRationaleCommitment, ERC165 {
     error HashMismatch(bytes32 expected, bytes32 actual);
 
     constructor(address _registry) {
-        registry = IAIAgentRegistry(_registry);
+        registry = IAgentRegistry(_registry);
     }
 
     modifier onlyAgentOperator(bytes32 agentId) {

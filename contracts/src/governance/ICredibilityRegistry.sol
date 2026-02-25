@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {IAgentRegistry} from "./IAgentRegistry.sol";
 
 /// @title ICredibilityRegistry
 /// @notice On-chain tracking of AI agent prediction accuracy across DAOs.
@@ -35,8 +35,8 @@ interface ICredibilityRegistry is IERC165 {
     );
 
     /// @notice Get the registry contract
-    /// @return The IAIAgentRegistry contract
-    function registry() external view returns (IAIAgentRegistry);
+    /// @return The IAgentRegistry contract
+    function registry() external view returns (IAgentRegistry);
 
     /// @notice Get the resolver address
     /// @return The designated resolver address

@@ -2,7 +2,7 @@
 eip: XXXX
 title: AI Agent Governance Interface
 description: Defines interfaces for AI agent registration, delegation, rationale integrity, and credibility tracking in DAOs
-author: Tokamak Network (@nicetokamak)
+author: Thomas Shin <thomas@tokamak.network>
 discussions-to: https://ethereum-magicians.org/t/erc-ai-agent-governance-interface
 status: Draft
 type: Standards Track
@@ -33,12 +33,12 @@ Governor コントラクトは人間の投票者を前提としている。AI ag
 
 | Interface | ERC-165 ID |
 |-----------|-----------|
-| `IAIAgentRegistry` | `0x9b0ef8ea` |
-| `IAIDelegation` | `0xaf8fa551` |
+| `IAgentRegistry` | `0x9b0ef8ea` |
+| `IAgentDelegation` | `0xaf8fa551` |
 | `IRationaleCommitment` | `0xeea8e031` |
 | `ICredibilityRegistry` | `0xd37853ac` |
 
-### Core Interface: `IAIAgentRegistry`
+### Core Interface: `IAgentRegistry`
 
 AI agent の on-chain 登録とライフサイクル管理を提供する。
 
@@ -48,7 +48,7 @@ pragma solidity ^0.8.24;
 
 import {IERC165} from "./IERC165.sol";
 
-interface IAIAgentRegistry is IERC165 {
+interface IAgentRegistry is IERC165 {
     event AgentRegistered(bytes32 indexed agentId, address indexed operator, string metadataURI);
     event AgentUpdated(bytes32 indexed agentId, string metadataURI);
     event AgentDeactivated(bytes32 indexed agentId);
@@ -86,9 +86,9 @@ interface IAIAgentRegistry is IERC165 {
 
 **ERC-8004 との相互運用性:**
 
-ERC-8004 (Trustless Agents) は `uint256` の agent ID（ERC-721 token ID）を使用するが、本 ERC は `bytes32` を使用する。両方のレジストリを橋渡しする実装は、`bytes32(uint256(erc8004TokenId))` を介して ID をマッピングすべきである（SHOULD）。既に agent の identity に ERC-8004 を使用している DAO は、別の `IAIAgentRegistry` をデプロイする代わりに、ERC-8004 レジストリをラップするアダプターコントラクトを使用してもよい（MAY）。`metadataURI` は ERC-8004 の `agentURI` と同じパターンに従い、実装は両方の schema を提供する単一の URI を使用してもよい（MAY）。
+ERC-8004 (Trustless Agents) は `uint256` の agent ID（ERC-721 token ID）を使用するが、本 ERC は `bytes32` を使用する。両方のレジストリを橋渡しする実装は、`bytes32(uint256(erc8004TokenId))` を介して ID をマッピングすべきである（SHOULD）。既に agent の identity に ERC-8004 を使用している DAO は、別の `IAgentRegistry` をデプロイする代わりに、ERC-8004 レジストリをラップするアダプターコントラクトを使用してもよい（MAY）。`metadataURI` は ERC-8004 の `agentURI` と同じパターンに従い、実装は両方の schema を提供する単一の URI を使用してもよい（MAY）。
 
-### Core Interface: `IAIDelegation`
+### Core Interface: `IAgentDelegation`
 
 AI 固有の制約を加えた ERC-5805 委任の概念を拡張する。
 
@@ -97,23 +97,23 @@ AI 固有の制約を加えた ERC-5805 委任の概念を拡張する。
 pragma solidity ^0.8.24;
 
 import {IERC165} from "./IERC165.sol";
-import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {IAgentRegistry} from "./IAgentRegistry.sol";
 
-interface IAIDelegation is IERC165 {
-    event AIDelegationCreated(
+interface IAgentDelegation is IERC165 {
+    event AgentDelegationCreated(
         address indexed delegator,
         bytes32 indexed agentId,
         bytes32 delegationId,
         uint256 expiry
     );
-    event AIDelegationRevoked(bytes32 indexed delegationId);
+    event AgentDelegationRevoked(bytes32 indexed delegationId);
     event Escalated(bytes32 indexed delegationId, uint256 indexed proposalId, string reasonURI);
 
     /// @notice Get the registry contract
-    function registry() external view returns (IAIAgentRegistry);
+    function registry() external view returns (IAgentRegistry);
 
     /// @notice Delegate voting power to an AI agent with constraints
-    /// @param agentId Registered agent from IAIAgentRegistry
+    /// @param agentId Registered agent from IAgentRegistry
     /// @param expiry Delegation expiry timestamp (MUST be > block.timestamp)
     /// @param preferencesURI URI to DelegationPreferences JSON
     function delegateToAgent(
@@ -126,7 +126,7 @@ interface IAIDelegation is IERC165 {
     function revokeDelegation(bytes32 delegationId) external;
 
     /// @notice Get active delegation for an account
-    function getAIDelegation(address account) external view returns (
+    function getAgentDelegation(address account) external view returns (
         bytes32 delegationId,
         bytes32 agentId,
         uint256 expiry,
@@ -141,12 +141,12 @@ interface IAIDelegation is IERC165 {
 
 **要件:**
 
-- `delegateToAgent` は、agent が `IAIAgentRegistry` でアクティブでない場合、revert しなければならない（MUST）。
+- `delegateToAgent` は、agent が `IAgentRegistry` でアクティブでない場合、revert しなければならない（MUST）。
 - `delegateToAgent` は、`expiry <= block.timestamp` の場合、revert しなければならない（MUST）。
 - `delegateToAgent` は、アカウントごとに最大1つのアクティブな委任のみ許可しなければならない（MUST）。アカウントに既にアクティブな委任がある場合、実装は新しい委任を作成する前に自動的にそれを取り消さなければならない（MUST）。
 - `revokeDelegation` は、元の delegator 以外のアドレスから呼び出された場合、revert しなければならない（MUST）。
-- `getAIDelegation` は、委任が期限切れまたは取り消されている場合、すべてのフィールドにゼロ値を返さなければならない（MUST）。
-- `escalate` は、agent の operator（`IAIAgentRegistry` に登録されている）のみが呼び出し可能でなければならない（MUST）。
+- `getAgentDelegation` は、委任が期限切れまたは取り消されている場合、すべてのフィールドにゼロ値を返さなければならない（MUST）。
+- `escalate` は、agent の operator（`IAgentRegistry` に登録されている）のみが呼び出し可能でなければならない（MUST）。
 - `escalate` は提案ごとに適用される。これは、agent が指定された `proposalId` への投票を辞退し、その判断を delegator に返すことを示す。エスカレーションは以前に投じた投票を取り消さず（DOES NOT）、委任自体にも影響しない（DOES NOT）。
 - `escalate` は `Escalated` event を emit しなければならない（MUST）。
 - `preferencesURI` は助言的なものにすぎない。on-chain コントラクトは選好制約を強制しない。強制は off-chain の agent システムの責任である。URI は delegator の表明した意図の検証可能な記録を提供する。
@@ -164,7 +164,7 @@ AI agent の根拠のための commit-reveal スキームを実装する。本 e
 pragma solidity ^0.8.24;
 
 import {IERC165} from "./IERC165.sol";
-import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {IAgentRegistry} from "./IAgentRegistry.sol";
 
 interface IRationaleCommitment is IERC165 {
     event RationaleCommitted(
@@ -180,7 +180,7 @@ interface IRationaleCommitment is IERC165 {
     );
 
     /// @notice Get the registry contract
-    function registry() external view returns (IAIAgentRegistry);
+    function registry() external view returns (IAgentRegistry);
 
     /// @notice Commit rationale hash before voting ends
     /// @param commitHash keccak256(abi.encodePacked(rationaleURI, salt))
@@ -224,7 +224,7 @@ DAO 横断で AI agent の予測精度を追跡する。本 extension は OPTION
 pragma solidity ^0.8.24;
 
 import {IERC165} from "./IERC165.sol";
-import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
+import {IAgentRegistry} from "./IAgentRegistry.sol";
 
 interface ICredibilityRegistry is IERC165 {
     event PredictionRecorded(
@@ -240,7 +240,7 @@ interface ICredibilityRegistry is IERC165 {
     );
 
     /// @notice Get the registry contract
-    function registry() external view returns (IAIAgentRegistry);
+    function registry() external view returns (IAgentRegistry);
 
     /// @notice Get the resolver address
     function resolver() external view returns (address);
@@ -298,122 +298,44 @@ verdict の値はアプリケーション定義（`uint8`）である。Governor
 
 ### Off-Chain Metadata Schemas
 
-以下の JSON schema は、on-chain URI から参照される off-chain データを定義する。これらは ERC-4824 の `daoURI` で確立されたパターンに従う。
-
-実装はこれらの schema に準拠すべきである（SHOULD）。実装は追加フィールドで拡張してもよい（MAY）。すべての schema には将来の互換性のための `version` フィールドが含まれる。
+以下のテーブルは、on-chain URI から参照される off-chain JSON データを定義する。ERC-4824 の `daoURI` で確立されたパターンに従う。実装はこれらの schema に準拠すべきであり（SHOULD）、追加フィールドで拡張してもよい（MAY）。完全な JSON Schema 定義は `../assets/eip-XXXX/schemas/` に提供される。
 
 #### AgentProfile JSON
 
-`IAIAgentRegistry.agentURI()` から参照される。
+`IAgentRegistry.agentURI()` から参照される。
 
-```json
-{
-  "type": "object",
-  "required": ["version", "name", "model", "operator"],
-  "properties": {
-    "version": {
-      "type": "string",
-      "const": "1.0",
-      "description": "Schema version"
-    },
-    "name": {
-      "type": "string",
-      "description": "Human-readable agent name"
-    },
-    "model": {
-      "type": "string",
-      "description": "LLM model identifier (e.g., 'gpt-5.2', 'claude-opus-4')"
-    },
-    "operator": {
-      "type": "string",
-      "description": "Organization or individual operating this agent"
-    },
-    "description": {
-      "type": "string",
-      "description": "Human-readable description of the agent's purpose and methodology"
-    }
-  }
-}
-```
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `version` | `string`, const `"1.0"` | Yes | Schema version |
+| `name` | `string` | Yes | Human-readable agent name |
+| `model` | `string` | Yes | LLM model identifier |
+| `operator` | `string` | Yes | Operating entity |
+| `description` | `string` | No | Agent purpose and methodology |
 
 #### DelegationPreferences JSON
 
-`IAIDelegation.delegateToAgent()` の `preferencesURI` から参照される。
+`IAgentDelegation.delegateToAgent()` の `preferencesURI` から参照される。
 
-```json
-{
-  "type": "object",
-  "required": ["version", "riskTolerance"],
-  "properties": {
-    "version": {
-      "type": "string",
-      "const": "1.0",
-      "description": "Schema version"
-    },
-    "riskTolerance": {
-      "type": "string",
-      "enum": ["conservative", "moderate", "aggressive"]
-    },
-    "escalation": {
-      "type": "object",
-      "properties": {
-        "confidenceThreshold": {
-          "type": "number",
-          "description": "Score below which the agent should escalate to the human"
-        },
-        "alwaysEscalateFor": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Proposal categories that always require human approval"
-        }
-      }
-    },
-    "principles": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Natural language principles guiding the agent's decisions"
-    }
-  }
-}
-```
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `version` | `string`, const `"1.0"` | Yes | Schema version |
+| `riskTolerance` | `string`, enum `["conservative", "moderate", "aggressive"]` | Yes | |
+| `escalation.confidenceThreshold` | `number` | No | agent がエスカレーションすべきスコア閾値 |
+| `escalation.alwaysEscalateFor` | `string[]` | No | 人間の承認が必要なカテゴリ |
+| `principles` | `string[]` | No | 自然言語による判断原則 |
 
 #### Rationale JSON
 
 `IRationaleCommitment.revealRationale()` の `rationaleURI` から参照される。
 
-```json
-{
-  "type": "object",
-  "required": ["version", "proposalId", "verdict"],
-  "properties": {
-    "version": {
-      "type": "string",
-      "const": "1.0",
-      "description": "Schema version"
-    },
-    "proposalId": { "type": "string" },
-    "verdict": {
-      "type": "string",
-      "description": "The agent's verdict. Values are application-defined."
-    },
-    "reasoning": {
-      "type": "string",
-      "description": "Human-readable explanation of the agent's decision"
-    },
-    "confidence": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 100,
-      "description": "Confidence score for this evaluation"
-    },
-    "evidence": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Supporting evidence or references"
-    }
-  }
-}
-```
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `version` | `string`, const `"1.0"` | Yes | Schema version |
+| `proposalId` | `string` | Yes | |
+| `verdict` | `string` | Yes | アプリケーション定義の verdict |
+| `reasoning` | `string` | No | 人間が読める説明 |
+| `confidence` | `number`, 0–100 | No | 確信度スコア |
+| `evidence` | `string[]` | No | 参照エビデンス |
 
 ## Rationale
 
@@ -421,9 +343,23 @@ verdict の値はアプリケーション定義（`uint8`）である。Governor
 
 on-chain 登録は、不変の監査証跡、同期的なコンポーザビリティ（委任および信頼性コントラクトが agent の存在をプログラム的に検証できる）、operator アドレスによる明確な説明責任を提供する。`bytes32` agent ID — `keccak256(operator, nonce)` — を使用する理由は、決定論的（offline で計算可能）、衝突耐性が高く（256ビット空間）、operator アドレスと分離されている（複数 agent operator をサポート）ためである。エスカレーションの理由やその他のメタデータは ERC-4824 URI パターン（`string reason` ではなく `reasonURI`）に従い、gas コストを削減する（~50バイト vs 数キロバイト）。
 
+### 永久的な無効化
+
+`deactivateAgent` は設計上不可逆である。5 つの特性がこの選択を動機づける：
+
+1. **信頼性の完全性。** 各 `agentId` には予測履歴と信頼性スコアが蓄積される。再有効化を許可すると、悪い実績を持つ agent が同じ identity で復帰でき、信頼性システムの意味が損なわれる。新規登録は新しい nonce → 新しい `agentId` → 履歴の分離を強制する。
+
+2. **単調性の保証。** `isActiveAgent(id)` が一度 `false` を返すと、永続的に `false` のままである。依存コントラクト — 委任マネージャー、信頼性 resolver — は無効状態を再確認なしにキャッシュでき、不変条件が単純化される。
+
+3. **復活攻撃の防止。** 侵害された agent が無効化された後、攻撃者によって再有効化されることを根本的に防ぎ、侵害後の攻撃ベクトルのクラス全体を排除する。
+
+4. **不変の監査証跡。** すべての agent のライフサイクルは `AgentRegistered` と `AgentDeactivated` の 2 つのイベントで完全に決定される。on/off のトグルがないため、インデクサーやオフチェーンモニターによるイベントログの解釈が単純化される。
+
+5. **複雑性の回避。** 再有効化を許可すると、既存の委任の処理方法、信頼性リセットの要否、クールダウン期間など追加の設計決定が必要になり、それぞれがエッジケースを導入する。`nonce++` で新しい agent を登録する方が gas コストも同等でありながら、これらすべてを排除する。
+
 ### 別インターフェースとしての委任
 
-ERC-5805 の `delegate(address)` は有効期限、選好、エスカレーションを表現できない。既存の Governor コントラクトを壊さないために、`IAIDelegation` を別の interface として定義する。実装は両者を橋渡しできる：`delegateToAgent()` は、operator アドレスを delegatee として内部的に `IVotes.delegate()` を呼び出してもよい。
+ERC-5805 の `delegate(address)` は有効期限、選好、エスカレーションを表現できない。既存の Governor コントラクトを壊さないために、`IAgentDelegation` を別の interface として定義する。実装は両者を橋渡しできる（Backwards Compatibility を参照）。
 
 ### Core + Extension 分離
 
@@ -449,7 +385,7 @@ commit-reveal がなければ、agent は投票結果を待ち、一致する根
 
 ### ERC-8004 (Trustless Agents)
 
-ERC-8004 は汎用的な agent の identity（ERC-721 ベースの登録）と汎用的な評判（自由形式のフィードバック）を提供する。本 ERC はガバナンス固有の振る舞いを追加する：委任制約、根拠の完全性、予測ベースの信頼性。ERC-8004 の agent は、ID マッピング `bytes32(uint256(erc8004TokenId))` を用いて `IAIAgentRegistry` にも登録できる。`ICredibilityRegistry` のスコアは、構造化されたフィードバックとして ERC-8004 の評判レジストリに報告できる。
+ERC-8004 は汎用的な agent の identity（ERC-721 ベースの登録）と汎用的な評判（自由形式のフィードバック）を提供する。本 ERC はガバナンス固有の振る舞いを追加する：委任制約、根拠の完全性、予測ベースの信頼性。両レジストリ間の ID マッピングは、上記 `IAgentRegistry` の仕様で定義されている。`ICredibilityRegistry` のスコアは、構造化されたフィードバックとして ERC-8004 の評判レジストリに報告できる。
 
 ### その他の関連 ERC
 
@@ -458,119 +394,38 @@ ERC-8004 は汎用的な agent の identity（ERC-721 ベースの登録）と�
 | [ERC-1202](./eip-1202.md) | 補完的 | `ICredibilityRegistry` は投票とともに予測を記録し事後検証を可能にする；投票 interface は変更しない |
 | [ERC-5732](./eip-5732.md) | 設計上の先行規格 | `IRationaleCommitment` は commit-reveal を `(agentId, proposalId)` キー空間にバインドしガバナンス固有のセマンティクスを付与；ERC-5732 を継承しない |
 | [ERC-8126](./eip-8126.md) | 代替アプローチ | 検証重視（ステーキング、ZK 証明）vs ミニマルなメタデータ；AgentProfile JSON を介して組み合わせ可能 |
-| [ERC-7777](./eip-7777.md) | 非重複 | ERC-7777 は物理ロボットとハードウェアアテステーションを統治；本 ERC はソフトウェア agent の DAO トークン投票を統治 |
-| [ERC-7662](./eip-7662.md) | 異なるモデル | 譲渡可能な NFT ID vs 譲渡不可能な `bytes32`；譲渡可能性は delegator-agent 間の信頼関係を破壊する |
 | [ERC-8118](./eip-8118.md) | 補完的 | 機械的な認可（関数スコープ、呼び出し回数）vs 意味的な委任（選好、エスカレーション） |
-| [ERC-7710](./eip-7710.md) | 補完的 | caveat 付き実行レイヤー委任 vs ガバナンスインテントレイヤー；ERC-7710 が `castVote` を認可し、`IAIDelegation` が*どう*投票するかを捕捉 |
-| [ERC-7579](./eip-7579.md) | 実装対象 | 本 ERC の interface は ERC-7579 モジュール（Validator, Executor, Hook）として実装可能 |
+| [ERC-7710](./eip-7710.md) | 補完的 | caveat 付き実行レイヤー委任 vs ガバナンスインテントレイヤー；ERC-7710 が `castVote` を認可し、`IAgentDelegation` が*どう*投票するかを捕捉 |
 
 ## Test Cases
 
-リファレンス実装には、6つのテストスイートにわたる98のテストが含まれている。
+リファレンス実装には、6つのテストスイートにわたる98のテストが含まれている。完全なテストソース: `../assets/eip-XXXX/test/`。
 
-### Integration Test Scenarios
-
-**1. フルライフサイクル (`test_fullLifecycle_registerDelegateCommitVoteRevealResolve`):**
-operator が AI agent を登録し、delegator が AI 委任を作成して IVotes を operator に橋渡しし、Governor の提案が作成され、agent が根拠の hash をコミットして予測を記録し（For、確信度85%）、operator が Governor で For に投票し、提案が可決され、agent が根拠を公開し（hash 検証済み）、resolver がポジティブな結果をマークして +3 の信頼性 delta（高確信度の正解）が得られる。
-
-**2. エスカレーションパス (`test_escalationPath_agentDefersToHuman`):**
-delegator が自身の IVotes を保持したまま AI 委任を作成する（助言のみパターン）。agent が物議を醸す提案に遭遇すると、理由 URI を伴う `Escalated` event を通じてエスカレーションを行う。delegator は自身の投票権を使用して直接投票し、提案は可決される。
-
-**3. 委任の期限切れ (`test_delegationExpiry_automaticInvalidation`):**
-短い有効期限で委任が作成される。有効期限のタイムスタンプを過ぎると、`getAIDelegation()` はゼロ値を返す。新しい委任はすぐに作成できる。
-
-**4. マルチエージェント (`test_multiAgent_twoAgentsSameProposal`):**
-異なる operator が運用する2つの agent が、同じ提案に対して独立した予測を行う。一方は For（高確信度）を、もう一方は Against（低確信度）を予測する。ポジティブな解決後、最初の agent は +3（正解）、2番目の agent は -1（不正解）を受け取り、独立した信頼性追跡が実証される。
-
-**5. 信頼性の蓄積 (`test_credibilityAccumulation_acrossMultipleProposals`):**
-agent が確信度と正確性の異なる3つの提案にわたって予測を行う。高確信度の正解（+3）、低確信度の正解（+1）、高確信度の不正解（-2）。累積スコアは +2、総予測数は3であることが検証される。
-
-**6. Agent の無効化 (`test_agentDeactivation_preventsNewDelegations`):**
-無効化後、3つの依存コントラクト（`AIDelegation`、`RationaleCommitment`、`CredibilityRegistry`）はすべて無効化された agent に対する操作を拒否し、レジストリが agent ライフサイクルの唯一の信頼できる情報源であることを実証する。
-
-### Governor Bridge Test Scenarios
-
-**7. 投票権の移転と復元 (`test_delegateBridge_votingPowerTransferAndRestore`):**
-delegator が `GovernorAIDelegation` を通じて AI 委任を作成し（以前の IVotes delegatee を記録）、IVotes を operator に委任し、operator が Governor で投票し、取消後に delegator が元の委任を復元する。
-
-**8. 自動信頼性解決 (`test_governorResolver_succeededProposal`, `test_governorResolver_defeatedProposal`):**
-`GovernorResolver` は `IGovernor.state()` を読み取り、可決された提案がポジティブな結果（1）にマッピングされ、否決された提案がネガティブな結果（0）にマッピングされることを判定し、信頼性予測を解決する。
-
-**9. 未確定提案の revert (`test_governorResolver_revertsOnActiveProposal`):**
-`GovernorResolver` は Active な提案に対して呼び出された場合、`ProposalNotFinalized` で revert し、早期解決を防止する。
+| # | Test | 検証対象 |
+|---|------|--------------------|
+| 1 | `test_fullLifecycle_register...` | 登録 → 委任 → コミット → 投票 → 公開 → 解決の全フローで正しい信頼性 delta |
+| 2 | `test_escalationPath_agentDefersToHuman` | エスカレーション event の emit; delegator の投票権維持 |
+| 3 | `test_delegationExpiry_automaticInvalidation` | 期限切れ委任はゼロ値を返す; 再委任成功 |
+| 4 | `test_multiAgent_twoAgentsSameProposal` | 同一提案に対する agent ごとの独立信頼性追跡 |
+| 5 | `test_credibilityAccumulation_...` | 確信度・正確性の異なる提案にわたる累積スコア |
+| 6 | `test_agentDeactivation_preventsNewDelegations` | 無効化された agent をすべての依存コントラクトが拒否 |
 
 ## Reference Implementation
 
 リファレンス実装が `../assets/eip-XXXX/` ディレクトリに提供されている。主要なコントラクトは以下のとおりである。
 
-- `AIAgentRegistry.sol` — 決定論的 ID と ERC-165 サポートによる agent 登録
-- `AIDelegation.sol` — 有効期限、自動取消、エスカレーション、および ERC-165 サポートによる委任
+- `AgentRegistry.sol` — 決定論的 ID と ERC-165 サポートによる agent 登録
+- `AgentDelegation.sol` — 有効期限、自動取消、エスカレーション、および ERC-165 サポートによる委任
 - `RationaleCommitment.sol` — hash 検証と ERC-165 サポートによる commit-reveal
 - `CredibilityRegistry.sol` — 設定可能な delta 計算、resolver ロール分離、および ERC-165 サポートによる予測記録
 
-`CredibilityRegistry` リファレンス実装は以下のコンストラクタパラメータを受け付ける。
-- **Delta 値**: 設定可能な `[highConfCorrect, lowConfCorrect, highConfWrong, lowConfWrong]`（デフォルト: `[+3, +1, -2, -1]`）
-- **確信度閾値**: 高確信度と低確信度を分ける `uint8` のスコア値（デフォルト: 70）
-- **Verdict 閾値**: 予測を「ポジティブ方向」とみなす verdict 値（デフォルト: 1、Governor の `For` に一致）
-- **Resolver アドレス**: 予測の解決を認可された独立アドレス
-
-### Deployment Guide
-
-導入する DAO は、3つのステップで段階的にデプロイできる。
-
-**Step 1 — Core（必須）:**
-
-1. `AIAgentRegistry` をデプロイする。コンストラクタパラメータは不要。
-2. レジストリアドレスを指定して `AIDelegation` をデプロイする。各 delegator は、有効期限と選好を伴って登録済み AI agent に委任できるようになる。
-
-**Step 2 — Extensions（任意）:**
-
-3. レジストリアドレスを指定して `RationaleCommitment` をデプロイする。agent は根拠の commit-reveal が可能になる。
-4. resolver 戦略を選択し（下記参照）、レジストリアドレス、resolver アドレス、および delta 設定を指定して `CredibilityRegistry` をデプロイする。
-
-**Resolver 戦略:**
-
-| 戦略 | 説明 | 信頼モデル |
-|----------|-------------|-------------|
-| ガバナンス multisig | 信頼された委員会による手動解決 | 最高信頼度、最低自動化 |
-| Timelock + challenge | 異議申立期間付きの自動化 | 中程度の信頼度 |
-| `GovernorResolver`（例） | on-chain で `IGovernor.state()` を読み取り | Governor ベースの DAO にはトラストレス |
-| Off-chain oracle | 外部サービスが結果を報告 | oracle への信頼が必要 |
-
-**Step 3 — Governor Bridge（任意）:**
-
-5. OpenZeppelin Governor（または互換）を使用する DAO は、`AIDelegation` の代わりに `GovernorAIDelegation` をデプロイする。これは取消時の復元のために delegator の以前の `IVotes` delegatee を記録する。
-6. Governor アドレスを指定して `GovernorResolver` をデプロイする。自動的な結果解決のために `GovernorResolver` アドレスを `CredibilityRegistry` の `resolver` として渡す。
-
-**Off-chain 統合パターン:**
-
-```
-Proposal Monitor → AI Agent Evaluates → commitRationale() → castVote()
-                                       → recordPrediction()
-                → Voting Ends         → revealRationale()
-                → Proposal Finalized  → resolvePrediction() (via resolver)
-```
-
-### Informative Examples: Governor Bridge
-
-`examples/` ディレクトリには、本 ERC と OpenZeppelin Governor を橋渡しする方法を示す、2つの参考（非規範的）コントラクトが含まれている。
-
-**`GovernorAIDelegation.sol`** — `IVotes` の委任状態を記録するために `AIDelegation` を拡張:
-- `delegateToAgent()` 時: delegator の現在の `IVotes` delegatee を保存し、`GovernorDelegationAdvised` event を emit
-- `revokeDelegation()` 時: 以前の delegatee とともに `GovernorDelegationRestoreAdvised` を emit
-- delegator は外部で `token.delegate(operator)` を実行する（`IVotes` の `msg.sender` 制約による要件）
-
-**`GovernorResolver.sol`** — Governor の状態を使用した自動信頼性解決:
-- `IGovernor.state()` を読み取り提案の結果を判定
-- Succeeded/Executed はポジティブ（1）に、Defeated/Canceled/Expired はネガティブ（0）にマッピング
-- 未確定の提案（Pending, Active, Queued）に対しては revert
-- 結果は決定論的であるため、誰でも `resolve()` を呼び出し可能
+OpenZeppelin Governor 統合を示す参考例（`GovernorAgentDelegation.sol`、`GovernorResolver.sol`）は `../assets/eip-XXXX/examples/` ディレクトリに提供されている。
 
 ## Security Considerations
 
 ### Agent Identity と Sybil 攻撃
 
-同一エンティティが運用する複数の AI agent は、信頼性スコアや投票結果を操作するために協調する可能性がある。`IAIAgentRegistry` の `operator` フィールドは公開されており、delegator は同一 operator の agent を特定できる。`registerAgent` はパーミッションレスであるため、任意のアドレスが任意の数の agent を登録可能である。実装は経済的または社会的メカニズムで緩和すべきである：最低限の stake または登録手数料、operator の多様性による信頼性の重み付け（同一 operator の agent 間の合算影響力を割引）、登録間のクールダウン期間、信頼性が有意とみなされる前の最低予測回数（例: 10回）。ガバナンスフロントエンドは operator の集中度をリスク指標として表示すべきである。
+同一エンティティが運用する複数の AI agent は、信頼性スコアや投票結果を操作するために協調する可能性がある。`IAgentRegistry` の `operator` フィールドは公開されており、delegator は同一 operator の agent を特定できる。`registerAgent` はパーミッションレスであるため、任意のアドレスが任意の数の agent を登録可能である。実装は経済的または社会的メカニズムで緩和すべきである：最低限の stake または登録手数料、operator の多様性による信頼性の重み付け（同一 operator の agent 間の合算影響力を割引）、登録間のクールダウン期間、信頼性が有意とみなされる前の最低予測回数（例: 10回）。ガバナンスフロントエンドは operator の集中度をリスク指標として表示すべきである。
 
 ### Resolver の信頼性
 
@@ -586,7 +441,7 @@ mempool 内の `commitRationale` トランザクションを観察したマイ�
 
 ### 信頼性ゲーミングと経済的実現可能性
 
-agent は結果が予測しやすい提案にのみ予測を提出し、信頼性を水増しする可能性がある。実装は、選択的にではなく DAO 内のすべての提案に対する予測を要求すべきである。`getCredibility()` の `totalPredictions` カウンターにより、delegator はスコアとともにボリュームを評価できる。`ICredibilityRegistry` の操作（`recordPrediction`、`resolvePrediction`）はそれぞれ約 80,000–120,000 gas を消費する。50 のアクティブな agent が月に12の提案を評価するエコシステムでは、Ethereum L1 のコストは一般的なガス価格で月 $200,000 USD を超える可能性がある。アクティブなエコシステムでは、信頼性および根拠コントラクトを L2 にデプロイすることを強く推奨する。コアインターフェース（`IAIAgentRegistry`、`IAIDelegation`）は既存の Governor コントラクトとのコンポーザビリティのために L1 に維持し、エクステンションはクロスチェーンメッセージパッシングによる解決とともに L2 にデプロイできる。
+agent は結果が予測しやすい提案にのみ予測を提出し、信頼性を水増しする可能性がある。実装は、選択的にではなく DAO 内のすべての提案に対する予測を要求すべきである。`getCredibility()` の `totalPredictions` カウンターにより、delegator はスコアとともにボリュームを評価できる。`ICredibilityRegistry` の操作（`recordPrediction`、`resolvePrediction`）はそれぞれ約 80,000–120,000 gas を消費する。50 のアクティブな agent が月に12の提案を評価するエコシステムでは、Ethereum L1 のコストは一般的なガス価格で月 $200,000 USD を超える可能性がある。アクティブなエコシステムでは、信頼性および根拠コントラクトを L2 にデプロイすることを強く推奨する。コアインターフェース（`IAgentRegistry`、`IAgentDelegation`）は既存の Governor コントラクトとのコンポーザビリティのために L1 に維持し、エクステンションはクロスチェーンメッセージパッシングによる解決とともに L2 にデプロイできる。
 
 ### 敵対的提案
 

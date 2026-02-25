@@ -7,7 +7,7 @@ import "../spec/syntax-highlight.css";
 
 hljs.registerLanguage("solidity", solidity);
 
-const CODE = `interface IAIAgentRegistry {
+const CODE = `interface IAgentRegistry {
     struct AgentInfo {
         address operator;
         string metadataURI;

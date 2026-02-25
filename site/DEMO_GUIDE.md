@@ -160,8 +160,8 @@
 
 | 인터페이스 | 문제 | 해결 |
 |-----------|------|------|
-| **IAIAgentRegistry** | AI와 사람 구별 불가 | 온체인 AI 신원 등록 |
-| **IAIDelegation** | 영구적 위임, 제어 불가 | 만료 + 선호도 + 에스컬레이션 |
+| **IAgentRegistry** | AI와 사람 구별 불가 | 온체인 AI 신원 등록 |
+| **IAgentDelegation** | 영구적 위임, 제어 불가 | 만료 + 선호도 + 에스컬레이션 |
 | **IRationaleCommitment** | 투표 이유 사후 조작 | Commit-reveal로 변조 불가능 |
 | **ICredibilityRegistry** | AI 신뢰 판단 기준 없음 | 포터블 신뢰도 점수 |
 

@@ -47,8 +47,8 @@ test.describe("Landing page sections", () => {
 
   test("Interfaces section has 4 interface cards", async ({ page }) => {
     await expect(page.getByRole("heading", { name: "Four Interfaces" })).toBeVisible();
-    await expect(page.getByText("IAIAgentRegistry", { exact: true })).toBeVisible();
-    await expect(page.getByText("IAIDelegation", { exact: true })).toBeVisible();
+    await expect(page.getByText("IAgentRegistry", { exact: true })).toBeVisible();
+    await expect(page.getByText("IAgentDelegation", { exact: true })).toBeVisible();
     await expect(page.getByText("IRationaleCommitment", { exact: true })).toBeVisible();
     await expect(page.getByText("ICredibilityRegistry", { exact: true })).toBeVisible();
   });
@@ -62,7 +62,7 @@ test.describe("Landing page sections", () => {
 
   test("Code preview section shows Solidity", async ({ page }) => {
     await expect(page.locator("text=Built on Solidity Interfaces")).toBeVisible();
-    await expect(page.locator("text=interface IAIAgentRegistry")).toBeVisible();
+    await expect(page.locator("text=interface IAgentRegistry")).toBeVisible();
   });
 
   test("Bottom CTA section visible", async ({ page }) => {

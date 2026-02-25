@@ -1,31 +1,19 @@
 ---
 eip: XXXX
 title: AI Agent Governance Interface
-description: Interfaces for AI agent registration, delegation, rationale commitment, and credibility tracking in DAOs
+description: Defines interfaces for AI agent registration, delegation, rationale integrity, and credibility tracking in DAOs
 author: Tokamak Network (@nicetokamak)
 discussions-to: https://ethereum-magicians.org/t/erc-ai-agent-governance-interface
 status: Draft
 type: Standards Track
 category: ERC
 created: 2026-02-24
-requires: 165, 5805, 4824
+requires: 165
 ---
 
 ## Abstract
 
-This ERC defines a modular set of Solidity interfaces that enable AI agents to participate in DAO governance transparently and accountably. The interfaces are organized into two tiers:
-
-**Core (must implement):**
-
-1. **`IAIAgentRegistry`** — On-chain registration of AI agents with off-chain metadata
-2. **`IAIDelegation`** — Preference-based voting delegation to AI agents with expiry and escalation
-
-**Extensions (may implement):**
-
-3. **`IRationaleCommitment`** — Commit-reveal scheme for tamper-proof proposal rationales
-4. **`ICredibilityRegistry`** — Cross-DAO credibility tracking based on prediction accuracy
-
-Together, these interfaces provide the minimal on-chain primitives needed for any DAO to integrate AI agents as governance participants while preserving human oversight, transparency, and accountability.
+This ERC defines standard interfaces for AI agents participating in DAO governance. It specifies mechanisms for on-chain agent registration, preference-aware delegation with expiry and escalation, cryptographic rationale commitment, and prediction-based credibility tracking. The interfaces are designed to be composable with existing governance infrastructure including [ERC-5805](./eip-5805.md) and [ERC-4824](./eip-4824.md).
 
 ## Motivation
 
@@ -45,9 +33,9 @@ DAOs suffer from chronic voter apathy. Most token holders lack the time or exper
 
 ### Why Now
 
-- Vitalik Buterin proposed "AI stewards" for DAO governance (February 21, 2026), envisioning AI agents that represent human preferences in governance decisions. This proposal generated significant community interest but did not specify on-chain interfaces.
-- General-purpose agent infrastructure (ERC-8004, ERC-8118) addresses *who an agent is* and *what functions it can call* — but not *how it should govern*. Governance requires delegation constraints (expiry, preferences, escalation), rationale integrity (commit-reveal), and domain-specific credibility (prediction accuracy against proposal outcomes).
-- Multiple ERCs are emerging to address AI agent identity and governance: ERC-8126 (agent registration with verification layers), ERC-7777 (robot/human society governance), and ERC-7662 (AI agent NFTs). Each addresses fragments of the problem — identity, verification, or ownership — but none provides the governance-specific primitives (delegation constraints, rationale integrity, prediction-based credibility) needed for accountable DAO participation.
+- Recent proposals for AI-assisted DAO governance have envisioned AI agents that represent human preferences in governance decisions. These proposals generated significant community interest but did not specify on-chain interfaces.
+- General-purpose agent infrastructure ([ERC-8004](./eip-8004.md), [ERC-8118](./eip-8118.md)) addresses *who an agent is* and *what functions it can call* — but not *how it should govern*. Governance requires delegation constraints (expiry, preferences, escalation), rationale integrity (commit-reveal), and domain-specific credibility (prediction accuracy against proposal outcomes).
+- Multiple ERCs are emerging to address AI agent identity and governance: [ERC-8126](./eip-8126.md) (agent registration with verification layers), [ERC-7777](./eip-7777.md) (robot/human society governance), and [ERC-7662](./eip-7662.md) (AI agent NFTs). Each addresses fragments of the problem — identity, verification, or ownership — but none provides the governance-specific primitives (delegation constraints, rationale integrity, prediction-based credibility) needed for accountable DAO participation.
 - NEAR Foundation is actively developing AI delegate voting, signaling that cross-chain AI governance is imminent.
 - AI agents are already participating in governance informally through regular addresses, making standardization urgent before fragmented approaches calcify.
 
@@ -55,7 +43,7 @@ DAOs suffer from chronic voter apathy. Most token holders lack the time or exper
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119 and RFC 8174.
 
-All four interfaces MUST implement ERC-165 interface detection.
+All four interfaces MUST implement [ERC-165](./eip-165.md) interface detection.
 
 ### ERC-165 Interface Identifiers
 
@@ -74,7 +62,7 @@ Provides on-chain registration and lifecycle management for AI agents.
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 
 interface IAIAgentRegistry is IERC165 {
     event AgentRegistered(bytes32 indexed agentId, address indexed operator, string metadataURI);
@@ -114,7 +102,7 @@ interface IAIAgentRegistry is IERC165 {
 
 **Interoperability with ERC-8004:**
 
-ERC-8004 (Trustless Agents) uses `uint256` agent IDs (ERC-721 token IDs), while this ERC uses `bytes32`. Implementations bridging both registries SHOULD map IDs via `bytes32(uint256(erc8004TokenId))`. DAOs already using ERC-8004 for agent identity MAY use an adapter contract that wraps the ERC-8004 registry rather than deploying a separate `IAIAgentRegistry`. The `metadataURI` follows the same pattern as ERC-8004's `agentURI` — implementations MAY use a single URI serving both schemas.
+ERC-8004 (Trustless Agents) uses `uint256` agent IDs ([ERC-721](./eip-721.md) token IDs), while this ERC uses `bytes32`. Implementations bridging both registries SHOULD map IDs via `bytes32(uint256(erc8004TokenId))`. DAOs already using ERC-8004 for agent identity MAY use an adapter contract that wraps the ERC-8004 registry rather than deploying a separate `IAIAgentRegistry`. The `metadataURI` follows the same pattern as ERC-8004's `agentURI` — implementations MAY use a single URI serving both schemas.
 
 ### Core Interface: `IAIDelegation`
 
@@ -124,7 +112,7 @@ Extends the concept of ERC-5805 delegation with AI-specific constraints.
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
 interface IAIDelegation is IERC165 {
@@ -191,7 +179,7 @@ Implements a commit-reveal scheme for AI agent rationales. This extension is OPT
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
 interface IRationaleCommitment is IERC165 {
@@ -251,7 +239,7 @@ Tracks AI agent prediction accuracy across DAOs. This extension is OPTIONAL — 
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
 interface ICredibilityRegistry is IERC165 {
@@ -336,7 +324,6 @@ Referenced by `IAIAgentRegistry.agentURI()`.
 
 ```json
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "required": ["version", "name", "model", "operator"],
   "properties": {
@@ -371,7 +358,6 @@ Referenced by `IAIDelegation.delegateToAgent()` via `preferencesURI`.
 
 ```json
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "required": ["version", "riskTolerance"],
   "properties": {
@@ -413,7 +399,6 @@ Referenced by `IRationaleCommitment.revealRationale()` via `rationaleURI`.
 
 ```json
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "required": ["version", "proposalId", "verdict"],
   "properties": {
@@ -458,7 +443,11 @@ ERC-5805's `delegate(address)` cannot express expiry, preferences, or escalation
 
 ### Why Core + Extension architecture?
 
-Agent identity and delegation are fundamental to any DAO integrating AI agents. Commit-reveal and credibility are valuable but not universally required. This separation follows the pattern of ERC-20 (core) + ERC-2612 (permit extension) and enables incremental adoption.
+Agent identity and delegation are fundamental to any DAO integrating AI agents. Commit-reveal and credibility are valuable but not universally required. This separation follows the pattern of [ERC-20](./eip-20.md) (core) + [ERC-2612](./eip-2612.md) (permit extension) and enables incremental adoption.
+
+### Why is `escalate()` advisory rather than enforceable?
+
+The `escalate()` function is a transparency tool, not an enforcement mechanism. When an agent escalates, it emits an on-chain event signaling that the agent declines to vote on a specific proposal, but neither the protocol nor any contract forces the delegator to act on the escalation. A malicious agent could simply ignore its own escalation threshold and vote anyway. This is by design: enforcing escalation at the contract level would require the delegation contract to intercept `Governor.castVote()` calls, adding complexity and coupling that conflicts with the goal of composability with existing governors. Instead, escalation creates a public, auditable record. Off-chain monitoring systems and delegators can observe escalation patterns and revoke delegation from agents that consistently fail to escalate when their stated preferences require it. The `preferencesURI` provides the basis for this social accountability.
 
 ### Why commit-reveal for rationales?
 
@@ -466,7 +455,7 @@ Without commit-reveal, an agent can wait for the voting outcome, generate a matc
 
 ### Why behavioral properties instead of a fixed delta matrix?
 
-A successful ERC defines *what* (interfaces) not *how* (algorithms). Just as ERC-4626 specifies rounding direction without prescribing yield formulas, this ERC specifies behavioral properties for credibility deltas without prescribing specific values.
+A successful ERC defines *what* (interfaces) not *how* (algorithms). Just as [ERC-4626](./eip-4626.md) specifies rounding direction without prescribing yield formulas, this ERC specifies behavioral properties for credibility deltas without prescribing specific values.
 
 ### Why a separate resolver role?
 
@@ -492,11 +481,11 @@ This ERC is complementary to ERC-5805, not a replacement. Implementations may in
 
 This ERC follows the URI pattern established by ERC-4824: `agentURI` follows the same model as `daoURI`, off-chain metadata schemas use JSON following the ERC-4824 convention, and `reasonURI` in `escalate()` follows the same content-addressed URI pattern.
 
-### ERC-1202 (Voting Interface)
+### [ERC-1202](./eip-1202.md) (Voting Interface)
 
 `ICredibilityRegistry` does not modify the voting interface but adds a transparency layer — AI agents' predictions are recorded alongside their votes, and post-resolution, anyone can verify whether the agent's rationale matched the outcome.
 
-### ERC-5732 (Commit Interface)
+### [ERC-5732](./eip-5732.md) (Commit Interface)
 
 `IRationaleCommitment` extends the generic `commit(bytes32)` pattern defined in ERC-5732 with governance-specific semantics. Where ERC-5732 provides a universal commit-reveal primitive (a single `bytes32` hash with no application context), this ERC binds each commitment to an `agentId` and `proposalId`, adds a URI-based reveal with salt verification, and enforces that only the agent's operator can commit. Implementations that already use ERC-5732 for general-purpose commitments can coexist — `IRationaleCommitment` operates on a separate `(agentId, proposalId)` key space. ERC-5732 is a design predecessor, not a dependency: `IRationaleCommitment` does not inherit or import ERC-5732's interface.
 
@@ -520,17 +509,52 @@ ERC-7662 represents AI agents as ERC-721 NFTs, enabling ownership transfer, mark
 
 ERC-8118 provides mechanical authorization (function scope, call count, time limits). This ERC provides semantic delegation (governance preferences, escalation policy). The two are complementary: ERC-8118 may authorize the agent to call governance functions, while `IAIDelegation` captures the delegator's intent for how those functions should be used.
 
-### ERC-7710 (Smart Contract Delegation)
+### [ERC-7710](./eip-7710.md) (Smart Contract Delegation)
 
 ERC-7710 provides a general-purpose delegation framework where one contract can delegate arbitrary function calls to another, with caveats (restrictions) applied at the execution layer. This operates at the mechanical level: "contract A may call function F on contract B subject to caveat C." `IAIDelegation` operates at the semantic level: "agent X may vote on behalf of delegator Y according to preferences P, with escalation policy E." ERC-7710 does not capture governance-specific concepts like preference alignment, escalation triggers, or delegation expiry tied to governance cycles. The two are composable: ERC-7710 can serve as the execution layer (authorizing the agent's smart account to call `Governor.castVote`), while `IAIDelegation` provides the governance intent layer that the agent's off-chain system consults before exercising that authorization.
 
-### ERC-7579 (Modular Smart Accounts)
+### [ERC-7579](./eip-7579.md) (Modular Smart Accounts)
 
 This ERC's interfaces can be implemented as ERC-7579 modules: Validator (verify that votes align with delegation preferences), Executor (execute governance actions on behalf of the account owner), or Hook (pre/post-execution audit logging).
 
+## Test Cases
+
+The reference implementation includes 98 tests across 6 test suites.
+
+### Integration Test Scenarios
+
+**1. Full Lifecycle (`test_fullLifecycle_registerDelegateCommitVoteRevealResolve`):**
+An operator registers an AI agent, a delegator creates an AI delegation and bridges IVotes to the operator, a Governor proposal is created, the agent commits a rationale hash and records a prediction (For, 85% confidence), the operator votes For in the Governor, the proposal succeeds, the agent reveals the rationale (hash verified), and the resolver marks a positive outcome resulting in +3 credibility delta (high confidence correct).
+
+**2. Escalation Path (`test_escalationPath_agentDefersToHuman`):**
+A delegator creates an AI delegation while retaining their own IVotes (advisory-only pattern). When the agent encounters a controversial proposal, it escalates via the `Escalated` event with a reason URI. The delegator votes directly using their own voting power, and the proposal succeeds.
+
+**3. Delegation Expiry (`test_delegationExpiry_automaticInvalidation`):**
+A delegation is created with a short expiry. After the expiry timestamp passes, `getAIDelegation()` returns zero values. A new delegation can be created immediately.
+
+**4. Multi-Agent (`test_multiAgent_twoAgentsSameProposal`):**
+Two agents operated by different operators make independent predictions on the same proposal — one predicts For (high confidence), the other predicts Against (low confidence). After positive resolution, the first agent receives +3 (correct) and the second receives -1 (wrong), demonstrating independent credibility tracking.
+
+**5. Credibility Accumulation (`test_credibilityAccumulation_acrossMultipleProposals`):**
+An agent makes predictions across three proposals with varying confidence and correctness: high-confidence correct (+3), low-confidence correct (+1), high-confidence wrong (-2). The cumulative score is verified as +2 with 3 total predictions.
+
+**6. Agent Deactivation (`test_agentDeactivation_preventsNewDelegations`):**
+After deactivation, all three dependent contracts (`AIDelegation`, `RationaleCommitment`, `CredibilityRegistry`) reject operations for the deactivated agent, demonstrating the registry as the single source of truth for agent lifecycle.
+
+### Governor Bridge Test Scenarios
+
+**7. Voting Power Transfer and Restore (`test_delegateBridge_votingPowerTransferAndRestore`):**
+A delegator creates an AI delegation via `GovernorAIDelegation` (which records the previous IVotes delegatee), delegates IVotes to the operator, the operator votes in Governor, and after revocation the delegator restores their original delegation.
+
+**8. Automatic Credibility Resolution (`test_governorResolver_succeededProposal`, `test_governorResolver_defeatedProposal`):**
+`GovernorResolver` reads `IGovernor.state()` to determine a Succeeded proposal maps to positive outcome (1) and a Defeated proposal maps to negative outcome (0), then resolves credibility predictions accordingly.
+
+**9. Non-Finalized Proposal Revert (`test_governorResolver_revertsOnActiveProposal`):**
+`GovernorResolver` reverts with `ProposalNotFinalized` when called on an Active proposal, preventing premature resolution.
+
 ## Reference Implementation
 
-A complete reference implementation is provided in the `contracts/src/governance/` directory:
+A reference implementation is provided in the `../assets/eip-XXXX/` directory. The key contracts are:
 
 - `AIAgentRegistry.sol` — Agent registration with deterministic IDs and ERC-165 support
 - `AIDelegation.sol` — Delegation with expiry, auto-revocation, escalation, and ERC-165 support
@@ -595,45 +619,6 @@ The `examples/` directory contains two informative (non-normative) contracts tha
 - Reverts for non-finalized proposals (Pending, Active, Queued)
 - Anyone can call `resolve()` since the outcome is deterministic
 
-## Test Cases
-
-The reference implementation includes 98 tests across 6 test suites:
-
-```
-forge test --match-path "test/governance/*" -vvv
-```
-
-### Integration Test Scenarios
-
-**1. Full Lifecycle (`test_fullLifecycle_registerDelegateCommitVoteRevealResolve`):**
-An operator registers an AI agent, a delegator creates an AI delegation and bridges IVotes to the operator, a Governor proposal is created, the agent commits a rationale hash and records a prediction (For, 85% confidence), the operator votes For in the Governor, the proposal succeeds, the agent reveals the rationale (hash verified), and the resolver marks a positive outcome resulting in +3 credibility delta (high confidence correct).
-
-**2. Escalation Path (`test_escalationPath_agentDefersToHuman`):**
-A delegator creates an AI delegation while retaining their own IVotes (advisory-only pattern). When the agent encounters a controversial proposal, it escalates via the `Escalated` event with a reason URI. The delegator votes directly using their own voting power, and the proposal succeeds.
-
-**3. Delegation Expiry (`test_delegationExpiry_automaticInvalidation`):**
-A delegation is created with a short expiry. After the expiry timestamp passes, `getAIDelegation()` returns zero values. A new delegation can be created immediately.
-
-**4. Multi-Agent (`test_multiAgent_twoAgentsSameProposal`):**
-Two agents operated by different operators make independent predictions on the same proposal — one predicts For (high confidence), the other predicts Against (low confidence). After positive resolution, the first agent receives +3 (correct) and the second receives -1 (wrong), demonstrating independent credibility tracking.
-
-**5. Credibility Accumulation (`test_credibilityAccumulation_acrossMultipleProposals`):**
-An agent makes predictions across three proposals with varying confidence and correctness: high-confidence correct (+3), low-confidence correct (+1), high-confidence wrong (-2). The cumulative score is verified as +2 with 3 total predictions.
-
-**6. Agent Deactivation (`test_agentDeactivation_preventsNewDelegations`):**
-After deactivation, all three dependent contracts (`AIDelegation`, `RationaleCommitment`, `CredibilityRegistry`) reject operations for the deactivated agent, demonstrating the registry as the single source of truth for agent lifecycle.
-
-### Governor Bridge Test Scenarios
-
-**7. Voting Power Transfer and Restore (`test_delegateBridge_votingPowerTransferAndRestore`):**
-A delegator creates an AI delegation via `GovernorAIDelegation` (which records the previous IVotes delegatee), delegates IVotes to the operator, the operator votes in Governor, and after revocation the delegator restores their original delegation.
-
-**8. Automatic Credibility Resolution (`test_governorResolver_succeededProposal`, `test_governorResolver_defeatedProposal`):**
-`GovernorResolver` reads `IGovernor.state()` to determine a Succeeded proposal maps to positive outcome (1) and a Defeated proposal maps to negative outcome (0), then resolves credibility predictions accordingly.
-
-**9. Non-Finalized Proposal Revert (`test_governorResolver_revertsOnActiveProposal`):**
-`GovernorResolver` reverts with `ProposalNotFinalized` when called on an Active proposal, preventing premature resolution.
-
 ## Security Considerations
 
 ### Agent Collusion
@@ -645,7 +630,9 @@ Multiple AI agents operated by the same entity could coordinate to manipulate cr
 An adversary could register many agents to amplify influence or game credibility. Since `registerAgent` is permissionless, implementations should rely on economic or social mechanisms to limit sybil attacks:
 - Require a minimum stake or registration fee to create an agent.
 - Weight delegation or credibility scores by the registering operator's on-chain history.
-- Delegators should evaluate agents based on `totalPredictions` volume, not just score.
+- Delegators should evaluate agents based on `totalPredictions` volume, not just score — agents with fewer than a minimum number of predictions (e.g., 10) should not be considered credible.
+- Weight credibility by operator diversity: if multiple agents share the same operator, their combined influence should be discounted. Governance frontends should surface operator concentration as a risk indicator.
+- Implementations may impose a cooldown period between successive agent registrations from the same operator to limit rapid sybil creation.
 
 ### Oracle Manipulation (Resolver Compromise)
 
@@ -678,6 +665,10 @@ Agents could submit predictions only for proposals where the outcome is predicta
 ### Delegation Expiry Edge Cases
 
 If a delegation expires during an active voting period, the agent may have already voted. Implementations should check delegation validity at vote time, not just at delegation time. The `escalate()` function provides a safety valve for borderline cases.
+
+### Economic Viability
+
+`ICredibilityRegistry` operations (`recordPrediction`, `resolvePrediction`) each consume approximately 80,000–120,000 gas. For an ecosystem with 50 active agents evaluating 12 proposals per month on Ethereum L1, the monthly cost for credibility operations alone could exceed $200,000 USD at typical gas prices. Implementations targeting L1 should consider batch resolution patterns — a single `resolvePrediction` call that resolves multiple agents for the same proposal. Deploying the credibility and rationale contracts on an L2 (where gas costs are orders of magnitude lower) is strongly recommended for active ecosystems. The core interfaces (`IAIAgentRegistry`, `IAIDelegation`) may remain on L1 for maximum composability with existing Governor contracts, while extensions are deployed on L2 with cross-chain message passing for resolution.
 
 ### AI Agent Autonomy Risks
 

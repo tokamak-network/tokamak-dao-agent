@@ -1,31 +1,19 @@
 ---
 eip: XXXX
 title: AI Agent Governance Interface
-description: Interfaces for AI agent registration, delegation, rationale commitment, and credibility tracking in DAOs
+description: Defines interfaces for AI agent registration, delegation, rationale integrity, and credibility tracking in DAOs
 author: Tokamak Network (@nicetokamak)
 discussions-to: https://ethereum-magicians.org/t/erc-ai-agent-governance-interface
 status: Draft
 type: Standards Track
 category: ERC
 created: 2026-02-24
-requires: 165, 5805, 4824
+requires: 165
 ---
 
 ## 摘要
 
-本 ERC 定义了一组模块化的 Solidity 接口，使 AI agent 能够以透明且可问责的方式参与 DAO 治理。接口分为两个层级：
-
-**核心（必须实现）：**
-
-1. **`IAIAgentRegistry`** — AI agent 的 on-chain 注册，关联 off-chain 元数据
-2. **`IAIDelegation`** — 基于偏好的投票委托机制，支持到期、升级处理（escalation）
-
-**扩展（可选实现）：**
-
-3. **`IRationaleCommitment`** — 基于 commit-reveal 方案的防篡改提案理由记录
-4. **`ICredibilityRegistry`** — 基于预测准确性的跨 DAO 信誉追踪
-
-这些接口共同提供了最小化的 on-chain 原语，使任何 DAO 都能将 AI agent 整合为治理参与者，同时保持人类监督、透明性和问责制。
+本 ERC 定义了 AI agent 参与 DAO 治理的标准接口。它规定了链上 agent 注册、具有到期和升级处理机制的偏好感知委托、加密理由承诺以及基于预测的信誉追踪机制。这些接口设计为可与包括 ERC-5805 和 ERC-4824 在内的现有治理基础设施组合使用。
 
 ## 动机
 
@@ -45,8 +33,9 @@ DAO 长期受低投票参与率困扰。大多数 token 持有者缺乏时间或
 
 ### 为何是现在
 
-- Vitalik Buterin 提出了用于 DAO 治理的"AI stewards"概念（2026年2月21日），设想由 AI agent 在治理决策中代表人类偏好。该提案引发了社区的广泛关注，但未指定 on-chain 接口。
+- 最近关于 AI 辅助 DAO 治理的提案设想了由 AI agent 在治理决策中代表人类偏好。这些提案引发了社区的广泛关注，但未指定 on-chain 接口。
 - 通用 agent 基础设施（ERC-8004、ERC-8118）解决了 *agent 是谁* 和 *agent 能调用什么函数* 的问题 — 但未解决 *agent 应如何治理*。治理需要委托约束（到期、偏好、升级处理）、理由完整性（commit-reveal），以及领域特定的信誉（基于提案结果的预测准确性）。
+- 多个 ERC 正在涌现以解决 AI agent 身份和治理问题：ERC-8126（具有验证层的 agent 注册）、ERC-7777（机器人/人类社会治理）和 ERC-7662（AI agent NFT）。每个标准都解决了问题的一个片段 — 身份、验证或所有权 — 但都未提供负责任的 DAO 参与所需的治理特定原语（委托约束、理由完整性、基于预测的信誉）。
 - NEAR Foundation 正在积极开发 AI delegate 投票，表明跨链 AI 治理即将到来。
 - AI agent 已经通过普通地址非正式地参与治理，在碎片化方案固化之前进行标准化迫在眉睫。
 
@@ -73,7 +62,7 @@ DAO 长期受低投票参与率困扰。大多数 token 持有者缺乏时间或
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 
 interface IAIAgentRegistry is IERC165 {
     event AgentRegistered(bytes32 indexed agentId, address indexed operator, string metadataURI);
@@ -123,7 +112,7 @@ ERC-8004（Trustless Agents）使用 `uint256` agent ID（ERC-721 token ID），
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
 interface IAIDelegation is IERC165 {
@@ -190,7 +179,7 @@ interface IAIDelegation is IERC165 {
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
 interface IRationaleCommitment is IERC165 {
@@ -250,7 +239,7 @@ interface IRationaleCommitment is IERC165 {
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
 interface ICredibilityRegistry is IERC165 {
@@ -335,7 +324,6 @@ Verdict 值由应用自行定义（`uint8`）。遵循 Governor 惯例的实现 
 
 ```json
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "required": ["version", "name", "model", "operator"],
   "properties": {
@@ -370,7 +358,6 @@ Verdict 值由应用自行定义（`uint8`）。遵循 Governor 惯例的实现 
 
 ```json
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "required": ["version", "riskTolerance"],
   "properties": {
@@ -412,7 +399,6 @@ Verdict 值由应用自行定义（`uint8`）。遵循 Governor 惯例的实现 
 
 ```json
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "required": ["version", "proposalId", "verdict"],
   "properties": {
@@ -459,6 +445,10 @@ ERC-5805 的 `delegate(address)` 无法表达到期、偏好或升级处理。�
 
 Agent 身份和委托是任何整合 AI agent 的 DAO 的基础需求。Commit-reveal 和信誉追踪有价值但并非普遍需要。这种分离遵循了 ERC-20（核心）+ ERC-2612（permit 扩展）的模式，支持渐进式采用。
 
+### 为什么 `escalate()` 是咨询性的而非强制性的？
+
+`escalate()` 函数是一种透明度工具，而非强制机制。当 agent 进行升级处理时，它会发出一个 on-chain 事件，表明 agent 拒绝对特定提案投票，但协议或合约并不强制 delegator 根据升级处理采取行动。恶意 agent 可以忽略自己的升级处理阈值并直接投票。这是有意为之的设计：在合约层面强制升级处理需要委托合约拦截 `Governor.castVote()` 调用，这会增加与现有 Governor 可组合性目标相矛盾的复杂性和耦合。相反，升级处理创建了公开的、可审计的记录。链下监控系统和 delegator 可以观察升级处理模式，并从那些在其声明偏好要求时一贯未进行升级处理的 agent 处撤回委托。`preferencesURI` 为这种社会问责提供了基础。
+
 ### 为什么理由需要 commit-reveal？
 
 没有 commit-reveal，agent 可以等待投票结果出炉后，生成匹配的理由，伪称具有先见之明以建立虚假信誉。Commit-reveal 模式通过要求在结果已知之前提交理由 hash 来防止这种行为。Salt 防止了针对 hash 的彩虹表攻击。
@@ -495,21 +485,76 @@ Agent 身份和委托是任何整合 AI agent 的 DAO 的基础需求。Commit-r
 
 `ICredibilityRegistry` 不修改投票接口，而是增加了一个透明层 — AI agent 的预测与其投票一同记录，裁决完成后，任何人都可以验证 agent 的理由是否与结果一致。
 
+### ERC-5732（Commit Interface）
+
+`IRationaleCommitment` 将 ERC-5732 中定义的通用 `commit(bytes32)` 模式扩展为具有治理特定语义的版本。ERC-5732 提供了仅包含单个 `bytes32` 哈希的通用 commit-reveal 原语（无应用上下文），而本 ERC 将每个 commitment 绑定到 `agentId` 和 `proposalId`，添加了带 salt 验证的基于 URI 的 reveal，并强制只有 agent 的 operator 才能 commit。已使用 ERC-5732 进行通用 commitment 的实现可以共存 — `IRationaleCommitment` 在独立的 `(agentId, proposalId)` 键空间中运作。ERC-5732 是设计上的前身而非依赖项：`IRationaleCommitment` 不继承也不导入 ERC-5732 的接口。
+
 ### ERC-8004（Trustless Agents）
 
 本 ERC 与 ERC-8004 互补。ERC-8004 提供通用 agent 身份（基于 ERC-721 的注册）和通用声誉（自由格式的反馈）。本 ERC 增加了治理特定的行为：委托约束、理由完整性和基于预测的信誉。ERC-8004 agent 也可以通过 ID 映射 `bytes32(uint256(erc8004TokenId))` 在 `IAIAgentRegistry` 中注册。`ICredibilityRegistry` 的分数可以作为结构化反馈报告回 ERC-8004 声誉注册表。
+
+### ERC-8126（AI Agent Registration）
+
+ERC-8126 定义了一个多层验证框架用于 AI agent 注册，要求在 agent 被准入之前进行链上质押、模型完整性的零知识证明和风险评分。本 ERC 采取刻意最小化的方法：`IAIAgentRegistry` 仅在链上存储 `metadataURI`，将验证推迟到链下或社会层。两种设计反映了不同的信任假设 — ERC-8126 面向每个 agent 必须在参与前证明其安全属性的高安全环境，而本 ERC 面向透明元数据的无许可注册使更广泛参与成为可能的开放治理生态系统。两种方法可以组合使用：ERC-8126 验证分数可以包含在 `agentURI` 引用的 AgentProfile JSON 中，允许委托人在选择 agent 时考虑验证状态。
+
+### ERC-7777（Human-Robot Society Governance）
+
+ERC-7777 处理包含物理机器人（具有硬件安全元素）和 AI agent 的社会的治理，定义了用于基于规则治理的 `IUniversalCharter` 和硬件证明要求。本 ERC 聚焦于更窄的领域：参与 DAO 代币投票的软件 AI agent。ERC-7777 的宪章式治理在协议层面规定强制执行的行为规则，而本 ERC 的 `preferencesURI` 将委托人的意图捕获为由链下 agent 系统解释的咨询性指导。两者的范围几乎不重叠 — ERC-7777 治理广泛的人机社会契约，而本 ERC 治理 AI 辅助 DAO 投票的具体机制（委托、理由完整性、信誉）。
+
+### ERC-7662（AI Agent NFTs）
+
+ERC-7662 将 AI agent 表示为 ERC-721 NFT，实现所有权转让、市场交易以及与现有 NFT 基础设施的可组合性。本 ERC 使用设计上不可转让的 `bytes32` agent ID。对于治理 agent，可转让性是不可取的：如果 agent 的身份可以被出售，委托人与特定 agent（具有已知 operator、模型和业绩记录）之间的信任关系可能被悄然破坏。`IAIAgentRegistry` 的 `deactivateAgent` → `registerAgent` 模式在 operator 关系变更时有意重置信誉。在同时使用两个标准的生态系统中，可以通过 `bytes32(uint256(tokenId))` 桥接 ID 空间，ERC-7662 的 NFT 元数据可以引用与 `agentURI` 使用的相同 AgentProfile JSON。
 
 ### ERC-8118（Agent 授权）
 
 ERC-8118 提供机械性授权（函数范围、调用次数、时间限制）。本 ERC 提供语义性委托（治理偏好、升级处理策略）。两者互补：ERC-8118 可以授权 agent 调用治理函数，而 `IAIDelegation` 捕获 delegator 对于如何使用这些函数的意图。
 
+### ERC-7710（Smart Contract Delegation）
+
+ERC-7710 提供了一个通用委托框架，其中一个合约可以将任意函数调用委托给另一个合约，并在执行层应用 caveat（限制）。这在机械层面运作："合约 A 可以在 caveat C 的约束下调用合约 B 的函数 F。"`IAIDelegation` 在语义层面运作："agent X 可以根据偏好 P，以升级处理策略 E 代表委托人 Y 投票。"ERC-7710 不捕获偏好对齐、升级处理触发器或与治理周期关联的委托到期等治理特定概念。两者可以组合使用：ERC-7710 可以作为执行层（授权 agent 的智能账户调用 `Governor.castVote`），而 `IAIDelegation` 提供 agent 的链下系统在行使该授权之前参考的治理意图层。
+
 ### ERC-7579（模块化智能账户）
 
 本 ERC 的接口可以作为 ERC-7579 模块实现：Validator（验证投票是否符合委托偏好）、Executor（代表账户所有者执行治理操作），或 Hook（执行前后的审计日志记录）。
 
+## 测试用例
+
+参考实现包含跨 6 个测试套件的 98 个测试。
+
+### 集成测试场景
+
+**1. 完整生命周期 (`test_fullLifecycle_registerDelegateCommitVoteRevealResolve`)：**
+一个 operator 注册 AI agent，delegator 创建 AI 委托并将 IVotes 桥接到 operator，创建 Governor 提案，agent 提交理由 hash 并记录预测（For，85% 置信度），operator 在 Governor 中投票 For，提案通过，agent 揭示理由（hash 验证通过），resolver 标记积极结果，产生 +3 信誉 delta（高置信度正确）。
+
+**2. 升级处理路径 (`test_escalationPath_agentDefersToHuman`)：**
+Delegator 创建 AI 委托同时保留自己的 IVotes（仅咨询模式）。当 agent 遇到有争议的提案时，通过 `Escalated` 事件和原因 URI 进行升级处理。Delegator 使用自己的投票权直接投票，提案通过。
+
+**3. 委托到期 (`test_delegationExpiry_automaticInvalidation`)：**
+创建一个短到期时间的委托。到期时间戳过后，`getAIDelegation()` 返回零值。可以立即创建新的委托。
+
+**4. 多 Agent (`test_multiAgent_twoAgentsSameProposal`)：**
+由不同 operator 运营的两个 agent 对同一提案做出独立预测 — 一个预测 For（高置信度），另一个预测 Against（低置信度）。积极结果裁决后，第一个 agent 获得 +3（正确），第二个获得 -1（错误），展示了独立的信誉追踪。
+
+**5. 信誉累积 (`test_credibilityAccumulation_acrossMultipleProposals`)：**
+一个 agent 在三个提案中以不同的置信度和正确性做出预测：高置信度正确（+3），低置信度正确（+1），高置信度错误（-2）。验证累计分数为 +2，共 3 个预测。
+
+**6. Agent 停用 (`test_agentDeactivation_preventsNewDelegations`)：**
+停用后，三个依赖合约（`AIDelegation`、`RationaleCommitment`、`CredibilityRegistry`）都拒绝对已停用 agent 的操作，证明注册表是 agent 生命周期的唯一真相来源。
+
+### Governor 桥接测试场景
+
+**7. 投票权转移与恢复 (`test_delegateBridge_votingPowerTransferAndRestore`)：**
+Delegator 通过 `GovernorAIDelegation` 创建 AI 委托（记录之前的 IVotes delegatee），将 IVotes 委托给 operator，operator 在 Governor 中投票，撤销后 delegator 恢复原始委托。
+
+**8. 自动信誉裁决 (`test_governorResolver_succeededProposal`、`test_governorResolver_defeatedProposal`)：**
+`GovernorResolver` 读取 `IGovernor.state()` 以确定通过的提案映射为积极结果（1），被否决的提案映射为消极结果（0），然后相应地裁决信誉预测。
+
+**9. 未终结提案 Revert (`test_governorResolver_revertsOnActiveProposal`)：**
+`GovernorResolver` 在对 Active 提案调用时 revert 并返回 `ProposalNotFinalized`，防止过早裁决。
+
 ## 参考实现
 
-完整的参考实现位于 `contracts/src/governance/` 目录：
+参考实现位于 `../assets/eip-XXXX/` 目录。核心合约如下：
 
 - `AIAgentRegistry.sol` — 具有确定性 ID 和 ERC-165 支持的 agent 注册
 - `AIDelegation.sol` — 具有到期、自动撤销、升级处理和 ERC-165 支持的委托
@@ -574,45 +619,6 @@ Proposal Monitor → AI Agent Evaluates → commitRationale() → castVote()
 - 对未终结的提案（Pending、Active、Queued）revert
 - 任何人都可以调用 `resolve()`，因为结果是确定性的
 
-## 测试用例
-
-参考实现包含跨 6 个测试套件的 98 个测试：
-
-```
-forge test --match-path "test/governance/*" -vvv
-```
-
-### 集成测试场景
-
-**1. 完整生命周期 (`test_fullLifecycle_registerDelegateCommitVoteRevealResolve`)：**
-一个 operator 注册 AI agent，delegator 创建 AI 委托并将 IVotes 桥接到 operator，创建 Governor 提案，agent 提交理由 hash 并记录预测（For，85% 置信度），operator 在 Governor 中投票 For，提案通过，agent 揭示理由（hash 验证通过），resolver 标记积极结果，产生 +3 信誉 delta（高置信度正确）。
-
-**2. 升级处理路径 (`test_escalationPath_agentDefersToHuman`)：**
-Delegator 创建 AI 委托同时保留自己的 IVotes（仅咨询模式）。当 agent 遇到有争议的提案时，通过 `Escalated` 事件和原因 URI 进行升级处理。Delegator 使用自己的投票权直接投票，提案通过。
-
-**3. 委托到期 (`test_delegationExpiry_automaticInvalidation`)：**
-创建一个短到期时间的委托。到期时间戳过后，`getAIDelegation()` 返回零值。可以立即创建新的委托。
-
-**4. 多 Agent (`test_multiAgent_twoAgentsSameProposal`)：**
-由不同 operator 运营的两个 agent 对同一提案做出独立预测 — 一个预测 For（高置信度），另一个预测 Against（低置信度）。积极结果裁决后，第一个 agent 获得 +3（正确），第二个获得 -1（错误），展示了独立的信誉追踪。
-
-**5. 信誉累积 (`test_credibilityAccumulation_acrossMultipleProposals`)：**
-一个 agent 在三个提案中以不同的置信度和正确性做出预测：高置信度正确（+3），低置信度正确（+1），高置信度错误（-2）。验证累计分数为 +2，共 3 个预测。
-
-**6. Agent 停用 (`test_agentDeactivation_preventsNewDelegations`)：**
-停用后，三个依赖合约（`AIDelegation`、`RationaleCommitment`、`CredibilityRegistry`）都拒绝对已停用 agent 的操作，证明注册表是 agent 生命周期的唯一真相来源。
-
-### Governor 桥接测试场景
-
-**7. 投票权转移与恢复 (`test_delegateBridge_votingPowerTransferAndRestore`)：**
-Delegator 通过 `GovernorAIDelegation` 创建 AI 委托（记录之前的 IVotes delegatee），将 IVotes 委托给 operator，operator 在 Governor 中投票，撤销后 delegator 恢复原始委托。
-
-**8. 自动信誉裁决 (`test_governorResolver_succeededProposal`、`test_governorResolver_defeatedProposal`)：**
-`GovernorResolver` 读取 `IGovernor.state()` 以确定通过的提案映射为积极结果（1），被否决的提案映射为消极结果（0），然后相应地裁决信誉预测。
-
-**9. 未终结提案 Revert (`test_governorResolver_revertsOnActiveProposal`)：**
-`GovernorResolver` 在对 Active 提案调用时 revert 并返回 `ProposalNotFinalized`，防止过早裁决。
-
 ## 安全考量
 
 ### Agent 串通
@@ -624,7 +630,9 @@ Delegator 通过 `GovernorAIDelegation` 创建 AI 委托（记录之前的 IVote
 攻击者可以注册大量 agent 以放大影响力或操纵信誉。由于 `registerAgent` 是无需许可的，实现应依靠经济或社会机制来限制 Sybil 攻击：
 - 要求创建 agent 时提供最低质押或注册费用。
 - 根据注册 operator 的 on-chain 历史记录加权委托或信誉分数。
-- Delegator 应根据 `totalPredictions` 数量而非仅根据分数来评估 agent。
+- Delegator 应根据 `totalPredictions` 数量而非仅根据分数来评估 agent — 预测次数低于最低数量（例如 10 次）的 agent 不应被视为可信。
+- 按 operator 多样性加权信誉：如果多个 agent 共享同一 operator，其合并影响力应予以折扣。治理前端应将 operator 集中度作为风险指标展示。
+- 实现可以对同一 operator 的连续 agent 注册施加冷却期，以限制快速的 Sybil 创建。
 
 ### Oracle 操纵（Resolver 被入侵）
 
@@ -657,6 +665,10 @@ Agent 可能仅对结果可预测的提案提交预测，以夸大其信誉。�
 ### 委托到期边缘情况
 
 如果委托在投票期间到期，agent 可能已经投票。实现应在投票时而非仅在委托时检查委托有效性。`escalate()` 函数为边界情况提供了安全阀。
+
+### 经济可行性
+
+`ICredibilityRegistry` 操作（`recordPrediction`、`resolvePrediction`）各消耗约 80,000–120,000 gas。在一个拥有 50 个活跃 agent、每月评估 12 个提案的生态系统中，仅 Ethereum L1 上的信誉操作成本就可能在典型 gas 价格下超过每月 $200,000 USD。面向 L1 的实现应考虑批量裁决模式 — 通过单次 `resolvePrediction` 调用裁决同一提案的多个 agent。强烈建议活跃的生态系统将信誉和理由合约部署在 L2（gas 成本低几个数量级）上。核心接口（`IAIAgentRegistry`、`IAIDelegation`）可保留在 L1 以获得与现有 Governor 合约的最大可组合性，而扩展则部署在 L2 上，通过跨链消息传递进行裁决。
 
 ### AI Agent 自主性风险
 

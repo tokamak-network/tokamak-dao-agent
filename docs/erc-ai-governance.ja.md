@@ -1,31 +1,19 @@
 ---
 eip: XXXX
 title: AI Agent Governance Interface
-description: Interfaces for AI agent registration, delegation, rationale commitment, and credibility tracking in DAOs
+description: Defines interfaces for AI agent registration, delegation, rationale integrity, and credibility tracking in DAOs
 author: Tokamak Network (@nicetokamak)
 discussions-to: https://ethereum-magicians.org/t/erc-ai-agent-governance-interface
 status: Draft
 type: Standards Track
 category: ERC
 created: 2026-02-24
-requires: 165, 5805, 4824
+requires: 165
 ---
 
 ## Abstract
 
-本 ERC は、AI agent が DAO ガバナンスに透明かつ説明責任を持って参加するための、モジュール式 Solidity interface 群を定義する。interface は二つの階層に分類される。
-
-**Core（実装必須）:**
-
-1. **`IAIAgentRegistry`** — off-chain metadata を伴う AI agent の on-chain 登録
-2. **`IAIDelegation`** — 有効期限とエスカレーション機能を備えた、選好ベースの AI agent への投票委任
-
-**Extensions（実装任意）:**
-
-3. **`IRationaleCommitment`** — 改ざん防止のための提案根拠 commit-reveal スキーム
-4. **`ICredibilityRegistry`** — 予測精度に基づく cross-DAO 信頼性追跡
-
-これらの interface は、人間による監督・透明性・説明責任を維持しつつ、あらゆる DAO が AI agent をガバナンス参加者として統合するために必要な、最小限の on-chain プリミティブを提供する。
+本 ERC は、AI agent の DAO ガバナンス参加のための標準 interface を定義する。On-chain での agent 登録、有効期限とエスカレーションを備えた選好ベースの委任、暗号学的な根拠 commitment、および予測ベースの信頼性追跡のメカニズムを規定する。これらの interface は、ERC-5805 および ERC-4824 を含む既存のガバナンスインフラストラクチャと組み合わせ可能に設計されている。
 
 ## Motivation
 
@@ -45,8 +33,9 @@ DAO は慢性的な投票者の無関心に悩まされている。ほとんど�
 
 ### なぜ今なのか
 
-- Vitalik Buterin は DAO ガバナンスのための「AI stewards」を提案した（2026年2月21日）。これは AI agent が人間の選好をガバナンスの意思決定において代表するという構想であり、コミュニティから大きな関心を集めたが、on-chain interface の仕様は含まれていなかった。
+- 最近の AI 支援 DAO ガバナンスに関する提案は、AI agent が人間の選好をガバナンスの意思決定において代表するという構想を示している。これらの提案はコミュニティから大きな関心を集めたが、on-chain interface の仕様は含まれていなかった。
 - 汎用的な agent インフラストラクチャ（ERC-8004、ERC-8118）は *agent が誰であるか* と *どの関数を呼び出せるか* を扱うが、*どのようにガバナンスすべきか* は扱わない。ガバナンスには委任制約（有効期限、選好、エスカレーション）、根拠の完全性（commit-reveal）、およびドメイン固有の信頼性（提案結果に対する予測精度）が必要である。
+- AI agent の identity とガバナンスに対応する複数の ERC が登場している：ERC-8126（検証レイヤーを備えた agent 登録）、ERC-7777（ロボット／人間社会ガバナンス）、ERC-7662（AI agent NFT）。それぞれが問題の断片 — identity、検証、所有権 — を扱っているが、責任ある DAO 参加に必要なガバナンス固有のプリミティブ（委任制約、根拠の完全性、予測ベースの信頼性）は提供していない。
 - NEAR Foundation は AI delegate による投票を積極的に開発しており、cross-chain AI ガバナンスが差し迫っていることを示している。
 - AI agent は既に通常のアドレスを通じて非公式にガバナンスに参加しており、断片的なアプローチが固定化する前に標準化が急務である。
 
@@ -73,7 +62,7 @@ AI agent の on-chain 登録とライフサイクル管理を提供する。
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 
 interface IAIAgentRegistry is IERC165 {
     event AgentRegistered(bytes32 indexed agentId, address indexed operator, string metadataURI);
@@ -123,7 +112,7 @@ AI 固有の制約を加えた ERC-5805 委任の概念を拡張する。
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
 interface IAIDelegation is IERC165 {
@@ -190,7 +179,7 @@ AI agent の根拠のための commit-reveal スキームを実装する。本 e
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
 interface IRationaleCommitment is IERC165 {
@@ -250,7 +239,7 @@ DAO 横断で AI agent の予測精度を追跡する。本 extension は OPTION
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.24;
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "./IERC165.sol";
 import {IAIAgentRegistry} from "./IAIAgentRegistry.sol";
 
 interface ICredibilityRegistry is IERC165 {
@@ -335,7 +324,6 @@ verdict の値はアプリケーション定義（`uint8`）である。Governor
 
 ```json
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "required": ["version", "name", "model", "operator"],
   "properties": {
@@ -370,7 +358,6 @@ verdict の値はアプリケーション定義（`uint8`）である。Governor
 
 ```json
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "required": ["version", "riskTolerance"],
   "properties": {
@@ -412,7 +399,6 @@ verdict の値はアプリケーション定義（`uint8`）である。Governor
 
 ```json
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "required": ["version", "proposalId", "verdict"],
   "properties": {
@@ -459,6 +445,10 @@ ERC-5805 の `delegate(address)` は有効期限、選好、またはエスカ�
 
 agent の identity と委任は、AI agent を統合するあらゆる DAO にとって基本的である。commit-reveal と信頼性は有用であるが、普遍的に必要とされるわけではない。この分離は ERC-20 (core) + ERC-2612 (permit extension) のパターンに従い、段階的な導入を可能にする。
 
+### なぜ `escalate()` は強制的ではなく助言的なのか
+
+`escalate()` 関数は透明性ツールであり、強制メカニズムではない。agent がエスカレーションすると、特定の提案への投票を辞退するという on-chain イベントを発行するが、プロトコルやコントラクトが delegator にエスカレーションに基づく行動を強制することはない。悪意ある agent は自身のエスカレーション閾値を無視して投票することが可能である。これは意図的な設計である：コントラクトレベルでエスカレーションを強制するには、委任コントラクトが `Governor.castVote()` の呼び出しをインターセプトする必要があり、既存の Governor との組み合わせ可能性という目標に反する複雑性と結合を追加することになる。代わりに、エスカレーションは公開的で監査可能な記録を作成する。off-chain の監視システムと delegator はエスカレーションパターンを観察し、表明された選好が求める場合に一貫してエスカレーションしない agent からの委任を取り消すことができる。`preferencesURI` がこの社会的説明責任の基盤を提供する。
+
 ### なぜ根拠に commit-reveal を使うのか
 
 commit-reveal がなければ、agent は投票結果を待ち、一致する根拠を生成し、虚偽の信頼性を構築するために先見の明を主張することができる。commit-reveal パターンは、結果が判明する前に根拠の hash を要求することでこれを防止する。salt はレインボーテーブル攻撃から hash を保護する。
@@ -495,21 +485,76 @@ ERC-4824 のパターンに従い、エスカレーションの理由は on-chai
 
 `ICredibilityRegistry` は投票 interface を変更しないが、透明性のレイヤーを追加する。AI agent の予測はその投票とともに記録され、解決後には agent の根拠が結果と一致したかどうかを誰でも検証できる。
 
+### ERC-5732 (Commit Interface)
+
+`IRationaleCommitment` は、ERC-5732 で定義された汎用的な `commit(bytes32)` パターンをガバナンス固有のセマンティクスで拡張する。ERC-5732 が単一の `bytes32` ハッシュのみを持つ汎用 commit-reveal プリミティブ（アプリケーションコンテキストなし）を提供するのに対し、本 ERC は各 commitment を `agentId` と `proposalId` にバインドし、salt 検証付きの URI ベース reveal を追加し、agent の operator のみが commit できるよう強制する。汎用 commitment に ERC-5732 を既に使用している実装と共存可能である — `IRationaleCommitment` は独立した `(agentId, proposalId)` キー空間で動作する。ERC-5732 は設計上の先行規格であり依存関係ではない：`IRationaleCommitment` は ERC-5732 の interface を継承も import もしない。
+
 ### ERC-8004 (Trustless Agents)
 
 本 ERC は ERC-8004 と補完関係にある。ERC-8004 は汎用的な agent の identity（ERC-721 ベースの登録）と汎用的な評判（自由形式のフィードバック）を提供する。本 ERC はガバナンス固有の振る舞いを追加する。すなわち、委任制約、根拠の完全性、および予測ベースの信頼性である。ERC-8004 の agent は、ID マッピング `bytes32(uint256(erc8004TokenId))` を用いて `IAIAgentRegistry` にも登録できる。`ICredibilityRegistry` のスコアは、構造化されたフィードバックとして ERC-8004 の評判レジストリに報告することができる。
+
+### ERC-8126 (AI Agent Registration)
+
+ERC-8126 は、AI agent 登録のための多層検証フレームワークを定義し、on-chain ステーキング、モデル完全性のゼロ知識証明、およびリスクスコアリングを agent の承認前に要求する。本 ERC は意図的にミニマリストなアプローチを取る：`IAIAgentRegistry` は on-chain に `metadataURI` のみを保存し、検証は off-chain またはソーシャルレイヤーに委ねる。二つの設計は異なる信頼前提を反映している — ERC-8126 はすべての agent が参加前に安全性を証明しなければならない高セキュリティ環境を対象とし、本 ERC は透明なメタデータによるパーミッションレスな登録がより広い参加を可能にするオープンなガバナンスエコシステムを対象とする。両アプローチは組み合わせ可能である：ERC-8126 の検証スコアは `agentURI` が参照する AgentProfile JSON に含めることができ、delegator が agent を選択する際に検証ステータスを考慮できる。
+
+### ERC-7777 (Human-Robot Society Governance)
+
+ERC-7777 は、物理ロボット（ハードウェアセキュリティ要素を含む）と AI agent の双方を含む社会のガバナンスを扱い、ルールベースガバナンスのための `IUniversalCharter` とハードウェアアテステーション要件を定義する。本 ERC はより狭い領域に焦点を当てる：DAO トークン投票に参加するソフトウェア AI agent。ERC-7777 のチャーターベースガバナンスがプロトコルレベルで強制される行動規則を規定するのに対し、本 ERC の `preferencesURI` は off-chain の agent システムが解釈するアドバイザリーガイダンスとして delegator の意図を捕捉する。両者のスコープはほぼ重複しない — ERC-7777 は広範な人間-ロボット社会契約を統治し、本 ERC は AI 支援 DAO 投票の具体的なメカニクス（委任、根拠の完全性、信頼性）を統治する。
+
+### ERC-7662 (AI Agent NFTs)
+
+ERC-7662 は AI agent を ERC-721 NFT として表現し、所有権の移転、マーケットプレイスでの取引、既存 NFT インフラストラクチャとの組み合わせを可能にする。本 ERC は設計上譲渡不可能な `bytes32` agent ID を使用する。ガバナンス agent にとって譲渡可能性は望ましくない：agent の identity が売買できるならば、delegator と特定の agent（既知の operator、モデル、実績を持つ）との間の信頼関係が暗黙裏に破壊されうる。`IAIAgentRegistry` の `deactivateAgent` → `registerAgent` パターンは、operator 関係が変更された際に意図的に信頼性をリセットする。両方の標準を使用するエコシステムでは、`bytes32(uint256(tokenId))` を通じて ID 空間をブリッジでき、ERC-7662 の NFT metadata は `agentURI` で使用されるのと同じ AgentProfile JSON を参照できる。
 
 ### ERC-8118 (Agent Authorization)
 
 ERC-8118 は機械的な認可（関数スコープ、呼び出し回数、時間制限）を提供する。本 ERC は意味的な委任（ガバナンスの選好、エスカレーションポリシー）を提供する。両者は補完関係にある。ERC-8118 は agent がガバナンス関数を呼び出す権限を与え、`IAIDelegation` はそれらの関数がどのように使用されるべきかという delegator の意図を捕捉する。
 
+### ERC-7710 (Smart Contract Delegation)
+
+ERC-7710 は、一つのコントラクトが任意の関数呼び出しを別のコントラクトに委任できる汎用委任フレームワークを提供し、実行レイヤーで caveat（制限）が適用される。これは機械的レベルで動作する：「コントラクト A は caveat C の下でコントラクト B の関数 F を呼び出すことができる。」`IAIDelegation` は意味的レベルで動作する：「agent X は選好 P に従い、エスカレーションポリシー E を持って delegator Y の代わりに投票できる。」ERC-7710 は選好の整合、エスカレーショントリガー、ガバナンスサイクルに連動した委任の有効期限といったガバナンス固有の概念を捕捉しない。両者は組み合わせ可能である：ERC-7710 が実行レイヤーとして機能し（agent のスマートアカウントが `Governor.castVote` を呼び出すことを認可）、`IAIDelegation` が agent の off-chain システムがその認可を行使する前に参照するガバナンスインテントレイヤーを提供する。
+
 ### ERC-7579 (Modular Smart Accounts)
 
 本 ERC の interface は ERC-7579 モジュールとして実装できる。Validator（投票が委任の選好に沿っているか検証）、Executor（アカウント所有者に代わってガバナンスアクションを実行）、または Hook（実行前後の監査ログ記録）として実装可能である。
 
+## Test Cases
+
+リファレンス実装には、6つのテストスイートにわたる98のテストが含まれている。
+
+### Integration Test Scenarios
+
+**1. フルライフサイクル (`test_fullLifecycle_registerDelegateCommitVoteRevealResolve`):**
+operator が AI agent を登録し、delegator が AI 委任を作成して IVotes を operator に橋渡しし、Governor の提案が作成され、agent が根拠の hash をコミットして予測を記録し（For、確信度85%）、operator が Governor で For に投票し、提案が可決され、agent が根拠を公開し（hash 検証済み）、resolver がポジティブな結果をマークして +3 の信頼性 delta（高確信度の正解）が得られる。
+
+**2. エスカレーションパス (`test_escalationPath_agentDefersToHuman`):**
+delegator が自身の IVotes を保持したまま AI 委任を作成する（助言のみパターン）。agent が物議を醸す提案に遭遇すると、理由 URI を伴う `Escalated` event を通じてエスカレーションを行う。delegator は自身の投票権を使用して直接投票し、提案は可決される。
+
+**3. 委任の期限切れ (`test_delegationExpiry_automaticInvalidation`):**
+短い有効期限で委任が作成される。有効期限のタイムスタンプを過ぎると、`getAIDelegation()` はゼロ値を返す。新しい委任はすぐに作成できる。
+
+**4. マルチエージェント (`test_multiAgent_twoAgentsSameProposal`):**
+異なる operator が運用する2つの agent が、同じ提案に対して独立した予測を行う。一方は For（高確信度）を、もう一方は Against（低確信度）を予測する。ポジティブな解決後、最初の agent は +3（正解）、2番目の agent は -1（不正解）を受け取り、独立した信頼性追跡が実証される。
+
+**5. 信頼性の蓄積 (`test_credibilityAccumulation_acrossMultipleProposals`):**
+agent が確信度と正確性の異なる3つの提案にわたって予測を行う。高確信度の正解（+3）、低確信度の正解（+1）、高確信度の不正解（-2）。累積スコアは +2、総予測数は3であることが検証される。
+
+**6. Agent の無効化 (`test_agentDeactivation_preventsNewDelegations`):**
+無効化後、3つの依存コントラクト（`AIDelegation`、`RationaleCommitment`、`CredibilityRegistry`）はすべて無効化された agent に対する操作を拒否し、レジストリが agent ライフサイクルの唯一の信頼できる情報源であることを実証する。
+
+### Governor Bridge Test Scenarios
+
+**7. 投票権の移転と復元 (`test_delegateBridge_votingPowerTransferAndRestore`):**
+delegator が `GovernorAIDelegation` を通じて AI 委任を作成し（以前の IVotes delegatee を記録）、IVotes を operator に委任し、operator が Governor で投票し、取消後に delegator が元の委任を復元する。
+
+**8. 自動信頼性解決 (`test_governorResolver_succeededProposal`, `test_governorResolver_defeatedProposal`):**
+`GovernorResolver` は `IGovernor.state()` を読み取り、可決された提案がポジティブな結果（1）にマッピングされ、否決された提案がネガティブな結果（0）にマッピングされることを判定し、信頼性予測を解決する。
+
+**9. 未確定提案の revert (`test_governorResolver_revertsOnActiveProposal`):**
+`GovernorResolver` は Active な提案に対して呼び出された場合、`ProposalNotFinalized` で revert し、早期解決を防止する。
+
 ## Reference Implementation
 
-完全なリファレンス実装が `contracts/src/governance/` ディレクトリに提供されている。
+リファレンス実装が `../assets/eip-XXXX/` ディレクトリに提供されている。主要なコントラクトは以下のとおりである。
 
 - `AIAgentRegistry.sol` — 決定論的 ID と ERC-165 サポートによる agent 登録
 - `AIDelegation.sol` — 有効期限、自動取消、エスカレーション、および ERC-165 サポートによる委任
@@ -574,45 +619,6 @@ Proposal Monitor → AI Agent Evaluates → commitRationale() → castVote()
 - 未確定の提案（Pending, Active, Queued）に対しては revert
 - 結果は決定論的であるため、誰でも `resolve()` を呼び出し可能
 
-## Test Cases
-
-リファレンス実装には、6つのテストスイートにわたる98のテストが含まれている。
-
-```
-forge test --match-path "test/governance/*" -vvv
-```
-
-### Integration Test Scenarios
-
-**1. フルライフサイクル (`test_fullLifecycle_registerDelegateCommitVoteRevealResolve`):**
-operator が AI agent を登録し、delegator が AI 委任を作成して IVotes を operator に橋渡しし、Governor の提案が作成され、agent が根拠の hash をコミットして予測を記録し（For、確信度85%）、operator が Governor で For に投票し、提案が可決され、agent が根拠を公開し（hash 検証済み）、resolver がポジティブな結果をマークして +3 の信頼性 delta（高確信度の正解）が得られる。
-
-**2. エスカレーションパス (`test_escalationPath_agentDefersToHuman`):**
-delegator が自身の IVotes を保持したまま AI 委任を作成する（助言のみパターン）。agent が物議を醸す提案に遭遇すると、理由 URI を伴う `Escalated` event を通じてエスカレーションを行う。delegator は自身の投票権を使用して直接投票し、提案は可決される。
-
-**3. 委任の期限切れ (`test_delegationExpiry_automaticInvalidation`):**
-短い有効期限で委任が作成される。有効期限のタイムスタンプを過ぎると、`getAIDelegation()` はゼロ値を返す。新しい委任はすぐに作成できる。
-
-**4. マルチエージェント (`test_multiAgent_twoAgentsSameProposal`):**
-異なる operator が運用する2つの agent が、同じ提案に対して独立した予測を行う。一方は For（高確信度）を、もう一方は Against（低確信度）を予測する。ポジティブな解決後、最初の agent は +3（正解）、2番目の agent は -1（不正解）を受け取り、独立した信頼性追跡が実証される。
-
-**5. 信頼性の蓄積 (`test_credibilityAccumulation_acrossMultipleProposals`):**
-agent が確信度と正確性の異なる3つの提案にわたって予測を行う。高確信度の正解（+3）、低確信度の正解（+1）、高確信度の不正解（-2）。累積スコアは +2、総予測数は3であることが検証される。
-
-**6. Agent の無効化 (`test_agentDeactivation_preventsNewDelegations`):**
-無効化後、3つの依存コントラクト（`AIDelegation`、`RationaleCommitment`、`CredibilityRegistry`）はすべて無効化された agent に対する操作を拒否し、レジストリが agent ライフサイクルの唯一の信頼できる情報源であることを実証する。
-
-### Governor Bridge Test Scenarios
-
-**7. 投票権の移転と復元 (`test_delegateBridge_votingPowerTransferAndRestore`):**
-delegator が `GovernorAIDelegation` を通じて AI 委任を作成し（以前の IVotes delegatee を記録）、IVotes を operator に委任し、operator が Governor で投票し、取消後に delegator が元の委任を復元する。
-
-**8. 自動信頼性解決 (`test_governorResolver_succeededProposal`, `test_governorResolver_defeatedProposal`):**
-`GovernorResolver` は `IGovernor.state()` を読み取り、可決された提案がポジティブな結果（1）にマッピングされ、否決された提案がネガティブな結果（0）にマッピングされることを判定し、信頼性予測を解決する。
-
-**9. 未確定提案の revert (`test_governorResolver_revertsOnActiveProposal`):**
-`GovernorResolver` は Active な提案に対して呼び出された場合、`ProposalNotFinalized` で revert し、早期解決を防止する。
-
 ## Security Considerations
 
 ### Agent の共謀
@@ -624,7 +630,9 @@ delegator が `GovernorAIDelegation` を通じて AI 委任を作成し（以前
 攻撃者は影響力を増幅したり信頼性を操作するために多数の agent を登録する可能性がある。`registerAgent` はパーミッションレスであるため、実装は sybil 攻撃を制限するために経済的または社会的メカニズムに依拠すべきである。
 - agent の作成に最低限の stake または登録手数料を要求する。
 - 登録 operator の on-chain 履歴による委任または信頼性スコアの重み付けを行う。
-- delegator はスコアだけでなく `totalPredictions` のボリュームに基づいて agent を評価すべきである。
+- delegator はスコアだけでなく `totalPredictions` のボリュームに基づいて agent を評価すべきである — 最低予測回数（例：10回）未満の agent は信頼に値するとみなされるべきではない。
+- operator の多様性による信頼性の重み付け：同一 operator が複数の agent を運用している場合、それらの合算された影響力は割り引かれるべきである。ガバナンスフロントエンドは operator の集中度をリスク指標として表示すべきである。
+- 実装は同一 operator からの連続的な agent 登録の間にクールダウン期間を設け、急速な sybil 生成を制限してもよい。
 
 ### Oracle の操作（Resolver の侵害）
 
@@ -657,6 +665,10 @@ agent は結果が予測しやすい提案にのみ予測を提出し、信頼�
 ### 委任の期限切れエッジケース
 
 委任がアクティブな投票期間中に期限切れになった場合、agent は既に投票している可能性がある。実装は委任時ではなく投票時に委任の有効性を確認すべきである。`escalate()` 関数はボーダーラインのケースに対する安全弁を提供する。
+
+### 経済的実現可能性
+
+`ICredibilityRegistry` の操作（`recordPrediction`、`resolvePrediction`）はそれぞれ約 80,000–120,000 gas を消費する。50 のアクティブな agent が月に12の提案を評価するエコシステムでは、Ethereum L1 での信頼性操作のコストだけで、一般的なガス価格で月 $200,000 USD を超える可能性がある。L1 を対象とする実装はバッチ解決パターン — 同一提案に対する複数の agent を1回の `resolvePrediction` 呼び出しで解決する方式 — を検討すべきである。アクティブなエコシステムでは、信頼性および根拠コントラクトを L2（ガスコストが桁違いに低い）にデプロイすることを強く推奨する。コアインターフェース（`IAIAgentRegistry`、`IAIDelegation`）は既存の Governor コントラクトとの最大限のコンポーザビリティのために L1 に維持し、エクステンションは解決のためのクロスチェーンメッセージパッシングとともに L2 にデプロイすることが可能である。
 
 ### AI Agent の自律性リスク
 

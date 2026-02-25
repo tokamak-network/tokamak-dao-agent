@@ -1,5 +1,4 @@
 import { navigate } from "../../App";
-import { isWalletConfigured } from "../../config/wagmi";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useI18n } from "../../contexts/I18nContext";
 import { LOCALE_LABELS, type Locale } from "../../i18n/translations";
@@ -108,7 +107,6 @@ export default function Header({ currentView }: HeaderProps) {
         >
           GitHub
         </a>
-        {isWalletConfigured && <w3m-button size="sm" />}
       </div>
     </header>
   );
@@ -140,11 +138,3 @@ function NavLink({ active, onClick, children }: {
   );
 }
 
-// Declare web component for TypeScript
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      "w3m-button": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & { size?: string }, HTMLElement>;
-    }
-  }
-}

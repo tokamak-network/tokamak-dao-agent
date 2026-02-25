@@ -29,6 +29,7 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
     }
 
     let cancelled = false;
+    const currentTarget = target;
 
     async function setup() {
       setIsConnecting(true);
@@ -52,17 +53,17 @@ export function useElizaChat(target: ChatTarget | null): UseElizaChatResult {
         // 3. Get or create channel
         let channelId: string | null = null;
 
-        if (target.type === "dm" && target.agentId) {
-          const dmRes = await fetch(`/api/elizaos/dm-channel?agentId=${target.agentId}`);
+        if (currentTarget.type === "dm" && currentTarget.agentId) {
+          const dmRes = await fetch(`/api/elizaos/dm-channel?agentId=${currentTarget.agentId}`);
           const dmData = await dmRes.json();
           channelId = dmData?.data?.id ?? dmData?.channelId ?? dmData?.id ?? null;
-        } else if (target.type === "group" && target.agentIds?.length) {
+        } else if (currentTarget.type === "group" && currentTarget.agentIds?.length) {
           const grpRes = await fetch("/api/elizaos/group-channel", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               name: `Governance Discussion ${Date.now()}`,
-              agentIds: target.agentIds,
+              agentIds: currentTarget.agentIds,
             }),
           });
           const grpData = await grpRes.json();

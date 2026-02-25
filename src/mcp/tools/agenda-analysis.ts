@@ -148,9 +148,10 @@ export async function handleAnalyzeAgenda(args: {
         args: [agendaId],
       });
 
-      targets = [...execInfo[0]];
-      bytecodes = [...execInfo[1]];
-      atomicExecute = execInfo[2];
+      const execResult = execInfo as [string[], string[], boolean];
+      targets = [...execResult[0]];
+      bytecodes = [...execResult[1]];
+      atomicExecute = execResult[2];
 
       // Get agenda metadata
       const agendaInfo = await publicClient.readContract({

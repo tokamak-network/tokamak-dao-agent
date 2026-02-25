@@ -6,7 +6,8 @@
  * the same streaming and tool-execution pipeline.
  */
 
-export type { ToolDefinition } from "../../types/tool-definition.ts";
+import type { ToolDefinition } from "../../types/tool-definition.ts";
+export type { ToolDefinition };
 
 /** Role-tagged message flowing through the agentic loop. */
 export interface ChatMessage {

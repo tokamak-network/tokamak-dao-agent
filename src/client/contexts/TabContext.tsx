@@ -22,6 +22,7 @@ const TAB_TO_PATH: Record<TabMode, string> = {
   analyze_proposal: "/proposal",
   agents: "/agents",
   forum: "/forum",
+  forum_proposal: "/forum",
 };
 
 const PATH_TO_TAB: Record<string, TabMode> = Object.fromEntries(

@@ -187,7 +187,7 @@ function customAgentToProfile(agent: Agent, index: number): AgentProfile {
     stakeholderLabel: STAKEHOLDER_LABELS[agent.stakeholderType] ?? agent.stakeholderType,
     personality: PERSONALITY_LABELS[agent.personality] ?? agent.personality,
     description: "",
-    accentColor: CUSTOM_ACCENT_COLORS[index % CUSTOM_ACCENT_COLORS.length],
+    accentColor: CUSTOM_ACCENT_COLORS[index % CUSTOM_ACCENT_COLORS.length] ?? "#888",
     cssVar: "",
     weights,
   };

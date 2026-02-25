@@ -254,7 +254,7 @@ export async function runDeliberation(
   const phase1Result = await runQocEvaluation(agenda);
 
   // Get the saved evaluations to pass to meta-agent
-  const { getCriterionEvaluationsForAgenda } = await import("../db/qoc.ts");
+  const { getCriterionEvaluationsForAgenda } = await import("../../db/qoc.ts");
   const phase1Evals = getCriterionEvaluationsForAgenda(agenda.id);
 
   // Save Phase 1 records
@@ -301,7 +301,7 @@ export async function runDeliberation(
   }
 
   // Apply adjustments
-  const adjustedEvals: QocCriterionEvaluation[] = phase1Evals.map((evaluation) => {
+  const adjustedEvals: QocCriterionEvaluation[] = phase1Evals.map((evaluation: QocCriterionEvaluation) => {
     const adjustment = metaAnalysis.adjustments.find(
       (a) => a.criterionId === evaluation.criterionId,
     );

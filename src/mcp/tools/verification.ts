@@ -121,7 +121,7 @@ function generateV2SwapCalldata(
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600); // 1 hour from now
 
   return encodeFunctionData({
-    abi: DEX_PROTOCOLS.uniswap_v2.swapAbi,
+    abi: DEX_PROTOCOLS.uniswap_v2!.swapAbi,
     functionName: "swapExactTokensForTokens",
     args: [amountIn, 0n, [tokenIn, tokenOut], recipient, deadline],
   });
@@ -139,7 +139,7 @@ function generateV3SwapCalldata(
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
 
   return encodeFunctionData({
-    abi: DEX_PROTOCOLS.uniswap_v3.swapAbi,
+    abi: DEX_PROTOCOLS.uniswap_v3!.swapAbi,
     functionName: "exactInputSingle",
     args: [
       {

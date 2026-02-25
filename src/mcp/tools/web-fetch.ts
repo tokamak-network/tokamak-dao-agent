@@ -62,7 +62,7 @@ export async function handleWebFetch(args: { url: string }): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-    const response = await fetch(validation.url.toString(), {
+    const response = await fetch(validation.url!.toString(), {
       signal: controller.signal,
       headers: {
         "Accept": "application/json, text/plain, */*",

@@ -47,7 +47,7 @@ export function ensureTipPrefix(title: string, n: number): string {
 
 export function extractAgendaDraft(messages: Message[]): AgendaDraft | null {
   for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
+    const msg = messages[i]!;
     if (msg.role !== "assistant") continue;
     const text = msg.parts
       .filter((p) => p.type === "text" && p.content)

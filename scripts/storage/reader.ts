@@ -251,7 +251,7 @@ export async function readSlots(
 
     batch.forEach((slot, idx) => {
       const slotKey = typeof slot === "bigint" ? slot.toString() : slot;
-      results.set(slotKey, values[idx]);
+      results.set(slotKey, values[idx]!);
     });
   }
 

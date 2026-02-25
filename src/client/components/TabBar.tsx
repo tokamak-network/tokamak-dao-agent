@@ -27,7 +27,7 @@ export function TabBar() {
           className={`tab-button${activeTab === tab.mode ? " active" : ""}`}
           onClick={() => {
             if (activeTab === tab.mode) return;
-            window.location.href = TAB_TO_PATH[tab.mode];
+            window.location.href = TAB_TO_PATH[tab.mode] ?? "/";
           }}
         >
           {tab.label}

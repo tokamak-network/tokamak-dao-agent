@@ -12,7 +12,7 @@ flowchart TB
 
     MCP & Web & SSE --> Handlers["Shared Tool Handlers<br/>(15 tools)"]
 
-    Handlers --> Data["contracts.json · Solidity sources<br/>compiled ABIs · storage layouts"]
+    Handlers --> Data["contracts.json · Solidity sources · ABIs · storage layouts"]
     Handlers --> RPC["Ethereum Mainnet<br/>(Alchemy RPC)"]
 ```
 

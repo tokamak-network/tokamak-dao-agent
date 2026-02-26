@@ -17,6 +17,7 @@ export default function CreateProposalStep() {
 
   useEffect(() => {
     if (isSuccess && receipt) {
+      if (receipt.status !== "success") return;
       for (const log of receipt.logs) {
         try {
           const decoded = decodeEventLog({
@@ -34,8 +35,11 @@ export default function CreateProposalStep() {
             }, hash);
             return;
           }
-        } catch {}
+        } catch {
+          // skip non-matching logs
+        }
       }
+      console.warn("[CreateProposalStep] TX succeeded but ProposalCreated event not found in logs");
     }
   }, [isSuccess, receipt]);
 
@@ -49,6 +53,9 @@ export default function CreateProposalStep() {
         ["0x" as `0x${string}`],          // calldatas
         description,
       ],
+      // Reown RPC gas cap is ~16M; viem default simulation gas is 21M.
+      // Explicit gas avoids "gas limit too high" RPC rejection.
+      gas: 500_000n,
     });
   };
 
@@ -77,7 +84,7 @@ export default function CreateProposalStep() {
         </button>
       </div>
 
-      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} />
+      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} receiptStatus={receipt?.status} />
     </div>
   );
 }

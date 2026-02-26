@@ -17,7 +17,7 @@ export default function RegisterAgentStep() {
 
   useEffect(() => {
     if (isSuccess && receipt) {
-      // Parse AgentRegistered event
+      if (receipt.status !== "success") return;
       for (const log of receipt.logs) {
         try {
           const decoded = decodeEventLog({
@@ -37,8 +37,11 @@ export default function RegisterAgentStep() {
             }, hash);
             return;
           }
-        } catch {}
+        } catch {
+          // skip non-matching logs
+        }
       }
+      console.warn("[RegisterAgentStep] TX succeeded but AgentRegistered event not found in logs");
     }
   }, [isSuccess, receipt]);
 
@@ -75,7 +78,7 @@ export default function RegisterAgentStep() {
         </button>
       </div>
 
-      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} />
+      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} receiptStatus={receipt?.status} />
     </div>
   );
 }

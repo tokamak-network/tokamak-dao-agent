@@ -6,6 +6,7 @@ interface TxStatusProps {
   isConfirming: boolean;
   isSuccess: boolean;
   error: Error | null;
+  receiptStatus?: "success" | "reverted";
 }
 
 /** Extract a human-readable reason from a viem/wagmi error */
@@ -47,15 +48,19 @@ function extractErrorReason(error: Error): string {
   return msg.slice(0, 200);
 }
 
-export default function TxStatus({ hash, isPending, isConfirming, isSuccess, error }: TxStatusProps) {
+export default function TxStatus({ hash, isPending, isConfirming, isSuccess, error, receiptStatus }: TxStatusProps) {
   const { t } = useI18n();
 
   if (!isPending && !isConfirming && !isSuccess && !error) return null;
+
+  const isReverted = isSuccess && receiptStatus === "reverted";
 
   const status = isPending
     ? { label: t("tx.awaitingSignature"), color: "var(--accent-yellow)" }
     : isConfirming
     ? { label: t("tx.confirming"), color: "var(--accent-blue)" }
+    : isReverted
+    ? { label: t("tx.reverted"), color: "var(--accent-red)" }
     : isSuccess
     ? { label: t("tx.confirmed"), color: "var(--accent-green)" }
     : { label: t("tx.failed"), color: "var(--accent-red)" };

@@ -13,6 +13,7 @@ const en: Translations = {
   // Header
   "header.spec": "Spec",
   "header.demo": "Demo",
+  "header.sequence": "Sequence",
 
   // Footer
   "footer.text": "ERC AI Agent Governance Interface \u2014 Draft Standard by Tokamak Network",
@@ -131,6 +132,7 @@ const en: Translations = {
   "tx.awaitingSignature": "Awaiting signature...",
   "tx.confirming": "Confirming...",
   "tx.confirmed": "Confirmed",
+  "tx.reverted": "Reverted",
   "tx.failed": "Failed",
 
   // Common
@@ -199,6 +201,7 @@ const en: Translations = {
 const ko: Translations = {
   "header.spec": "Spec",
   "header.demo": "Demo",
+  "header.sequence": "Sequence",
 
   "footer.text": "ERC AI \uC5D0\uC774\uC804\uD2B8 \uAC70\uBC84\uB10C\uC2A4 \uC778\uD130\uD398\uC774\uC2A4 \u2014 Tokamak Network \uCD08\uC548 \uD45C\uC900",
 
@@ -304,6 +307,7 @@ const ko: Translations = {
   "tx.awaitingSignature": "\uC11C\uBA85 \uB300\uAE30 \uC911...",
   "tx.confirming": "\uD655\uC778 \uC911...",
   "tx.confirmed": "\uD655\uC778\uB428",
+  "tx.reverted": "\uB418\uB3CC\uB824\uC9D0",
   "tx.failed": "\uC2E4\uD328",
 
   "common.signing": "\uC11C\uBA85 \uC911...",
@@ -368,6 +372,7 @@ const ko: Translations = {
 const zh: Translations = {
   "header.spec": "Spec",
   "header.demo": "Demo",
+  "header.sequence": "Sequence",
 
   "footer.text": "ERC AI \u4EE3\u7406\u6CBB\u7406\u63A5\u53E3 \u2014 Tokamak Network \u8349\u6848\u6807\u51C6",
 
@@ -473,6 +478,7 @@ const zh: Translations = {
   "tx.awaitingSignature": "\u7B49\u5F85\u7B7E\u540D...",
   "tx.confirming": "\u786E\u8BA4\u4E2D...",
   "tx.confirmed": "\u5DF2\u786E\u8BA4",
+  "tx.reverted": "\u5DF2\u56DE\u6EDA",
   "tx.failed": "\u5931\u8D25",
 
   "common.signing": "\u7B7E\u540D\u4E2D...",
@@ -537,6 +543,7 @@ const zh: Translations = {
 const ja: Translations = {
   "header.spec": "Spec",
   "header.demo": "Demo",
+  "header.sequence": "Sequence",
 
   "footer.text": "ERC AI \u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u30AC\u30D0\u30CA\u30F3\u30B9\u30A4\u30F3\u30BF\u30FC\u30D5\u30A7\u30FC\u30B9 \u2014 Tokamak Network \u30C9\u30E9\u30D5\u30C8\u6A19\u6E96",
 
@@ -642,6 +649,7 @@ const ja: Translations = {
   "tx.awaitingSignature": "\u7F72\u540D\u5F85\u3061...",
   "tx.confirming": "\u78BA\u8A8D\u4E2D...",
   "tx.confirmed": "\u78BA\u8A8D\u6E08\u307F",
+  "tx.reverted": "\u30EA\u30D0\u30FC\u30C8\u6E08\u307F",
   "tx.failed": "\u5931\u6557",
 
   "common.signing": "\u7F72\u540D\u4E2D...",

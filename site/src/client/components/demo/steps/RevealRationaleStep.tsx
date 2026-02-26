@@ -11,10 +11,10 @@ export default function RevealRationaleStep() {
   const { t } = useI18n();
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash });
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && receipt?.status === "success") {
       update({ isRevealed: true });
       completeStep(5);
       pushLog("RationaleRevealed", {
@@ -23,7 +23,7 @@ export default function RevealRationaleStep() {
         rationaleURI,
       }, hash);
     }
-  }, [isSuccess]);
+  }, [isSuccess, receipt]);
 
   const submit = () => {
     if (!agentId || proposalId === null || !salt) return;
@@ -77,7 +77,7 @@ export default function RevealRationaleStep() {
         {isPending ? t("common.signing") : isConfirming ? t("common.confirming") : t("reveal.button")}
       </button>
 
-      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} />
+      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} receiptStatus={receipt?.status} />
     </div>
   );
 }

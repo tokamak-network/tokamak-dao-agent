@@ -21,10 +21,10 @@ export default function VoteStep() {
   const { data: blockNumber } = useBlockNumber({ watch: true });
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash });
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && receipt?.status === "success") {
       update({ hasVoted: true });
       completeStep(4);
       pushLog("VoteCast", {
@@ -32,7 +32,7 @@ export default function VoteStep() {
         support: voteOptions.find((o) => o.value === support)?.label || String(support),
       }, hash);
     }
-  }, [isSuccess]);
+  }, [isSuccess, receipt]);
 
   const submit = () => {
     if (proposalId === null) return;
@@ -40,6 +40,7 @@ export default function VoteStep() {
       ...CONTRACTS.governor,
       functionName: "castVote",
       args: [proposalId, support],
+      gas: 300_000n,
     });
   };
 
@@ -89,7 +90,7 @@ export default function VoteStep() {
         {isPending ? t("common.signing") : isConfirming ? t("common.confirming") : t("vote.button")}
       </button>
 
-      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} />
+      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} receiptStatus={receipt?.status} />
     </div>
   );
 }

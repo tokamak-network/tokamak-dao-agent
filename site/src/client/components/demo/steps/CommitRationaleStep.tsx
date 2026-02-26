@@ -32,12 +32,12 @@ export default function CommitRationaleStep() {
     isPending: commitPending,
     error: commitError,
   } = useWriteContract();
-  const { isLoading: commitConfirming, isSuccess: commitSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: commitConfirming, isSuccess: commitSuccess, data: commitReceipt } = useWaitForTransactionReceipt({
     hash: commitTxHash,
   });
 
   useEffect(() => {
-    if (commitSuccess) {
+    if (commitSuccess && commitReceipt?.status === "success") {
       pushLog("RationaleCommitted", {
         agentId: agentId!,
         proposalId: proposalId!.toString(),
@@ -45,7 +45,7 @@ export default function CommitRationaleStep() {
       }, commitTxHash);
       setStep("predict");
     }
-  }, [commitSuccess]);
+  }, [commitSuccess, commitReceipt]);
 
   // Predict tx
   const {
@@ -54,12 +54,12 @@ export default function CommitRationaleStep() {
     isPending: predictPending,
     error: predictError,
   } = useWriteContract();
-  const { isLoading: predictConfirming, isSuccess: predictSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: predictConfirming, isSuccess: predictSuccess, data: predictReceipt } = useWaitForTransactionReceipt({
     hash: predictTxHash,
   });
 
   useEffect(() => {
-    if (predictSuccess) {
+    if (predictSuccess && predictReceipt?.status === "success") {
       update({ rationaleURI, salt: salt!, commitHash: commitHash! });
       completeStep(3);
       pushLog("PredictionRecorded", {
@@ -70,7 +70,7 @@ export default function CommitRationaleStep() {
       }, predictTxHash);
       setStep("done");
     }
-  }, [predictSuccess]);
+  }, [predictSuccess, predictReceipt]);
 
   const submitCommit = () => {
     if (!agentId || proposalId === null || !commitHash) return;
@@ -171,10 +171,10 @@ export default function CommitRationaleStep() {
       </div>
 
       {step === "commit" && (
-        <TxStatus hash={commitTxHash} isPending={commitPending} isConfirming={commitConfirming} isSuccess={commitSuccess} error={commitError} />
+        <TxStatus hash={commitTxHash} isPending={commitPending} isConfirming={commitConfirming} isSuccess={commitSuccess} error={commitError} receiptStatus={commitReceipt?.status} />
       )}
       {step === "predict" && (
-        <TxStatus hash={predictTxHash} isPending={predictPending} isConfirming={predictConfirming} isSuccess={predictSuccess} error={predictError} />
+        <TxStatus hash={predictTxHash} isPending={predictPending} isConfirming={predictConfirming} isSuccess={predictSuccess} error={predictError} receiptStatus={predictReceipt?.status} />
       )}
     </div>
   );

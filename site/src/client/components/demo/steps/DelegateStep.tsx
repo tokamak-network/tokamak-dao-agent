@@ -8,6 +8,31 @@ import TxStatus from "../TxStatus";
 import { pushLog } from "../EventLog";
 import PreferencesForm, { type RiskTolerance } from "./PreferencesForm";
 
+// Deployed Sepolia contract uses old event name (before IAI* → I* rename).
+// Merge both old and new event ABIs so decodeEventLog matches either.
+const DELEGATION_DECODE_ABI = [
+  ...CONTRACTS.delegation.abi,
+  {
+    type: "event" as const,
+    name: "AIDelegationCreated",
+    inputs: [
+      { name: "delegator", type: "address" as const, indexed: true, internalType: "address" as const },
+      { name: "agentId", type: "bytes32" as const, indexed: true, internalType: "bytes32" as const },
+      { name: "delegationId", type: "bytes32" as const, indexed: false, internalType: "bytes32" as const },
+      { name: "expiry", type: "uint256" as const, indexed: false, internalType: "uint256" as const },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event" as const,
+    name: "AIDelegationRevoked",
+    inputs: [
+      { name: "delegationId", type: "bytes32" as const, indexed: true, internalType: "bytes32" as const },
+    ],
+    anonymous: false,
+  },
+];
+
 export default function DelegateStep() {
   const { agentId, completeStep, update } = useDemo();
   const { t } = useI18n();
@@ -43,14 +68,16 @@ export default function DelegateStep() {
 
   useEffect(() => {
     if (isSuccess && receipt) {
+      if (receipt.status !== "success") return;
       for (const log of receipt.logs) {
         try {
           const decoded = decodeEventLog({
-            abi: CONTRACTS.delegation.abi,
+            abi: DELEGATION_DECODE_ABI,
             data: log.data,
             topics: log.topics,
           });
-          if (decoded.eventName === "AgentDelegationCreated") {
+          // Match both old (AIDelegationCreated) and new (AgentDelegationCreated) event names
+          if (decoded.eventName === "AgentDelegationCreated" || decoded.eventName === "AIDelegationCreated") {
             const delegationId = (decoded.args as any).delegationId as `0x${string}`;
             update({ delegationId });
             completeStep(1);
@@ -61,8 +88,11 @@ export default function DelegateStep() {
             }, hash);
             return;
           }
-        } catch {}
+        } catch {
+          // skip non-matching logs
+        }
       }
+      console.warn("[DelegateStep] TX succeeded but delegation event not found in logs");
     }
   }, [isSuccess, receipt]);
 
@@ -166,7 +196,7 @@ export default function DelegateStep() {
         {isPending ? t("common.signing") : isConfirming ? t("common.confirming") : t("delegate.button")}
       </button>
 
-      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} />
+      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} receiptStatus={receipt?.status} />
     </div>
   );
 }

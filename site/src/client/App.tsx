@@ -9,13 +9,15 @@ import Footer from "./components/layout/Footer";
 import LandingPage from "./pages/LandingPage";
 import SpecPage from "./pages/SpecPage";
 import DemoPage from "./pages/DemoPage";
+import SequencePage from "./pages/SequencePage";
 
-type View = "landing" | "spec" | "demo";
+type View = "landing" | "spec" | "demo" | "sequence";
 
 function parseView(): View {
   const path = window.location.pathname;
   if (path === "/spec") return "spec";
   if (path === "/demo") return "demo";
+  if (path === "/sequence") return "sequence";
   return "landing";
 }
 
@@ -36,6 +38,7 @@ export default function App() {
   }, []);
 
   const content =
+    view === "sequence" ? <SequencePage /> :
     view === "demo" ? <DemoPage /> :
     view === "spec" ? <SpecPage /> :
     <LandingPage />;

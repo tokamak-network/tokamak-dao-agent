@@ -12,10 +12,10 @@ export default function ResolveStep() {
   const { t } = useI18n();
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash });
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && receipt?.status === "success") {
       update({ isResolved: true });
       completeStep(6);
       pushLog("PredictionResolved", {
@@ -24,7 +24,7 @@ export default function ResolveStep() {
         outcome: "Succeeded (1)",
       }, hash);
     }
-  }, [isSuccess]);
+  }, [isSuccess, receipt]);
 
   const submit = () => {
     if (!agentId || proposalId === null) return;
@@ -58,7 +58,7 @@ export default function ResolveStep() {
         {isPending ? t("common.signing") : isConfirming ? t("common.confirming") : t("resolve.button")}
       </button>
 
-      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} />
+      <TxStatus hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} error={error} receiptStatus={receipt?.status} />
     </div>
   );
 }

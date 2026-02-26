@@ -264,6 +264,13 @@ input[type="range"]::-moz-range-thumb {
 .lifecycle-flow { display: flex; align-items: center; overflow-x: auto; padding: 1rem 0; gap: 0; }
 .landing-glow { text-shadow: 0 0 8px rgba(74,158,255,0.3), 0 0 24px rgba(74,158,255,0.15); }
 
+/* Sequence diagram flash animation */
+@keyframes flash {
+  0% { background: rgba(74,158,255,0.3); }
+  100% { background: transparent; }
+}
+.flash { animation: flash 1s ease; }
+
 @media (max-width: 768px) {
   .landing-section, .landing-section-alt { padding: 2.5rem 1rem; }
 }

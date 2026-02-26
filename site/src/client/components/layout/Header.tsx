@@ -4,7 +4,7 @@ import { useI18n } from "../../contexts/I18nContext";
 import { LOCALE_LABELS, type Locale } from "../../i18n/translations";
 
 interface HeaderProps {
-  currentView: "landing" | "spec" | "demo";
+  currentView: "landing" | "spec" | "demo" | "sequence";
 }
 
 export default function Header({ currentView }: HeaderProps) {
@@ -44,6 +44,9 @@ export default function Header({ currentView }: HeaderProps) {
           </NavLink>
           <NavLink active={currentView === "demo"} onClick={() => navigate("/demo")}>
             {t("header.demo")}
+          </NavLink>
+          <NavLink active={currentView === "sequence"} onClick={() => navigate("/sequence")}>
+            {t("header.sequence")}
           </NavLink>
         </nav>
       </div>

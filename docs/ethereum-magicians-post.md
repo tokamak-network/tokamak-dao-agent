@@ -1,4 +1,4 @@
-# ERC-XXXX: AI Agent Governance Interface
+# ERC-XXXX: Agent Governance Interface
 
 AI agents are already voting in DAOs through regular EOAs — indistinguishable from human voters. The question is not whether AI will participate in governance, but whether we standardize *how*.
 
@@ -6,7 +6,7 @@ Without a common interface, each DAO builds incompatible AI integrations. Agent 
 
 This ERC specifies four Solidity interfaces (two core, two optional extensions) for agent registration, preference-aware delegation with expiry and escalation, commit-reveal rationale integrity, and prediction-based credibility tracking. It layers on top of ERC-5805 and ERC-4824 without requiring Governor modifications.
 
-**Full specification:** [ERC AI Agent Governance Interface](https://erc-ai-governance.tokamak.network)
+**Full specification:** [ERC Agent Governance Interface](https://erc-ai-governance.tokamak.network)
 **Reference implementation:** [GitHub](https://github.com/nicetokamak/tokamak-dao-agent) (98 tests, Sepolia deployment, CC0)
 
 Status: **Draft**. We welcome feedback, co-authors, and alternative implementations.

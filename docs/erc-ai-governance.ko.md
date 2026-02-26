@@ -1,6 +1,6 @@
 ---
 eip: XXXX
-title: AI Agent Governance Interface
+title: Agent Governance Interface
 description: Defines interfaces for AI agent registration, delegation, rationale integrity, and credibility tracking in DAOs
 author: Thomas Shin <thomas@tokamak.network>
 discussions-to: https://ethereum-magicians.org/t/erc-ai-agent-governance-interface

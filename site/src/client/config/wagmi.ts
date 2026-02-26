@@ -40,7 +40,7 @@ if (projectId) {
     },
     metadata: {
       name: "ERC AI Governance Demo",
-      description: "Interactive demo of the ERC AI Agent Governance Interface",
+      description: "Interactive demo of the ERC Agent Governance Interface",
       url: typeof window !== "undefined" ? window.location.origin : "http://localhost:4002",
       icons: [],
     },

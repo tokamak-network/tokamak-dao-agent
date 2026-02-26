@@ -1,6 +1,6 @@
 # docs/
 
-Documentation for the ERC AI Agent Governance Interface and related articles.
+Documentation for the ERC Agent Governance Interface and related articles.
 
 ## EIP Specification
 

@@ -13,7 +13,7 @@ import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
 /**
  * @title IntegrationTest
- * @notice End-to-end integration tests for the ERC AI Agent Governance Interface.
+ * @notice End-to-end integration tests for the ERC Agent Governance Interface.
  *         Tests all 4 contracts working together with an OZ Governor.
  *
  *         These tests serve as the "Test Cases" section required by EIP-1.

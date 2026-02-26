@@ -299,7 +299,7 @@ This standard is not about replacing human governance with AI. It is about makin
 
 This EIP is a draft. We welcome feedback, co-authors, and implementations.
 
-- **Read the full specification**: [ERC AI Agent Governance Interface](https://erc-ai-governance.tokamak.network)
+- **Read the full specification**: [ERC Agent Governance Interface](https://erc-ai-governance.tokamak.network)
 - **Try the Sepolia demo**: [Interactive Demo](https://erc-ai-governance.tokamak.network/demo)
 - **View the source code**: [GitHub Repository](https://github.com/nicetokamak/tokamak-dao-agent)
 - **Join the discussion**: [Ethereum Magicians Forum](https://ethereum-magicians.org/t/erc-ai-agent-governance-interface)

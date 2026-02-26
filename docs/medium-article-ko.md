@@ -183,7 +183,7 @@ AI 에이전트는 우리가 표준화하든 하지 않든 거버넌스에 올 �
 
 이 EIP는 초안입니다. 피드백, 공동 저자, 구현을 환영합니다.
 
-- **전체 스펙**: [ERC AI Agent Governance Interface](https://erc-ai-governance.tokamak.network)
+- **전체 스펙**: [ERC Agent Governance Interface](https://erc-ai-governance.tokamak.network)
 - **Sepolia 데모**: [인터랙티브 데모](https://erc-ai-governance.tokamak.network/demo)
 - **소스 코드**: [GitHub Repository](https://github.com/nicetokamak/tokamak-dao-agent)
 - **토론**: [Ethereum Magicians Forum](https://ethereum-magicians.org/t/erc-ai-agent-governance-interface)

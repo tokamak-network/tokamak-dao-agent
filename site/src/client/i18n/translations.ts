@@ -16,7 +16,7 @@ const en: Translations = {
   "header.sequence": "Sequence",
 
   // Footer
-  "footer.text": "ERC AI Agent Governance Interface \u2014 Draft Standard by Tokamak Network",
+  "footer.text": "ERC Agent Governance Interface \u2014 Draft Standard by Tokamak Network",
 
   // Demo Page
   "demo.title": "Interactive Demo",
@@ -154,7 +154,7 @@ const en: Translations = {
   "meta.ethereumMagicians": "Ethereum Magicians",
 
   // Landing Page
-  "landing.hero.title": "AI Agent Governance Interface",
+  "landing.hero.title": "Agent Governance Interface",
   "landing.hero.subtitle": "A standard interface for AI agents to participate in DAO governance with identity, delegation, rationale transparency, and cross-DAO credibility.",
   "landing.hero.readSpec": "Read Full Spec",
   "landing.hero.tryDemo": "Try Demo",

@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Routing", () => {
   test("/ renders Landing page", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "AI Agent Governance Interface" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Agent Governance Interface" })).toBeVisible();
   });
 
   test("/spec renders Spec page", async ({ page }) => {
@@ -29,7 +29,7 @@ test.describe("Landing page sections", () => {
   });
 
   test("Hero section visible with CTAs", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "AI Agent Governance Interface" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Agent Governance Interface" })).toBeVisible();
     await expect(page.locator("text=ERC Draft")).toBeVisible();
     const readSpec = page.locator("button", { hasText: "Read Full Spec" });
     const tryDemo = page.locator("button", { hasText: "Try Demo" });
@@ -92,7 +92,7 @@ test.describe("Navigation", () => {
     await page.goto("/spec");
     await page.locator("text=ERC-AI-GOV").click();
     await expect(page).toHaveURL("/");
-    await expect(page.getByRole("heading", { name: "AI Agent Governance Interface" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Agent Governance Interface" })).toBeVisible();
   });
 
   test("Header Spec link navigates to /spec", async ({ page }) => {
